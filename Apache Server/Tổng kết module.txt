@@ -1,27 +1,12 @@
-Apache 
-Apache hỗ trợ các giao thức HTTP và HTTPS và có thể chạy trên nhiều hệ điều hành khác nhau, bao gồm Windows, Linux và macOS. Nó cũng hỗ trợ các ứng dụng web PHP, Perl và Python.
-Trong khi đó, httpd là một phần của Apache HTTP Server, là một tên viết tắt của "HTTP daemon". Nó là một tiến trình chạy ngầm trên máy chủ web của bạn và xử lý các yêu cầu HTTP được gửi đến máy chủ. httpd là một phần quan trọng của Apache HTTP Server và được cài đặt cùng với nó.
-
-
-
-# Mô hình web
-# Mở rộng dần hệ thống cực lớn
-
-
-
 # Basic
--> Cài đặt
-Cài dùng cho window:
-Download apache -> a number of third party vendors -> Apache Lounge -> cài 64bit -> giải nén vào ổ C -> vào bin -> chạy httpd.exe -> vào browser: localhost -> hiện It works!! là chạy thành công
-
-Có thể cài có sẵn trong xampp or docker
-
+-> Cài cho window: Download apache -> a number of third party vendors -> Apache Lounge -> cài 64bit -> giải nén vào ổ C -> vào bin -> chạy httpd.exe -> vào browser: localhost -> hiện It works!! là chạy thành công
 Tùy bản Apache mà được xây dựng trên Visual C Redistributiuon for Visual Studio phiên bản khác nhau mà phải có Visual Studio mới chạy được apache
 Ta giải nén vào ổ C mà kp là ổ khác vì cấu hình này được chỉnh sẵn trong file config là DocumentRoot rồi nên nếu ta dùng thư mục khác thì phải thay đổi config thư mục như trong docker ta set với image httpd ấy
 
--> Tương tác file httpd.conf: vào C:\Apache24\conf\httpd.conf
-- Tắt warning thiếu servername: 
-uncomment #ServerName www.example.com:80 -> sửa thành: ServerName localhost
+Có thể cài có sẵn trong xampp or docker
+
+-> Tương tác basic file httpd.conf: vào C:\Apache24\conf\httpd.conf
+- Tắt warning thiếu servername: uncomment #ServerName www.example.com:80 -> sửa thành: ServerName localhost
 
 - Bật mod_rewrite trong Apache trên localhost: cần thiết khi dùng Wordpress Permalink hay rewrite cho htaccess
 uncomment: #LoadModule rewrite_module modules/mod_rewrite.so trong file config -> sửa: AllowOverride None thành AllowOverride All 
@@ -38,13 +23,38 @@ Vào file config -> uncomment module mod_rewrite -> vào <Directory> mà gọi h
 RewriteEngine on # để bật Rewrite, cần dùng nó ở mỗi thư mục muốn nó hoạt động
 RewriteRule ^about$ about.html [NC] # để chuyển hướng mọi request bắt đầu và kết thúc bằng about ở url(Vd: /about) thì sẽ lấy file about.html
 
--> Command basic:
-Thông tin cơ bản về Apache:
-httpd -V
+-> Command basic: httpd -V
 httpd -M
-
 Khởi chạy Apache (start), dừng (stop), khởi động lại restart. VD: httpd -k start
 Khởi chạy Apache (nối terminate): httpd -DFOREGROUND
+
+-> Các thiết lập mặc định là:
+Document root Directory: /var/www/html or /var/www
+File cấu hình: httpd.conf
+Cổng HTTP mặc định: 80 TCP
+Cổng HTTPS mặc định: 443 TCP
+Log truy cập tại: /var/log/httpd/access_log
+Log ghi lại lỗi tại: /var/log/httpd/error_log
+Lệnh khởi động lại Apache: service httpd restart
+
+Cập nhập Apache với:
+yum update httpd
+apt-get install apache2
+=> Đây là command trong linux 
+
+VD: 
+<Directory />
+  Options None
+  Order deny,allow
+  Deny from all
+</Directory>
+=> Options None k cho phép User bật lại thiết lập (VD cố tình bật thông qua file htaccess)
+Deny from all để k ai được quyền truy cập thư mục gốc
+
+VD: Ta có thể giới hạn kích thước gửi đến, mặc định là k giới hạn:
+<Directory "/var/www/myweb1/user_uploads">
+  LimitRequestBody 512000//k load được quá 512kb trong request
+</Directory>
 
 
 
@@ -101,7 +111,7 @@ RewriteRule ^.*$ - [L] thì ^.*$ match với mọi url và - là k thực hiện
 => Các RewriteCond liên tiếp chỉ áp dụng với 1 RewriteRule ngay sau nó. Các RewriteRule bên dưới k bị ảnh hưởng. Nếu 1 RewriteRule k có RewriteCond nào phía trên, khi file chạy đến nó sẽ luôn được thực hiện vì k có đk gì.
 
 VD:
-#Chuyển hướng 1 URL cụ thể
+# Chuyển hướng 1 URL cụ thể
 RewriteEngine  on
 RewriteRule    "^/url-cu\.html$"  "url-moi.html"  [R=301]
 #Chuyển hướng thư mục news sang domain (server mới)
@@ -209,36 +219,8 @@ Allow from mydomain.com
 
 
 
-# Setting của Apache
--> Các thiết lập mặc định là:
-Document root Directory: /var/www/html or /var/www
-File cấu hình: httpd.conf
-Cổng HTTP mặc định: 80 TCP
-Cổng HTTPS mặc định: 443 TCP
-Log truy cập tại: /var/log/httpd/access_log
-Log ghi lại lỗi tại: /var/log/httpd/error_log
-Lệnh khởi động lại Apache: service httpd restart
-
-Cập nhập Apache với:
-yum update httpd
-apt-get install apache2
-=> Đây là command trong linux 
-
-VD: 
-<Directory />
-  Options None
-  Order deny,allow
-  Deny from all
-</Directory>
-=> Options None k cho phép User bật lại thiết lập (VD cố tính bật thông qua file htaccess)
-Deny from all để k ai được quyền truy cập thư mục gốc
-
-VD: Ta có thể giới hạn kích thước gửi đến, mặc định là k giới hạn:
-<Directory "/var/www/myweb1/user_uploads">
-  LimitRequestBody 512000//k load được quá 512kb trong request
-</Directory>
-
--> CGI(Common Gateway Interface) phân biệt tránh nhầm với CGI(Computer-Generated Imagery) trong kỹ xảo điện ảnh
+# CGI scrpit
+CGI(Common Gateway Interface) phân biệt tránh nhầm với CGI(Computer-Generated Imagery) trong kỹ xảo điện ảnh
 CGI được viết bằng Perl or C hoặc có thể chỉ là 1 shellscript đơn giản. Để tương tác server-client và các server với nhau. VD client gửi 1 form lên server thì nếu nhận được những thông tin phức tạp thì server sẽ k trực tiếp xử lý công việc này mà chuyển cho các CT khác gọi là gateway xử lý. CGI Script chính là CT chạy gateway trên WebServer. 
 Quy trình: Trình duyệt chuyển dữ liệu đến server -> server chuyển đến 1 CGI Script -> CGI Script xử lý và có thể chuyển cho 1 ứng dụng khác nếu cần thiết, sau đó gửi dữ liệu xuất ra cho web server -> web server chuyển dữ liệu lại cho trình duyệt
 CGI script cũng có thể xác nhận định danh của user và những thông tin về password của họ, cấp cho user quyền truy xuất theo những giới hạn của Web site
@@ -275,7 +257,7 @@ server-info : lấy thông tin server
 server-status : lấy trạng thái server
 type-map : phân tích file, ánh xạ đến nội dung cần thiết
 
-Handler cũng được gán bằng một CGI script được kích hoạt bởi Action, VD khi khi gọi đến file có phần mở rộng .xyz thì xử lý file đó với script CGI "/cgi-bin/program.cgi":
+Handler cũng được gán bằng một CGI script được kích hoạt bởi Action, VD khi gọi đến file có phần mở rộng .xyz thì xử lý file đó với script CGI "/cgi-bin/program.cgi":
 # Files of a particular file extension
 AddHandler my-file-type .xyz => tạo 1 handler mới tên là "my-file-type" xử lý mọi file có đuôi .xyz
 Action my-file-type "/cgi-bin/program.cgi"
@@ -292,7 +274,7 @@ AddHandler handler-name extension
 # handler-nam là tên handler
 # extension là phần mở rông của file gắn với handler (php, html ...)
 
-#Loại bỏ Handler
+# Loại bỏ Handler
 RemoveHandler extension
 # extension là phần mở rông của file gắn với handler cần bỏ
 
@@ -302,11 +284,8 @@ VD: Các file .php sẽ mở bằng handler có tên application/x-httpd-php
     SetHandler application/x-httpd-php
 </FilesMatch>
 
-1 số PHP Handler có thể sử dụng với Apache như CGI, DSO, FPM, FCGId, suPHP
-Apache 2.0 Handler là Handler PHP mặc định trong Apache/Php, nó thiết lập tính an toàn cao bằng cách chạy các script php với user là nobody hoặc apache, tuy nhiên nếu dùng suPHP thì an toan hơn nhiều, nhưng suPHP không còn được duy trì cập nhật (bản cuối 2013 suphp.org)
-
-FastCGI Handler
-FastCGI kế thừa từ CGI nó được tùy chỉnh để giảm tải sự tương tác giữa script CGI và Webserver, cho phép Server phụ vụ được nhiều yêu cầu cùng lúc hơn.
+Apache 2.0 Handler là Handler PHP mặc định trong Apache/Php, nó thiết lập tính an toàn cao bằng cách chạy các script php với user là nobody hoặc apache.
+FastCGI Handler: FastCGI kế thừa từ CGI nó được tùy chỉnh để giảm tải sự tương tác giữa script CGI và Webserver, cho phép Server phụ vụ được nhiều yêu cầu cùng lúc hơn.
 
 suEXE giúp chạy CGI dưới 1 user khác với user đang chạy Apache HTTPD, mặc định thì cùng user.
 Khi sử dụng tính năng này mục đích để gán user cho những VirtualHost khác nhau. Ta nên quản lý user chặt chẽ, nếu k thì k nên dùng suEXE
@@ -319,6 +298,9 @@ httpd -V sẽ ra -D SUEXEC_BIN="/apache/bin/suexec" là vị trí lưu suEXE
 </VirtualHost>
 => Ở host địa chỉ và cổng trên nếu chạy CGI với FastCHI or PHP-FPM thì nó sẽ chạy tới user là abc và group là xyz
 
-=> Dừng lại publish global, dùng VirtualHost, self-sign SSL => để học tiếp phải đăng nhập được vào Router của wifi cơ
+
+
+# Other
+-> Dừng: publish global, dùng VirtualHost, self-sign SSL => để học tiếp phải đăng nhập được vào Router của wifi cơ
 
 

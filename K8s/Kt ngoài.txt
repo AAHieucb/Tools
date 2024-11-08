@@ -1,0 +1,9 @@
+# Basic
+K8s giúp tự động deploy, quản lý và scaling ứng dụng container. Nó hoạt động với nhiều ứng dụng container hóa, VD Docker. 
+Nó lo nhiều chức năng khác so với docker. VD ta đã deploy 3 server khác nhau lên docker, xong muốn scale up lên 40 server, và cũng phải quản lý cả 40 server, restart nếu nó die, nếu chỉ dùng docker thì phải quản lý thủ công từng container. Nhờ K8s mà mọi thứ ez hơn
+Kubernetes quản lý ứng dụng phân tán trên 1 cụm máy chủ, có khả năng scale lên cả ngàn container chạy trên nhiều máy chủ, dùng nhiều trong cloud-native và microservices
+
+=> Docker tạo 1 container thì K8s giúp quản lý các container ở nhiều máy chủ cơ. 
+=> Docker Swarm là công cụ tương tự K8s, nhưng nó chỉ phù hợp với dự án nhỏ, ít container, giao diện dễ dùng hơn và triển khai nhanh, yêu cầu mở rộng đơn giản. K8s dùng quy mô lớn, mở rộng linh hoạt, khả năng tự động cân bằng tải và quản lý hàng nghìn container, độ phức tạp cao hơn.
+
+

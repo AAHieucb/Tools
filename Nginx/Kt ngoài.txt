@@ -1,0 +1,28 @@
+# SS nginx apache: 
+Apache chỉ nhận 1 lượng request xác định và loại bỏ số còn lại trong khi NGINX cố gắng hết khả năng để k bỏ qua 1 request nào. Nginx chịu được số user truy cập 1 thời điểm nhiều hơn Apache.
+Apache "prefork" thì mỗi request kể cả lấy tài nguyên tĩnh đều dùng 1 process riêng. Còn nginx xử lý hướng sự kiện trong cùng 1 luồng async, 1 process xử lý nhiều request liên tục tuỳ lượng tài nguyên còn lại của hệ thống. Mỗi process gồm nhiều worker nhỏ hơn xử lý request và Worker Connections sẽ quản lý tât cả thread đó, giải quyết C10K
+
+
+
+# Forward Proxy và Reverse Proxy
+Forward Proxy: Đại diện cho người dùng truy cập các tài nguyên trên Internet. Nó ẩn danh người dùng, lọc nội dung or cache để tăng tốc độ. VD dùng CDN.
+Reverse Proxy: Đại diện cho máy chủ nhận các request. Nó có thể cân bằng tải, mã hóa SSL, che giấu bảo mật cho máy chủ thực, response từ nó giống như là từ 1 máy chủ.
+
+
+
+# Hosting
+-> Pb VPS và máy chủ vật lý: VD cấu hình laptop cá nhân thành server vật lý or VPS
+- Ta cài đặt các dịch vụ máy chủ muốn sử dụng (như Apache, MySQL, PHP, v.v.) trực tiếp lên laptop hệ điều hành Windows là thành 1 server vật lý
+- Ta dùng phần mềm ảo hóa như VMware hoặc VirtualBox rồi cài chạy các server trên đó. Mỗi server này có thể chạy một hệ điều hành riêng biệt và có các ứng dụng riêng, cung ra ngoài mạng host và truy cập được ngoài internet thì gọi là 1 VPS
+
+-> Có 4 loại web hosting: 
+- Shared hosting(hay hosting): trang web của ta đặt trên 1 máy chủ cùng vói nhiều trang web khác. các website chia sẻ tài nguyên từ máy chủ như RAM, CPU. Chi phí thấp, kỹ năng chuyên môn k cao. VD: ta host mấy trang web lên máy chủ free r ấy. Bảo mật không tốt vì hàng đống website cùng IP máy chủ. Nhưng dù sao vẫn tốt hơn host trên máy tính cá nhân k chuyên dụng
+- VPS(Virtual Private Server) là máy chủ chuyên dụng nhưng chỉ là ảo được chia ra từ 1 máy chủ, có ip riêng, tài nguyên độc lập. 1 website k bị ảnh hưởng hiệu suất bởi các website khác nếu máy host k bị quá tải. 
+- Server(máy chủ dùng riêng): cung quyền kiểm soát hoàn toàn website mà k lo bảo mật, có thể cho người khác thuê lại. Chi phí có riêng 1 cái khá cao vì phải đảm bảo về phần cứng, các công ty bảo mật toàn dùng cách này. Tự bảo trì và quản lý máy chủ. Vẫn dùng chung server vật lý với người khác nhưng được phân bố 1 vùng riêng.
+Máy tính của ta cũng có thể cho host thành 1 máy chủ được, nó sẽ là server dùng riêng mỗi tội phần cứng và hiệu năng kém. PC làm host thường chạy hệ điều hành FreeNAS
+- Cloud Hosting: khả năng không giới hạn xử lý lượng truy cập lớn. Trả thêm phí nếu muốn can thiệp sâu vào hệ thống. Bộ nhớ của cloud được tổng hợp từ các vùng nhớ rảnh trên nhiều máy chủ. Website cũng được phân bố nhiều máy chủ cloud đảm bảo tính availability cao.
+
+VD 1 kiến trúc VPS react nginx:
+Client --SSL--> VPS[Nginx -> PM2 -> Serve{HTML, CSS, JS, static assets}]
+
+

@@ -1,6 +1,3 @@
-Firebase
-
-
 # Basic
 Envolve là tiền thân của Firebase được gg mua lại. Firebase có nhiều tính năng:
 - Cloud firestore cung real-time database kết nối an toàn SSL, phù hợp với ứng dụng vừa và nhỏ Vì query phức tạp thì NoSQL sẽ gặp vấn đề.
@@ -12,8 +9,10 @@ Envolve là tiền thân của Firebase được gg mua lại. Firebase có nhi�
 - Cloud Storage: lưu tài nguyên như ảnh video vào storage.
 - Firebase Dynamic Link tạo link riêng để tối ưu dùng riêng cho các thiết bị Android, iOS, web.
 
--> Setup firebase cung rest API với file JSON:
-Tạo dự án tương tự -> build -> realtime database -> create database -> start in test mode là mở bất kỳ ai, start in locked mode là phải cấp quyền, với các ứng dụng thực thì phải dùng locked mode -> mục data -> thêm file json or tự gõ theo nhánh -> để gõ: ấn nút mở xuống và gõ tên, mở xuống lại gõ tiếp, khi được ít nhất 2 cấp có thể dừng và ấn Add, sau đó mở rộng tiếp -> tương tác với DB qua url bên trên. Mỗi 1 nhánh tạo ra 1 đường link đến file json như ở VD thì nhánh One trong Pets có url là .../Pets/One.json
+
+
+# Realtime db JSON file cung API
+Tạo 1 dự án -> build -> realtime database -> create database -> start in test mode là mở bất kỳ ai, start in locked mode là phải cấp quyền, với các ứng dụng thực thì phải dùng locked mode -> mục data -> thêm file json or tự gõ theo nhánh -> để gõ: ấn nút mở xuống và gõ tên, mở xuống lại gõ tiếp, khi được ít nhất 2 cấp có thể dừng và ấn Add, sau đó mở rộng tiếp -> tương tác với DB qua url bên trên. Mỗi 1 nhánh tạo ra 1 đường link đến file json như ở VD thì nhánh One trong Pets có url là .../Pets/One.json
 Ta có thể chỉnh quyền ở tab rules, read và write là true hết thì mọi ứng dụng bên ngoài đều có thể chỉnh sửa database của ta -> publish rules
 
 -> Setup kiểm soát quyền db: Ta vào firebase chỉnh 2 rules là: "auth.uid != null" => sẽ thành giới hạn ứng dụng nào được truy câp vào database. Giả sử yêu cầu phải login gg: 
@@ -26,9 +25,8 @@ Với C2 trả về 1 cái tokenId trong response, nếu k sẽ ra error. Ta par
 
 
 
-//!!!!!!!!
 # Hosting Firebase
--> Cách dùng firebase hosting cho trang web tĩnh: free thì chỉ dùng được 1GB, có custom domain
+-> Host web tĩnh: free thì chỉ dùng được 1GB
 Login firebase là google account -> create project -> tên dự án, chọn cả set up firebase hosting và gõ tên url web ra -> continue -> </> -> tên app -> register -> continue to console -> build -> hosting -> get started-> cd vào thư mục chứa thư mục public của dự án -> npm install -g firebase-tools -> firebae login(làm 1 lần) -> firebase init -> space để chọn, enter để xác nhận(có thể chọn nh options) -> nó bảo có chọn thư mục public là nơi ta có thể gõ tên thư mục vào, để là public thì ấn enter(có sẵn public và index.html bên trong r) -> k chọn github, dự án của ta phải có file gốc là index.html, k chọn overwrite cái index.html của ta, k chọn single page -> firebase deploy -> refresh trang
 
 Lỗi routing trong ReactJS khi deploy firebase => fix sửa file firebase.json thành:
@@ -43,17 +41,13 @@ Lỗi routing trong ReactJS khi deploy firebase => fix sửa file firebase.json 
       }
     ]
   }
-}
-
-Khi chuyển route, nó bị lỗi khi k tìm thấy route đó trong server hosting vì mặc định server chỉ host / or đường dẫn xđ trong package json, vì ta dùng single page nên phải redirect mọi url vào index.html để từ đó nó chạy các component Switch Route bên trong trỏ đến đúng trang cần lấy
-Tuy nhiên như trên nó chỉ đúng với SPA, nếu MPA với React sẽ k được
+} => Khi chuyển route, nó bị lỗi khi k tìm thấy route đó trong server hosting vì mặc định server chỉ host / or đường dẫn xđ trong package json, vì ta dùng single page nên phải redirect mọi url vào index.html để từ đó nó chạy các component Switch Route bên trong trỏ đến đúng trang cần lấy. MPA sẽ khác
 
 Dùng firebase connect github(hosting CI/CD): Tiếp tục từ npm install -g firebase-tools -> firebase init hosting -> ... -> Chọn dùng github Yes -> xđ user/repo -> grant access theo url hiện ra(làm 1 lần) -> xđ nhánh -> xđ câu lệnh trước và sau khi deploy -> Có option chọn mỗi khi merge pull request, app sẽ tự động deploy lại (thực ra cứ push lên git là nó tạo ra phiên bản mới ngay) -> nếu gắn với git phải push lên 1 lần mới đc
-=> Cái CSR có index.html dùng được chứ NextJS thì k dùng được như trên mà phải enable framework(vẫn trong giai đoạn thử nghiệm)
 
--> NextJS hosting: firebase experiments:enable webframeworks -> firebase init hosting -> làm bth tự nhận diện project theo framework phổ biến => trả phí mới được. Với nextjs nên host bằng vercel
-
-Làm thủ công NextJS hosting + CICD (Nếu k cần CICD chỉ cần bỏ đoạn setup git là được):
+-> Hosting nextjs khi tạo web tĩnh: dùng SSG export tĩnh ra trước
+1) firebase experiments:enable webframeworks -> firebase init hosting -> làm bth tự nhận diện project theo framework phổ biến => bản trả phí mới được.
+2) Làm thủ công NextJS hosting + CICD (Nếu k cần CICD chỉ cần bỏ đoạn setup git là được):
 ... -> firebase init hosting -> chọn vừa config được, vừa chơi GitAction -> setup url, nhánh, các thứ. Chọn url directory là out k dùng public -> Khi dùng nextjs có thể kp single page router như bth thì có thể dùng như dưới. Khi đó MPA(tức router của trang chính k trỏ đến các trang con mà người dùng chủ động gõ url vào trang con) thì phải dùng dynamic link như dưới:
 {
   "hosting": {
@@ -72,18 +66,15 @@ Làm thủ công NextJS hosting + CICD (Nếu k cần CICD chỉ cần bỏ đo�
     ]
   }
 }
-Để chạy được, các lệnh github ta k set gì hết. Thêm lệnh npm run build và npm run export vào package.json để tạo ra thư mục out(tương đương thư mục bulid và public của react)
+Để chạy được, các lệnh github ta k set gì hết. Thêm lệnh npm run build và npm run export vào package.json để tạo ra thư mục out (tương đương thư mục bulid và public của react)
 Mỗi lần gọi lệnh npm run export sẽ tạo ra file index.html trong out ok. Nhưng đôi khi để chạy được các lệnh này, 1 vài tính năng của Next sẽ lỗi. VD khi dùng next/image thẻ <Image/> thì phải thêm config unoptimize: true vào vì khi dùng next export thì cái Image Optimizer mặc định k tương thích (chỉ chạy bằng next start mới có tương thích) (Thực tế có loại next image optimizer khác có thể dùng nhưng ở đây ta chỉ đơn giản disable nó)
 Trong gitignore cũng phải xóa out đi vì phải push cả nó lên git. Mỗi khi có git action (push, merge) lên đúng 1 nhánh của git sẽ kích hoạt gitaction gắn với firebase chạy lần lượt các lệnh cần thiết deploy dự án. Có thê xem trạng thái trong mục Action của dự án trên github.
-=> Mỗi lần sửa đổi: chạy build và export -> push lên git sau khi đổi thư mục out xong -> là xong. Tức cái lệnh chạy trước khi deploy là k bao gồm lệnh build (Thực chất có thể dùng lệnh build ở đó)
-=> NextJS là SSR và cần server để chạy nhưng ở đây ta dùng SSG export tĩnh ra rồi host lên cloud này thôi, cũng có thể coi là CSR trừ khi nó dùng getStaticProps fetch trước. CSR chuẩn thì phải là React, khi mà data gần như k có gì lúc ban đầu và browser phải fetch tiếp toàn bộ.
-Trong quá trình export có thể bị lỗi các thứ vì config webpack của nextjs mà ta phải search gg thôi
 
+=> Mỗi lần sửa đổi: chạy build và export -> push lên git sau khi đổi thư mục out xong -> là xong. Tức cái lệnh chạy trước khi deploy là k bao gồm lệnh build (Thực chất có thể dùng lệnh build ở đó)
 Môi khi update thì check cả 2 url .web.app và .firebaseapp.com thì mới được bản update mới nhất 
 
--> Với react app: làm tương tự -> ở thư mục chưa public -> npm run build -> ... -> chọn folder public hay k thì ta gõ build vào
-Ta k cần phải vào web firebase và tạo sẵn 1 app nx mà chỉ cần -> create a new project(k dùng existing project) -> gõ tên project(là url web hiển thị, k viết hoa) -> enter tiếp để xác nhận dùng project id cùng tên luôn -> goi single app hay k tức là có dồn tất cả vào file index.html hay k thì chọn có ->..
-
+-> Hosting React: làm tương tự -> ở thư mục chưa public -> npm run build -> ... -> chọn folder public hay k thì ta gõ build vào
+Ta k cần phải vào web firebase và tạo sẵn 1 app nx mà chỉ cần -> create a new project (k dùng existing project) -> gõ tên project (là url web hiển thị, k viết hoa) -> enter tiếp để xác nhận dùng project id cùng tên luôn -> goi single app hay k tức là có dồn tất cả vào file index.html hay k thì chọn có -> ...
 Firebase lỗi reload khi reload trang lại theo url mới của ứng dụng và fix bằng cách thêm: 
 "rewrites": [
   {

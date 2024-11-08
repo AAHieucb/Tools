@@ -1,0 +1,12 @@
+# CI/CD
+CI/CD tự động build, test, merge, deploy. 
+Nếu 1 bước fail sẽ k thực hiện sang bước tiếp theo và ứng dụng vẫn ở phiên bản thành công cuối cùng trước đó.
+
+CI là continuous integration tức code thay đổi thì tự động build, test và merge vào shared repo. CD là continuous delivery / continuous deployment là tự động deploy.
+Nhiều công ty áp dụng CI/CD cho developer deploy sang các nhanh dev, sau đó admin là người duy nhất có quyền merge vào nhánh master để tự động deploy sản phẩm ở dạng dùng thử non-production or staging environment(bản test cho qa). Sau khoảng vài tháng mới chốt release nó thành version production mới.
+
+-> Github actions giúp tự động hóa hàng loạt các tác vụ khi sự kiện xảy ra, VD khi push code lên thì thực hiện lần lượt các hành động nào.
+Có thể tự host trên server riêng or cloud nào đó rồi connect với github qua github actions để tự động hóa việc chạy các lệnh deploy lên.
+VD: dùng tự động deploy lên firebase, vercel bằng github actions. Nếu ta muốn thực hiện các câu lệnh phức tạp trên các nền tảng khác k hỗ trợ github action, sẽ phải tự code workflow, push lên thì chạy từng dòng lệnh nào phải ghi ra.
+
+

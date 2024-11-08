@@ -1,14 +1,38 @@
 -> https://github.com/wg/wrk 
 Test benchmark request mạnh cho máy multicore. Cách tải nhanh nhất là hỏi GPT4
 
+
+
 -> https://lightning.ai  
 Dùng online VSC cloud GPU mạnh tạm thời
+
+
 
 -> http://www.plantuml.com/plantuml/uml
 Plant UML vẽ UML diagram bằng code đỉnh
 
+
+
 -> Fiddler: 
 Tool bắt gói tin mà máy gửi đi, có thể biết mọi thông tin request. VD debug powershell biết được nó gửi request gì đi mà việc dùng thông thường k thể thấy được
 
--> Fig.io: best tool autocomplete terminal, chuyển sang Amazon Code Whisper
+
+
+-> Dùng cURL call api qua cmd => tool phế k nên dùng
+Các lệnh:
+curl -X GET "http://localhost:<port>/<>" 
+
+curl -X POST "https://example.com/api" \
+-H "Authorization: Bearer YOUR_BEARER_TOKEN" \
+-H "Content-Type: application/json" \
+-H "Custom-Header: CustomValue" \
+-d '{"key1":"value1", "key2":"value2"}'
+
+POST object tự hiểu là application/x-www-form-urlencoded: curl -d "param1=value1&param2=value2" -X POST http://localhost:<port>/
+POST object explicit: curl -d "param1=value1&param2=value2" -H "Content-Type: application/x-www-form-urlencoded" -X POST http://localhost:<port>/
+POST data file: curl -d "@data.txt" -X POST http://localhost:<port>/data
+POST with data in JSON file: curl -d "@data.json" -X POST http://localhost:3000/data
+
+=> Lỗi A parameter cannot be found that matches parameter name 'X' => cái này là lỗi do OS đã được set từ trước cái curl như 1 alias(bí danh) để invoke-webrequest. Ta phải xóa cái set từ trước đó đi với: remove-item alias:\curl là có thể dùng đc bth
+
 

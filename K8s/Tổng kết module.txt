@@ -1,11 +1,8 @@
-K8s
-
-
 # Basic
 -> Cấu trúc basic:
 Master[etcd, controller, manager, scheduler <-> kube apiserver] <-> Worker1[Container] | <- Load balancer <- User
                                                                 <-> Worker2[Container] | 
-=> Kubenetes cluster gồm 1 master và nhiều worker node:
+Kubenetes cluster gồm 1 master và nhiều worker node:
 - Master Server là máy chủ chính điều khiển cả cụm máy
 etcd lưu cấu hình chung cả cụm máy. etcd chạy tại máy master và là 1 dự án open source cung cấp dịch vụ lưu trữ dữ liệu theo key-val
 kube-apiserver chạy tại máy master cung API để client tương tác với K8s
@@ -16,7 +13,7 @@ Container có thể là docker or các nền tảng khác để chạy container
 Kubelet chạy trên mọi máy node để giám sát chạy hay dừng các ứng dụng trên node
 kube-proxy cung proxy để các ứng dụng ngoài vào mạng cluster tùy theo traffic
 
--> Glasskube là package manager cho kubernetes, giúp deploy, cài đặt, làm mọi thứ với kubernetes dễ hơn. Học K8s nên dùng.
+-> Glasskube là package manager cho kubernetes, giúp deploy, cài đặt, làm mọi thứ với kubernetes dễ hơn.
 
 
 
@@ -33,7 +30,6 @@ kubectl version --short
 kubectl cluster-info => show url để connect vào
 kubectl get nodes => lấy mọi node trong cluster. Nếu chạy 1 node thì chỉ có master
 kubectl get pods -A => show các pods chạy trong mọi namespace (khi có -A option)
-
 kubectl describe node/<tên node> => Hiển thị thông tin về 1 node trong k8s. VD pods: 110 là cluster này chứa max 110 container bên trong
 
 -> Thực hành tạo K8s nhiều nodes => có thể triển khai vào hệ thống thực tế:
@@ -54,13 +50,11 @@ vagrant halt => dừng máy ảo
 vagrant reload => khởi động lại máy ảo, có đọc lại cấu hình trong Vagrantfile
 vagrant destroy => xóa máy ảo
 
---> Tạo các file Vagrantfile cho 3 máy và chạy vagrant up
+---> Tạo các file Vagrantfile cho 3 máy và chạy vagrant up
 => Lỗi với máy window khi dùng Vagrantfile với VMBox => K dùng Vagran với window
 URL: https://www.youtube.com/watch?v=yOBeQNGX278&list=PLwJr0JSP7i8D-QS50lYsXpAg-jYoqxMVy
 
---> Các bước sau:
-Sau khi tạo máy ảo mà có enable SSH, ta có thể kết nối vào máy ảo bằng SSH. VD: ssh root@192.168.10.100 -> nhập password là vào được terminal của VM
-
+--> Sau khi tạo máy ảo mà có enable SSH, ta có thể kết nối vào máy ảo bằng SSH. VD: ssh root@192.168.10.100 -> nhập password là vào được terminal của VM
 Vào máy master, chạy: kubeadm init --apiserver-advertise-address=172.16.10.100 --pod-network-cidr=192.168.0.0/16
 => Lệnh này giúp cấu hình nó thành master node của k8s cluster. Trong 1 cluster thì các node muốn liên lạc với nhau phải thông qua 1 cái plugin network (như hình Cấu trúc.png). Tham số --pod-network-cidr sẽ dùng plugin network tên là Calico trong K8s. Sau đó phải cài calico
 
@@ -74,8 +68,7 @@ Dùng kubectl ở trong máy ảo node master sẽ truy cập vào k8s nhiều n
 
 Ta phải connect kubectl ở máy host vào k8s ở remote:
 kube config view => phải chạy trong git bash, nó show kubectl hiện tại đang connect tới k8s cluster nào và thông tin tk xác thực để connect với cluster đó.
-Tức để kubectl local connect được tới cluster khác thì phải xem được thông tin cluster và tk xác thực để login vào cluster đó. Thông tin này được lưu tại:
-~/.kube/config
+Tức để kubectl local connect được tới cluster khác thì phải xem được thông tin cluster và tk xác thực để login vào cluster đó. Thông tin này được lưu tại: ~/.kube/config
 => Ta vào master node ở remote, lấy file config ở remote ra, lấy file config ở local ra. Trộn 2 files lại với nhau và thế vào file config ở local. Lúc đó kubectl ở local sẽ connect được tới 1 trong 2 systems k8s
 Chi tiết cách trộn: https://www.youtube.com/watch?v=yOBeQNGX278&list=PLwJr0JSP7i8D-QS50lYsXpAg-jYoqxMVy => phút 35
 
@@ -90,7 +83,7 @@ Mỗi pods chứa nhiều container khác nhau thuộc cùng 1 mạng mà có th
 
 
 # Dùng K8s Dashboard
-Để tránh lag, ta nên mở rộng dùng wsl2 với nhiều bộ nhớ và CPU hơn. Nếu bị lag:
+Để tránh lag thì nên mở rộng dùng wsl2 với nhiều bộ nhớ và CPU hơn. Nếu bị lag:
 Window + R -> %USERPROFILE% -> Tạo file .wslconfig nếu chưa có -> Thêm vào:
 [wsl2]
 memory=8GB                                
@@ -98,13 +91,11 @@ swap=4GB
 processors=4
 -> Restart lại docker (tốt nhất là tắt máy bật lại)
 
-Công cụ quản lý như kubectl nhưng là trên giao diện. 
-Nó là tool độc lập với k8s, ta chỉ cài trong máy xong muốn dùng giao diện cho hệ thống k8s nào thì connect vào thôi
+K8s Dashboard là công cụ quản lý như kubectl nhưng là trên giao diện. Nó độc lập với k8s, ta chỉ cài trong máy xong muốn dùng giao diện cho hệ thống k8s nào thì connect vào
 
 -> Version 3 là breakchange, ta dùng tạm version 2
 Tải file version 2.7: https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
 Tổng hợp mọi phiên bản: https://github.com/kubernetes/dashboard/releases
-
 Đảm bảo là k8s đang chạy trong máy là có 1 cluster
 
 --> Chạy Dashboard với many nodes
@@ -176,14 +167,12 @@ Giả sử nó hiện ra url để truy cập dashboard là: 127.0.0.1:8001
 => URL: http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/
 
 --> Lệnh khác tương tự: kubectl proxy --address="192.168.0.101" -p 8001 --accept-hosts='^*$'
-
 Để đăng nhập bằng token, vẫn phải làm bước tạo user có quyền truy cập vào dashboard
 
--> Khi có nhiều namespace, ta có thể gọi hàm apply triển khai thêm dịch vụ vào namespace cụ thể nào với:
+-> Khi có nhiều namespace, ta có thể gọi hàm apply triển khai thêm dịch vụ vào namespace cụ thể nào với: 
 kubectl apply --namespace <namespace-name> -f <resource-file.yaml>
 
--> Để chạy 1 container mới trên 1 node k8s:
-Ta phải gắn cho node 1 cái label: kubectl label nodes <node-name> redis-node=true
+-> Để chạy 1 container mới trên 1 node k8s, phải gắn cho node 1 cái label: kubectl label nodes <node-name> redis-node=true
 
 R viết file yaml run container ở 1 node có label đó thông qua NodeSelector. Thuộc tính này giúp xđ nodes nào để chạy cái pods mới này:
 apiVersion: apps/v1
@@ -223,7 +212,6 @@ Cài trên window ez: https://github.com/derailed/k9s/releases
 -> Cách dùng:
 kubectl đang tương tác với cluster nào thì k9s cũng tương tác với cluster đó. Nên có thể chuyển qua lệnh chuyển context của kubectl
 Run: k9s => hiển thị giao diện cli của k9s liên kết với kubectl 
-
 URL: https://www.youtube.com/watch?v=FW0eQu_QQ3k
 
 
@@ -292,16 +280,13 @@ kubectl explain pod --recursive=true
 kubectl describe pod/<tên pod>
 => Thông tin của pods hiện ra là ip và port. Tuy nhiên ip này là nội bộ chỉ các node trong cluster liên lạc với nhau, khi muốn bên ngoài truy cập vào service thì dùng:
 kubectl proxy
-Hoặc:
-kubectl proxy --address="0.0.0.0" --accept-hosts='^*$'
+Hoặc: kubectl proxy --address="0.0.0.0" --accept-hosts='^*$'
 => Nó sẽ mở ra bên ngoài để truy cập qua: http://localhost/api/v1/namespaces/default/pods/mypod:8085/proxy/
 Ta cũng có thể chuyển port truy cập với: kubectl port-forward mypod 8080:8085
 
 
 
-# ReplicaSet trong K8s
-=> ref tới "ReplicaSet"
-
+# ReplicaSet trong K8s => ref tới "ReplicaSet"
 Khi CPU hay bộ nhớ của 1 node không đủ thì k thể tạo tạo thêm POD cho node đó.
 Việc tạo thêm pod có ích khi máy thừa bộ nhớ và CPU nhưng các pod trong máy vẫn đang bị quá tải vì quá nhiều request. Việc tạo thêm pod trong node đó sẽ giúp tận dụng hết công suất chiều dọc hiện có của máy
 
@@ -324,19 +309,13 @@ Ta phải tạo 1 HPA để tự động scale theo mức độ CPU.
 C1: kubectl autoscale rs rsapp --max=2 --min=1
 => Dùng dòng lệnh tạo 1 hpa tên là rsapp tham chiếu đến replicaset tên là rsapp để tự scale các pod với thiết lập min-max các pod
 kubectl get hpa => liệt kê các hpa
-
 C2: Tạo hpa từ file yaml => VD ref tới "HPA"
 
 
 
-# Deployment
-Dùng replicaset độc lập không hay, họ thường dùng Deployment tốt hơn. Mỗi Deployment sở hữu 1 ReplicaSet riêng.
-
-
-
 # Other
--> Dừng series từ Deployment:
-https://xuanthulab.net/deployment-trong-kubernetes-trien-khai-cap-nhat-va-scale.html
+-> Dừng series từ Deployment: Dùng replicaset độc lập không hay, họ thường dùng Deployment tốt hơn. Mỗi Deployment sở hữu 1 ReplicaSet riêng.
+URL: https://xuanthulab.net/deployment-trong-kubernetes-trien-khai-cap-nhat-va-scale.html
 Còn có PV, PVC, Ingress, Rancher2, Deployment, Service Headless, DaemonSet, CronJob, NFS, Secret
 
 Series khác: https://viblo.asia/s/kubernetes-series-bq5QL8QGlD8

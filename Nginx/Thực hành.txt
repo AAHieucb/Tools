@@ -1,15 +1,14 @@
-# VD cấu hình Nginx làm reverse proxy cho Apache trên Ubuntu
+# VD cấu hình Nginx làm reverse proxy trên Ubuntu
 Dùng Let's Encrypt và PHP
 URL: https://galaxyz.net/cach-cau-hinh-nginx-lam-web-server-va-reverse-proxy-reverse-proxy-cho-apache-tren-mot-server-ubuntu-1804.388.anews
 URL: https://galaxyz.net/cach-cau-hinh-nginx-lam-reverse-proxy-cho-apache.3086.anews
 
 
 
-//!!!!!!!
-# Thực hành dùng pm2 tạo nhiều instance của server, tạo hẳn 3 cái server của nodejs và dùng nginx để cân bằng tải 4 server này
+# Thực hành dùng pm2 tạo 3 cái server nodejs và dùng nginx để cân bằng tải các server đó
 => ref tới "UseNginx / nginx-loadbalancer"
 
--> Dùng pm2: npm install pm2
+-> Dùng pm2: giúp khởi động lại dự án khi VPS bị restart hay app bị crash. Nếu k có thì khi gặp TH như v ta phải tự vào vps và chạy npm start ở folder dự án thủ công
 pm2 list
 pm2 stop id
 pm2 delete id
@@ -20,17 +19,15 @@ pm2 logs
 pm2 flush => xóa logs đã có
 pm2 startup ubuntu => nếu server reboot thì pm2 tự động chạy lại luôn chứ ta kp chạy thủ công lại
 pm2 unstartup ubuntu
--> để pass args vào file.js, ta phải dùng file.json để file.js có thể lấy thông qua process.argv[2]
-=> pm2 start file.json --only <name>
+=> Để pass args vào file.js, ta phải dùng file.json để file.js có thể lấy thông qua process.argv[2]. VD pm2 start file.json --only <name>
+VD pm2 start process.json app-dev => sẽ chạy tất cả các cái có tên app-dev, app-dev1,..
 
-Chạy: pm2 start process.json app-dev => sẽ chạy tất cả các cái có tên app-dev, app-dev1,..
+=> Có thể dùng pm2 với frontend: Dùng tương tự với dự án react, sửa lệnh chạy thành "pm2 start node_modules/react-scripts/scripts/start.js" là xong
 
--> cấu hình config cho nginx làm cân bằng tải có 4 server.
--> mở cmd vào url có file nginx.exe 
--> chạy: taskkill /f /im nginx.exe để tắt các nginx cũ
--> chạy: start nginx.exe để restart cái nginx 
+-> Cấu hình config cho nginx làm cân bằng tải có 4 server.
+Mở cmd vào url có file nginx.exe -> chạy: taskkill /f /im nginx.exe để tắt các nginx cũ -> chạy: start nginx.exe để restart cái nginx 
 
--> Các cách cấu hình cân bằng tải
+-> Vd các cách cấu hình cân bằng tải
 - RoundRobin quay vòng:
 http {
   upstream backend_servers {
@@ -99,47 +96,29 @@ http {
   }
 }
 => dựa vào ip của client lần trước connection như nào lần này vào tiếp server đó
+=> Lệnh proxy_pass trong cấu hình nginx làm cho máy chủ chặn reverse proxy. Nó xác định tất cả lưu lượng sẽ được redirect đến đâu. Còn cái server-name thật ra muốn set phải có 1 tên miền sẵn rồi, phải đk từ trước
 
 Ngoài ra còn thuật toán least time chỉ dùng được ở bản trả phí của nginx
 => Tùy bài toán mà thuật toán dùng khác nhau VD ứng dụng cần tính toán nhiều cho mỗi request như convert video online thì dùng least time tối ưu nhất
 
-=> Ta có thể tiếp tục bao hosting bên ngoài nó để host cái web nodejs này lên public bằng cách dùng VPS -> khi đã có VPS thì vào terminal cửa số của VPS thì nhét dự án này của ta vào đó và trong file config của nginx nhớ đổi: server_name <YourVPSIpAddress>; và ta có thể truy cập public được website của ta
+-> Hosting lên VPS: có thể tiếp tục bao hosting bên ngoài nó để host cái web nodejs này lên public bằng cách dùng VPS -> khi đã có VPS thì vào terminal cửa số của VPS thì nhét dự án này của ta vào đó và trong file config của nginx nhớ đổi: server_name <YourVPSIpAddress>; và ta có thể truy cập public được website của ta
 Khi có VPS, ta có thể đăng nhập để dùng terminal của cái VPS đó, mặc định thg là ubuntu. Ta sẽ cài nodejs, npm như mới trong cái ubuntu đó và copy dự án của ta vào để chạy thôi. Nhiều nền tảng VPS hỗ trợ sẵn nodejs và npm thì k cần cài thủ công nữa or vẫn phải cài cho đúng phiên bản
-
---> Lệnh proxy_pass trong cấu hình nginx làm cho máy chủ chặn reverse proxy. Nó xác định tất cả lưu lượng sẽ được redirect đến đâu
-Còn cái server-name thật ra muốn set phải có 1 tên miền sẵn rồi, phải đk từ trước
-
---> Dùng pm2 với frontend: PM2 có thể dùng cả frontend và backend thoải mái
-Dùng tương tự với dự án react chỉ hơi khác 1 tí là PM2 ta k chạy file js bth mà lệnh npm start thực chất cần chạy thành: pm2 start node_modules/react-scripts/scripts/start.js là xong
-
-
-
-# Other
--> Forward Proxy là trung gian cho client liên hệ với bất kỳ máy chủ nào thì Reverse Proxy là trung gian cho các máy chủ liên kết với nó có thể được liên lạc bởi bất cứ client nào. Nó kiểm soát yêu cầu của client và lọc nếu hợp lệ sẽ chuyển đến service thích ứng
-
--> Lệnh "curl url" trên cmd ok nhưng trên VSC k hđ, phải dùng gitbash mới được
-
--> .dockerignore sẽ bỏ những file nào trong quá trình build image từ Dockerfile
-.prettierignore và .eslintignore được dùng để xác định file nào sẽ k tự động format code và lint báo lỗi. 
-Trong prettierignore cần bỏ các file k thuộc ngôn ngữ js, html, css. Trong eslintignore chỉ bỏ vài file build ra thôi vì cần check hết. Trong gitignore bỏ tất cả các file tự sinh ra khi dùng dự án và file .env. Trong dockerignore bỏ các file mà có thể tự sinh ra khi dùng dự án, các thứ dùng cho dev mà k dùng cho production vì nó chỉ chạy 1 phát production luôn.
 
 
 
 # Setup dự án NodeJS deploy hoàn chỉnh Cloud DigitalOcean + NodeJS Express Web App + Custom Domain + Reverse Proxy Nginx + SSL certbot (DevOps)
-
 URL: https://www.youtube.com/watch?v=oykl1Ih9pMg
 
-Các bước:
-Tạo 1 dự án NodeJS và push lên github -> vào Digital Ocean create droplet -> chọn hệ điều hành ubuntu và các thông tin khác -> chọn SSH keys và hostname là tạo được 1 cloud server
-=> Cloud Server thì có loại này có loại khác. VD như Digital Ocean cho ta vào hẳn commandline hệ điều hành của VPS trong khi Heroku k làm được v mà phải thông qua git của heroku, do đó k thể dùng nginx kết hợp với Heroku bth
+-> Tạo 1 dự án NodeJS và push lên github -> vào Digital Ocean create droplet -> chọn hệ điều hành ubuntu và các thông tin khác -> chọn SSH keys và hostname là tạo được 1 cloud server
+=> Cloud Server có loại này có loại khác. VD như Digital Ocean cho ta vào hẳn commandline hệ điều hành của VPS trong khi Heroku k làm được v mà phải thông qua git của heroku, do đó k thể dùng nginx kết hợp với Heroku bth
 
 -> Mở terminal bình thường: ssh root@<ip address cung từ VPS của digital ocean>. Phải có password tài khoản (có thể dùng tk user bth k cần dùng root) -> Thế là truy cập được vào terminal linux của VPS -> sudo apt update -> cài node và npm: sudo apt install nodejs -> tạo app và clone từ github về trên máy ảo(chứ kp command copy nào ở đây cả) -> vào app -> npm install
 => Từ đây có thể chạy node app.js và từ public, ta có thể mở browser: <ip của VPS>:<port> ok rồi. Nhưng ta k muốn cái url xàm lol thế này nên phải dùng thêm nginx
 
 -> npm install -g pm2 -> pm2 start app.js -> app sẽ run ở background -> pm2 startup reboot để server reboot thì app sẽ backup -> có thể reboot để khởi động lại VPS luôn, sau đó pm2 tự chạy chứ k cần phải start thủ công nx vì dùng lệnh trên r
 
-=> Trước khi dùng nginx ta sẽ enable firewall trên VPS
--> "ufw status" xem trạng thái firewall hiện tại -> ufw enable để mở firewall nhưng nó sẽ disrupt cái ssh connection hiện tại -> ufw allow ssh -> kêt nối lại connection đó -> ufw status sẽ thấy port 22/tcp được mở vì đó là của SSH mà ta đang sử dụng -> vào lại app thấy k chạy vì firewall k mở port 5000 như trước
+Trước khi dùng nginx ta sẽ enable firewall trên VPS: 
+"ufw status" xem trạng thái firewall hiện tại -> ufw enable để mở firewall nhưng nó sẽ disrupt cái ssh connection hiện tại -> ufw allow ssh -> kêt nối lại connection đó -> ufw status sẽ thấy port 22/tcp được mở vì đó là của SSH mà ta đang sử dụng -> vào lại app thấy k chạy vì firewall k mở port 5000 như trước
 => Và ta cũng k cần mở port 5000 nữa mà cái ta cần là port 80 và 143 cơ để nginx sẽ tự forward 5000 cho ta
 
 -> ufw allow http -> ufw allow https -> ufw status sẽ thấy mở thêm 80 và 143 -> sudo apt install nginx -> nginx tự được mở vào ip của server sẽ thấy -> mở file config ở: /etc/nginx/sites-available/default và sửa location / ra proxy_pass http://localhost:5000 và các setting khác -> server_name thêm 2 phiên bản url và www.url vào nginx -> save và sudo nginx -t để check -> sudo service nginx restart -> vào lại trang web ở ip của VPS chả cần port nx cũng tự vào trang web của ta
@@ -155,14 +134,5 @@ Tạo 1 dự án NodeJS và push lên github -> vào Digital Ocean create drople
 => 1 số đặc điểm: có thể có nhiều server và dùng nginx làm load balancing; ở đây có nginx nên đã có thể xử lý 1 lượng truy cập lớn rồi; nếu VPS sập và nhà cung cấp khởi động lại, k cần lo vì PM2 tự động start lại cho ta chứ ta k cần canh chừng vc đó mà làm thủ công; SSL tự động gia hạn nên chả khác nào vĩnh viễn mà hoàn toàn free; VPS sẽ mất tiền nếu dùng lâu hết hạn, tốt nhất là trả phí hoặc dùng server riêng chứ k dùng free như v 
 => Dùng Heroku cũng như google firebase v, k mở terminal của hệ điều hành của nó để chạy nginx được mà chỉ là 1 hosting k config được thôi
 => Digital Ocean chỉ là 1 công cụ cung VPS, tức cung 1 cái máy có ip public. Ta có thể dùng laptop cá nhân thay thế VPS này bằng cách: public ip laptop ra ngoài, ghép tên miền từ namecheap với ip laptop đó, chạy server nodejs và nginx trên máy laptop như bth.
-
-
-
-# Certbot
-Chỉ là 1 tool tự động quá trình cài đặt và cập nhật chứng chỉ SSL/TLS từ Let's Encrypt, một tổ chức cung cấp chứng chỉ SSL/TLS miễn phí.
-Nó mã nguồn mở được phát triển bởi Electronic Frontier Foundation (EFF).
-
-Nó tự động hóa cấp chứng chỉ, cài chứng chỉ, gia hạn, và hỗ trợ các tính năng bảo mật như HSTS và OCSP Stapling.
-
 
 
