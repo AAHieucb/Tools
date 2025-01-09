@@ -36,3 +36,14 @@ POST with data in JSON file: curl -d "@data.json" -X POST http://localhost:3000/
 => Lỗi A parameter cannot be found that matches parameter name 'X' => cái này là lỗi do OS đã được set từ trước cái curl như 1 alias(bí danh) để invoke-webrequest. Ta phải xóa cái set từ trước đó đi với: remove-item alias:\curl là có thể dùng đc bth
 
 
+
+-> Tool AI: Tốt nhất là chạy local, mọi tool đều mất phí
+Vbee: AI tool tạo giọng nói từ văn bản, chuyên dùng cho tiếng việt.
+Rosebud AI: AI tạo game từ text, 1 hit nhét vào thẻ canvas luôn
+http://colormind.io/: AI giúp sinh color palette
+
+
+
+-> 
+
+
