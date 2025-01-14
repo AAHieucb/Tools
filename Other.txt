@@ -37,13 +37,14 @@ POST with data in JSON file: curl -d "@data.json" -X POST http://localhost:3000/
 
 
 
--> Tool AI: Tốt nhất là chạy local, mọi tool đều mất phí
+-> Tool AI tốt nhất là chạy local, mọi tool đều mất phí
 Vbee: AI tool tạo giọng nói từ văn bản, chuyên dùng cho tiếng việt.
 Rosebud AI: AI tạo game từ text, 1 hit nhét vào thẻ canvas luôn
 http://colormind.io/: AI giúp sinh color palette
+https://bolt.new/ => tool tạo web app full stack bằng ai
 
 
 
--> 
+-> https://chartdb.io/ => tool cực mạnh visualize mọi loại relational database
 
 
