@@ -71,3 +71,21 @@ DaVinci Resolve thay thế Premiere, Blender thay thế after effect, Krita thay
 Prestashop thay thế shopify
 NextCloud thay thế Dropbox
 Matomo thay thế Google Analytics
+
+
+
+-> Youtube online tool:
+https://online-voice-recorder.com/ => free online audio
+https://www.audacityteam.org/ => free app audio
+https://www.canva.com/ => free online intro/outro, video editor 
+https://obsproject.com/ => free app screen record with voice
+cursorful => free online screen record without voice
+https://www.blackmagicdesign.com/products/davinciresolve/ => free app video
+https://shotcut.org/ => free app video
+https://www.apowersoft.com/free-online-screen-recorder => free online screen recording with voice
+https://clideo.com/ => edit video có watermark online
+https://app.clipchamp.com/ => free online edit video no watermark
+https://www.flexclip.com/pricing.html => video editor no watermark nhưng limit 10p
+
+
+
