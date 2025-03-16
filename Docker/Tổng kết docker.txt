@@ -192,4 +192,5 @@ VD dùng trong Dockerfile:
 RUN apk add --no-cache git => apk add <tên gói> để cài 1 gói mới vào alpine với --no-cache là k cache ở command build image.
 RUN npm install --production --silient => npm install là cài các package nhưng --production tức nó bỏ qua các package trong devDependencies, còn --silent là k log output khi install
 
+-> Watchtower: container đb dùng trong hệ thống có nhiều docker container. Nó chạy trong background luôn đảm bảo image newest version, tự check, update image, reboots container.
 
