@@ -1,0 +1,164 @@
+-> Multi-stage Dockerfile:
+FROM oven/bun:alpine AS base # set oven/bun:alpine làm image cơ sở
+
+FROM base AS deps # stage 1 kế thừa image cơ sở, mỗi stage là 1 container tạm thời
+WORKDIR /app # cd vào thư mục app 
+COPY package.json bun.lockb ./ # copy 2 files từ ngoài máy vào folder gốc của container
+RUN bun install --frozen-lockfile # Chạy lệnh trên cmd của container
+
+FROM base AS builder # Stage 2 cũng kế thừa image cơ sở
+WORKDIR /app # 1 stage mới phải set lại
+COPY --from=deps /app/node_modules ./node_modules # stage mới phải copy file từ stage cũ qua nếu muốn dùng vì chúng độc lập nhau
+COPY . .
+RUN bun run build
+
+FROM base AS runner # Stage 3
+WORKDIR /app
+ENV NODE_ENV=production # Setup biến môi trường, trong nodejs truy cập được với process.env.NODE_ENV. Chú ý nó k tự thêm vào .env
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+
+EXPOSE 3000 # Mở cổng trong docker, chú ý bên ngoài k truy cập được nếu k ánh xạ
+CMD ["bun", "run", "server.js"] # Chạy lệnh "bun run server.js"
+
+
+
+-> deploy.sh trên ubuntu:
+sudo apt update && sudo apt upgrade -y # Update package list trong ubuntu
+
+--> Set env var dùng cho cmd:
+POSTGRES_USER="myuser" 
+POSTGRES_PASSWORD=$(openssl rand -base64 12) # Generate a random 12-character password
+APP_DIR=~/myapp
+
+--> Dùng swapfile, cần thêm logic xóa swapfile cũ trước khi thêm:
+sudo fallocate -l 2G /swapfile # Tạo 1 file swapfile có kích thước 2GB mà k cần ghi dữ liệu rỗng vào. 
+sudo chmod 600 /swapfile # chỉ cho phép root đọc và ghi
+sudo mkswap /swapfile # định dạng tệp đó thành vùng nhớ swap
+sudo swapon /swapfile # kích hoạt swap file để dùng nó
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab # thêm swap vào /etc/fstab để giữ lại kể cả khi reboot VPS. Cần thêm logic /etc/fstab k có mới thêm lại
+
+--> Install Docker
+sudo apt install apt-transport-https ca-certificates curl software-properties-common -y
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" -y
+sudo apt update
+sudo apt install docker-ce -y
+# Install Docker Compose
+sudo rm -f /usr/local/bin/docker-compose
+sudo curl -L "https://github.com/docker/compose/releases/download/v2.24.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+# Wait for the file to be fully downloaded before proceeding
+if [ ! -f /usr/local/bin/docker-compose ]; then
+  echo "Docker Compose download failed. Exiting."
+  exit 1
+fi
+sudo chmod +x /usr/local/bin/docker-compose # cấp quyền thực thi (+x) cho file docker-compose để chạy như một lệnh trong terminal.
+sudo ln -sf /usr/local/bin/docker-compose /usr/bin/docker-compose # đảm bảo docker-compose ở đúng thư mục để gọi được
+# Verify Docker Compose installation
+docker-compose --version
+if [ $? -ne 0 ]; then
+  echo "Docker Compose installation failed. Exiting."
+  exit 1
+fi
+# Ensure Docker starts on boot and start Docker service
+sudo systemctl enable docker
+sudo systemctl start docker
+
+cd ~/myapp && git pull # Có thể chạy bất cứ lệnh nào trong terminal, cd và pull code về
+
+DATABASE_URL="postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@db:5432/$POSTGRES_DB"
+echo "DATABASE_URL=$DATABASE_URL" >> "$APP_DIR/.env" # Thủ công ghi thêm biến vào .env vì .env trên git k có gì
+
+# Install Nginx
+sudo apt install nginx -y
+
+# Remove old Nginx config (if it exists)
+sudo rm -f /etc/nginx/sites-available/myapp
+sudo rm -f /etc/nginx/sites-enabled/myapp
+
+# Stop Nginx temporarily to allow Certbot to run in standalone mode
+sudo systemctl stop nginx
+
+# Obtain SSL certificate using Certbot standalone mode
+sudo apt install certbot -y
+sudo certbot certonly --standalone -d $DOMAIN_NAME --non-interactive --agree-tos -m $EMAIL
+
+# Ensure SSL files exist or generate them
+if [ ! -f /etc/letsencrypt/options-ssl-nginx.conf ]; then
+  sudo wget https://raw.githubusercontent.com/certbot/certbot/main/certbot-nginx/certbot_nginx/_internal/tls_configs/options-ssl-nginx.conf -P /etc/letsencrypt/
+fi
+
+if [ ! -f /etc/letsencrypt/ssl-dhparams.pem ]; then
+  sudo openssl dhparam -out /etc/letsencrypt/ssl-dhparams.pem 2048
+fi
+
+# Create Nginx config with reverse proxy, SSL support, rate limiting, and streaming support
+sudo cat > /etc/nginx/sites-available/myapp <<EOL
+limit_req_zone \$binary_remote_addr zone=mylimit:10m rate=10r/s;
+
+server {
+    listen 80;
+    server_name $DOMAIN_NAME;
+
+    # Redirect all HTTP requests to HTTPS
+    return 301 https://\$host\$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name $DOMAIN_NAME;
+
+    ssl_certificate /etc/letsencrypt/live/$DOMAIN_NAME/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/$DOMAIN_NAME/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    # Enable rate limiting
+    limit_req zone=mylimit burst=20 nodelay;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host \$host;
+        proxy_cache_bypass \$http_upgrade;
+
+        # Disable buffering for streaming support
+        proxy_buffering off;
+        proxy_set_header X-Accel-Buffering no;
+    }
+}
+EOL
+
+# Create symbolic link if it doesn't already exist
+sudo ln -s /etc/nginx/sites-available/myapp /etc/nginx/sites-enabled/myapp
+
+# Restart Nginx to apply the new configuration
+sudo systemctl restart nginx
+
+# Build and run the Docker containers from the app directory (~/myapp)
+cd $APP_DIR
+sudo docker-compose up --build -d
+
+# Check if Docker Compose started correctly
+if ! sudo docker-compose ps | grep "Up"; then
+  echo "Docker containers failed to start. Check logs with 'docker-compose logs'."
+  exit 1
+fi
+
+# Output final message
+echo "Deployment complete. Your Next.js app and PostgreSQL database are now running. 
+Next.js is available at https://$DOMAIN_NAME, and the PostgreSQL database is accessible from the web service.
+
+The .env file has been created with the following values:
+- POSTGRES_USER
+- POSTGRES_PASSWORD (randomly generated)
+- POSTGRES_DB
+- DATABASE_URL
+- DATABASE_URL_EXTERNAL
+- SECRET_KEY
+- NEXT_PUBLIC_SAFE_KEY"
+
+
