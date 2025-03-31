@@ -19,7 +19,7 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 
-EXPOSE 3000 # Mở cổng trong docker, chú ý bên ngoài k truy cập được nếu k ánh xạ
+EXPOSE 3000 # Docker dự kiến lắng nghe cổng nào, chú ý bên ngoài k truy cập được nếu k ánh xạ. EXPOSE chỉ là tài liệu mô tả k có cũng k sao
 CMD ["bun", "run", "server.js"] # Chạy lệnh "bun run server.js"
 
 FROM nginx:stable-alpine AS production # or, tạo 1 stage dùng nginx image
@@ -52,6 +52,8 @@ services:
         consistency: cached # cached giúp ưu tiên đọc dữ liệu từ container hơn là đồng bộ ngay lập tức với máy host, tối ưu hiệu suất bằng cách giảm số lần đồng bộ giữa host và container.
   db:
     image: postgres:latest
+    container_name: test-nextjs-container1
+    restart: no
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -79,6 +81,12 @@ networks:
   my_network: # Tạo mạng để các container giao tiếp vói nhau
     name: my_network
     driver: bridge # Mạng cầu 
+
+-> restart: giống pm2 chạy nodejs
+no => Không tự động khởi động lại (mặc định).
+always => Luôn khởi động lại container nếu bị dừng, nếu ta thủ công gây dừng mới k khởi động lại, reboot docker sẽ tự khởi động lại
+on-failure => Chỉ khởi động lại nếu container thoát với mã lỗi (non-zero exit code).
+unless-stopped => Luôn khởi động lại, trừ khi dừng container thủ công hoặc reboot docker.
 
 
 
