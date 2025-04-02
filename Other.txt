@@ -1,8 +1,3 @@
--> https://github.com/wg/wrk 
-Test benchmark request mạnh cho máy multicore. Cách tải nhanh nhất là hỏi GPT4
-
-
-
 -> https://lightning.ai  
 Dùng online VSC cloud GPU mạnh tạm thời
 
