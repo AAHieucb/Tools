@@ -1,5 +1,5 @@
--> https://lightning.ai  
-Dùng online VSC cloud GPU mạnh tạm thời
+-> Fiddler: 
+Tool bắt gói tin mà máy gửi đi, có thể biết mọi thông tin request. VD debug powershell biết được nó gửi request gì đi mà việc dùng thông thường k thể thấy được
 
 
 
@@ -8,13 +8,7 @@ Plant UML vẽ UML diagram bằng code đỉnh
 
 
 
--> Fiddler: 
-Tool bắt gói tin mà máy gửi đi, có thể biết mọi thông tin request. VD debug powershell biết được nó gửi request gì đi mà việc dùng thông thường k thể thấy được
-
-
-
--> Dùng cURL call api qua cmd => tool phế k nên dùng
-Các lệnh:
+-> Dùng cURL call api qua cmd.
 curl -X GET "http://localhost:<port>/<>" 
 
 curl -X POST "https://example.com/api" \
@@ -32,6 +26,7 @@ POST with data in JSON file: curl -d "@data.json" -X POST http://localhost:3000/
 
 
 
+//!!!!!!!
 -> Tool AI tốt nhất là chạy local, mọi tool đều mất phí
 Vbee: AI tool tạo giọng nói từ văn bản, chuyên dùng cho tiếng việt.
 Rosebud AI: AI tạo game từ text, 1 hit nhét vào thẻ canvas luôn
