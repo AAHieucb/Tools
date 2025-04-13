@@ -42,12 +42,12 @@ https://bolt.new/ => tool tạo web app full stack bằng ai
 
 
 -> Tool open source free replace bản trả phí:
-Libre Office => thay thế hoàn hảo cho MS Office 365, chỉ chạy local và k có cloud hay AI.
-Nocodb => chuyển dữ liệu RDBMS sang dạng bảng tính thay thế airtable, cung API tự động. Cloud cũng free max 20 users. Tự setup VPS self host để hỗ trợ unlimited user.
-Focalboard => thay thế Trello, notion để quản lý tiến độ công việc, note-taking.
-App Flowy => tương tự FocalBoard
-Jitsi => thay thế Zoom. Free open source hỗ trợ mọi tính năng như zoom, dùng webRTC.
-Plane => thay thế jira, hỗ trợ scrum.
+Libre Office thay thế hoàn hảo cho MS Office 365, chỉ chạy local và k có cloud hay AI.
+Nocodb chuyển dữ liệu RDBMS sang dạng bảng tính thay thế airtable, cung API tự động. Cloud cũng free max 20 users. Tự setup VPS self host để hỗ trợ unlimited user.
+Focalboard thay thế Trello, notion để quản lý tiến độ công việc, note-taking.
+App Flowy tương tự FocalBoard
+Jitsi thay thế Zoom. Free open source hỗ trợ mọi tính năng như zoom, dùng webRTC.
+Plane thay thế jira, hỗ trợ scrum.
 
 ERPNext => thay thế saleforce crm. Tự chạy với docker và host với chi phí rẻ. 
 Saleforce là 1 tool mà doanh nghiệp sử dụng để hiểu khách hàng. VD khách vào web search 1 sản phẩm, hệ thống track cookie, chat, forms sẽ thu thập mọi thông tin lưu vào saleforce. Saleforce dựa vào lịch sử giao dịch và tương tác rồi tạo 1 lead (cơ hội bán hàng) cho đội ngũ bán hàng để họ biết khách hàng đang qt sp nào và có thể liên hệ với khách kịp thời để bán nó. VD khi đk 1 website, sẽ có người gọi điện đến hỏi về nhu cầu.
