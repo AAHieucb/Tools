@@ -1,11 +1,7 @@
-# Apache server là 1 phần mềm web server bth được viết bằng C++, dùng mọi hđh.
-Hỗ trợ CGI, PHP, SSL/TLS, GZIP compression, virtual hosting, URL rewriting, xác thực và ủy quyền, caching, cân bằng tải, reverse proxy.
-Apache server dựa trên kiến trúc đa tiến trình hoặc đa luồng. Mỗi request là 1 luồng.
-
-Bản chất apache là gọi vào 1 port thì serve lại 1 thư mục. Khác với server bth là cấu hình url routing thì trả lại API data nào. 
-Vd php -S localhost:8000 => serve thư mục hiện tại ở cổng nào. 
-Vd các server linux serve file trong hệ thống ra thông qua apache server đó. Bắt ở 1 cổng thì serve lại 1 file CGI script sẽ chạy script đó và trả lại kết quả
-
-Còn httpd là một phần của Apache HTTP Server, là HTTP daemon. Nó là một tiến trình chạy ngầm trên máy chủ web và xử lý các yêu cầu HTTP được gửi đến máy chủ. httpd là một phần quan trọng của Apache HTTP Server và được cài đặt cùng với nó.
+# Apache server 
+1 phần mềm web server viết bằng C++, dùng mọi hđh. Nó hỗ trợ CGI, PHP, GZIP compression, virtual hosting, URL rewriting, xác thực và ủy quyền, caching, cân bằng tải.
+Trong apache, mỗi request là 1 luồng. 
+Apache server có httpd là 1 phần cài đặt cùng, nó là 1 http daemon xử lý request gửi tới.
+Vd khi nhận request, apache server sẽ serve thư mục ở 1 port, hoặc execute 1 CGI script và trả lại kết quả.
 
 

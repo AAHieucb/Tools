@@ -1,3 +1,4 @@
+//!!!!!!!!!
 # Basic
 -> Cài cho window: Download apache -> a number of third party vendors -> Apache Lounge -> cài 64bit -> giải nén vào ổ C -> vào bin -> chạy httpd.exe -> vào browser: localhost -> hiện It works!! là chạy thành công
 Tùy bản Apache mà được xây dựng trên Visual C Redistributiuon for Visual Studio phiên bản khác nhau mà phải có Visual Studio mới chạy được apache

@@ -65,6 +65,14 @@ Matomo thay thế Google Analytics
 
 
 
+-> VD có 3 cách để dùng penpot: 1 ứng dụng open source thiết kế UI UX
+1) Dùng online trên cloud chỉ cần đk tk, data lưu online vĩnh viễn, mất chi phí
+2) Tải source về chạy local. Chỉ dùng trên máy cá nhân, dùng được mọi tính năng, thậm chí sửa code để sửa tính năng. K cần kết nối internet, data chỉ lưu trên máy k share. Nếu dùng 1 người thì nên dùng local.
+3) Self-host penpot là cài trên máy local nhưng host lên 1 máy chủ hoặc cloud riêng. Điểm lợi khi host là có thể cộng tác với người khác nhưng chi phí bảo trì máy chủ cao.
+Có thể thuê 1 máy chủ, tự cấu hình máy cá nhân thành máy chủ, dùng 1 đám mây có sẵn, tự tạo 1 đám mây private/public cloud để host lên đó. 
+
+
+
 -> Youtube online tool:
 cursorful => free online screen record without voice
 https://online-voice-recorder.com/ => free online record audio
@@ -77,18 +85,5 @@ https://www.apowersoft.com/free-online-screen-recorder => free online screen rec
 https://clideo.com/ => edit video có watermark online
 https://app.clipchamp.com/ => *free online edit video no watermark, có cho record luôn
 https://www.flexclip.com/pricing.html => video editor no watermark nhưng limit 10p
-
-
-
-//!!!!!!!
--> VD có 3 cách để dùng penpot: 1 ứng dụng open source thiết kế UI UX
-1) Dùng online trên cloud chỉ cần đk tk, data lưu online vĩnh viễn, mất chi phí
-2) Tải source về chạy local. Chỉ dùng trên máy cá nhân, dùng được mọi tính năng, thậm chí sửa code để sửa tính năng. K cần kết nối internet, data chỉ lưu trên máy k share.
-3) Self-host penpot là cài trên máy local nhưng host lên 1 máy chủ hoặc cloud riêng. 
-Có thể thuê 1 máy chủ, tự cấu hình máy cá nhân thành máy chủ, dùng 1 đám mây có sẵn, tự tạo 1 đám mây để host lên đó. 
-Có thể custom mọi thứ khi đã có code rồi. Có thể dùng free, có thể cộng tác với người khác, nhưng chi phí bảo trì máy chủ cao
-
-Để tạo 1 đám mây của riêng mình, có thể là public cloud hoặc private cloud, có thể dùng máy chủ ảo thuê hoặc máy chủ vật lý.
-Việc triển khai lên đám mây hay server thì dùng ứng dụng k khác gì nhau, có gì dùng nấy, nếu dùng 1 người thì nên cài local.
 
 
