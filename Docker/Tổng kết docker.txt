@@ -194,3 +194,9 @@ RUN npm install --production --silient => npm install là cài các package như
 
 -> Watchtower: container đb dùng trong hệ thống có nhiều docker container. Nó chạy trong background luôn đảm bảo image newest version, tự check, update image, reboots container.
 
+
+
+
+-> swag: container giúp reverse proxy + SSL
+
+

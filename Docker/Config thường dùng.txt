@@ -32,9 +32,11 @@ CMD ["nginx", "-g", "daemon off;"]
 -> docker-compose.yml:
 services:
   web: # ứng dụng web
+    cap_add:
+      - NET_ADMIN
     build: . # Xây dựng container từ Dockerfile trong thư mục hiện tại.
     ports:
-      - '3000:3000' # Ánh xạ cổng 3000 trên máy host với cổng 3000 trong container.
+      - 3000:3000 # Ánh xạ cổng 3000 trên máy host với cổng 3000 trong container.
     environment:
       - NODE_ENV=production # Tạo biến môi trường
       - CHOKIDAR_USEPOLLING=true # Chokidar là thư viện file watching kiểu polling, phải có thì live reload mới hoạt động
@@ -82,11 +84,16 @@ networks:
     name: my_network
     driver: bridge # Mạng cầu 
 
--> restart: giống pm2 chạy nodejs
+--> restart: giống pm2 chạy nodejs
 no => Không tự động khởi động lại (mặc định).
 always => Luôn khởi động lại container nếu bị dừng, nếu ta thủ công gây dừng mới k khởi động lại, reboot docker sẽ tự khởi động lại
 on-failure => Chỉ khởi động lại nếu container thoát với mã lỗi (non-zero exit code).
 unless-stopped => Luôn khởi động lại, trừ khi dừng container thủ công hoặc reboot docker.
+
+--> cap_add:
+  - NET_ADMIN
+Cho phép container thêm quyền quản trị mạng, mặc định Docker k cho container quyền đó vì lý do bảo mật
+1 container có quyền NET_ADMIN thì có thể xoá interface mạng, gán IP mới cho interface, thay đổi routing table.
 
 
 
