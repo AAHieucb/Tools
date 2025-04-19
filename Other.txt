@@ -18,6 +18,7 @@ Plant UML vẽ UML diagram bằng code đỉnh
 
 -> Dùng cURL call api qua cmd.
 curl -X GET "http://localhost:<port>/<>" 
+curl <url> --include => query get tới url hiển thị đầy đủ header
 
 curl -X POST "https://example.com/api" \
 -H "Authorization: Bearer YOUR_BEARER_TOKEN" \
