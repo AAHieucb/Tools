@@ -1,3 +1,4 @@
+//!!!!!!!
 # Dùng docker window
 WSL2 là phiên bản giống ubuntu nhất của window, dùng được rất nhiều ứng dụng của như VSC hay docker hoàn thiện hơn so với HyperV.
 Dùng WSL2 phải enable virtualization. Dù máy dùng bios mode UEFI hay legacy đều phải vào setup bios của máy tính khi khởi động để enable virtualization technology. 

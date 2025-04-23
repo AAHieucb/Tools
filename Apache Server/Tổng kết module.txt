@@ -12,7 +12,7 @@ Ta giải nén vào ổ C mà kp là ổ khác vì cấu hình này được ch�
 uncomment: #LoadModule rewrite_module modules/mod_rewrite.so trong file config -> sửa: AllowOverride None thành AllowOverride All 
 - Cài service cho Apache trong window: cmd -> cd C:\Apache24\bin -> httpd -k install => thì 1 service tên là Apache2.4 đã có trên Service của window. 
 Có thể chỉnh tên: httpd -k install -n "ten-service" -> Bh ta có thể start, stop, restart tùy ý service này trong Service của window or dùng cmd. VD: net start / stop Apache2.4
-=> Khi install như v thì service của Apache sẽ tự khởi động cùng với window, có thể chỉnh thành Manual ở Service của window or dùng commandline tắt dịch vụ đi: sc delete Apache2.4
+=> Khi install v thì service của Apache sẽ tự khởi động cùng với window, có thể chỉnh thành Manual ở Service của window or dùng commandline tắt dịch vụ đi: sc delete Apache2.4
 - Cập nhập Apache trong linux với:
 yum update httpd
 apt-get install apache2
@@ -21,7 +21,7 @@ httpd -M
 httpd -k start => khởi chạy Apache (start), dừng (stop), khởi động lại restart
 httpd -DFOREGROUND => khởi chạy Apache (nối terminate)
 
--> Các thiết lập mặc định là:
+-> Các thiết lập mặc định là: Chạy apache server sẽ default serve thư mục trong htdocs.
 Document root Directory: /var/www/html or /var/www
 File cấu hình: httpd.conf
 Cổng HTTP mặc định: 80 TCP
@@ -193,45 +193,42 @@ VD: Trong file htaccess
 
 
 
-//!!!!!!
 # CGI scrpit
-CGI(Common Gateway Interface) viết bằng Perl or C hoặc có thể chỉ là 1 shellscript đơn giản để tương tác server-client. VD client gửi 1 form lên server, nếu cần xử lý phức tạp, server sẽ k trực tiếp xử lý công việc này mà chuyển cho các CT khác gọi là gateway xử lý. CGI Script chính là CT chạy gateway trên WebServer. 
-Quy trình: Trình duyệt chuyển dữ liệu đến server -> server chuyển đến 1 CGI Script -> CGI Script xử lý và có thể chuyển cho 1 ứng dụng khác nếu cần thiết, sau đó gửi dữ liệu xuất ra cho web server -> web server chuyển dữ liệu lại cho trình duyệt
-CGI script cũng có thể xác nhận định danh của user và những thông tin về password của họ, cấp cho user quyền truy xuất theo những giới hạn của Web site
+CGI(Common Gateway Interface) script là 1 chương trình viết bằng Perl or C hoặc chỉ là 1 shellscript đơn giản để tương tác server-client. VD client gửi 1 form lên server, nếu cần xử lý phức tạp, server gọi đến chương trình thực thi 1 CGI script chỉ định để xử lý yêu cầu. Xử lý xong sẽ gửi kết quả lại server, server gửi tiếp cho client.
+Còn có FastCGI Handler. FastCGI kế thừa CGI và được tùy chỉnh để giảm tải sự tương tác giữa script CGI và Webserver. Nhẹ hơn nên server phục vụ được nhiều yêu cầu cùng lúc hơn.
 
-VD: mod_actions để thi hành CGI Script dựa theo kiểu file or method đến. 
+VD: Action image/gif /cgi-bin/images.cgi # Chạy script image.cgi khi mở file .gif
 Cú pháp: Action action-type cgi-script [virtual]
 Thì action-type là MIME được thêm vào nhờ mod_mime bằng chỉ thị AddType như image/jpeg
 cgi-script là vị trí của CGI Script
 virtual thêm vào để loại bỏ các Handler phía trước
-VD: # Chạy image.cgi khi mở file .gif
-Action image/gif /cgi-bin/images.cgi
 
-VD: # Mở .php bằng php.cgi
+VD mở .php bằng php.cgi:
 AddHandler my-file-type .php
 Action my-file-type "/cgi-bin/php.cgi"
 
-VD: # Thiết lập một Handler mới trong Virtual Host
+VD thiết lập một Handler mới trong Virtual Host:
 <Location "/news">
   SetHandler news-handler
   Action news-handler "/cgi-bin/news.cgi" virtual
 </Location>
 
-VD: Chạy CGI dựa theo phương thức gửi đến với chỉ thị Script.
-Script POST "/cgi-bin/postcontent.cgi" => gặp post thì chạy CGI Script này
+VD: Script POST "/cgi-bin/postcontent.cgi" => gặp request POST thì server chạy CGI Script này
 
 
 
 # Dùng Handler 
-Là cơ chế được thi hành khi 1 file nào đó được apache gọi đến. Điều đó có nghĩa là mỗi kiểu file .php, .html, .cgi có handler riêng. Có loại tải vào bằng Module như php, có loại có sẵn trong Apache. Các Handler mặc định tích hợp sẵn là:
-default-handler : sử dụng phục vụ các nội dung tĩnh (như các file ảnh .jpg ...)
-send-as-is : (mod_asis) - Apache gửi file nhưng không có hầu hết phần header thông thường
-cgi-script : handler này thi hành file như cgi script
-server-info : lấy thông tin server
-server-status : lấy trạng thái server
-type-map : phân tích file, ánh xạ đến nội dung cần thiết
+Cơ chế là khi apache gọi đến 1 file nào thì thực hiện handler tương ứng. Mỗi kiểu file .php, .html, .cgi có handler riêng. Có loại handler phải tải vào bằng Module như php, có loại có sẵn trong Apache. 
 
-Handler cũng được gán bằng một CGI script được kích hoạt bởi Action, VD khi gọi đến file có phần mở rộng .xyz thì xử lý file đó với script CGI "/cgi-bin/program.cgi":
+Các Handler mặc định tích hợp sẵn là:
+default-handler phục vụ các nội dung tĩnh (như các file ảnh .jpg ...)
+send-as-is (mod_asis) - Apache gửi file nhưng không có hầu hết phần header thông thường
+cgi-script: handler này thi hành file như cgi script
+server-info lấy thông tin server
+server-status lấy trạng thái server
+type-map phân tích file, ánh xạ đến nội dung cần thiết
+
+Handler cũng được gán bằng một CGI script được kích hoạt bởi Action. VD khi gọi đến file có phần mở rộng .xyz thì xử lý file đó với script CGI "/cgi-bin/program.cgi":
 # Files of a particular file extension
 AddHandler my-file-type .xyz => tạo 1 handler mới tên là "my-file-type" xử lý mọi file có đuôi .xyz
 Action my-file-type "/cgi-bin/program.cgi"
@@ -255,16 +252,14 @@ RemoveHandler extension
 # Thiết lập hander cho một nhóm file phù hợp với cú pháp: SetHandler handler-name
 VD: Các file .php sẽ mở bằng handler có tên application/x-httpd-php
 <FilesMatch "\.php$">
-    SetHandler application/x-httpd-php
+  SetHandler application/x-httpd-php
 </FilesMatch>
 
-Apache 2.0 Handler là Handler PHP mặc định trong Apache/Php, nó thiết lập tính an toàn cao bằng cách chạy các script php với user là nobody hoặc apache.
-FastCGI Handler: FastCGI kế thừa từ CGI nó được tùy chỉnh để giảm tải sự tương tác giữa script CGI và Webserver, cho phép Server phụ vụ được nhiều yêu cầu cùng lúc hơn.
-
-suEXE giúp chạy CGI dưới 1 user khác với user đang chạy Apache HTTPD, mặc định thì cùng user.
+-> suEXE giúp chạy CGI dưới 1 user khác với user đang chạy Apache HTTPD, mặc định thì cùng user.
 Khi sử dụng tính năng này mục đích để gán user cho những VirtualHost khác nhau. Ta nên quản lý user chặt chẽ, nếu k thì k nên dùng suEXE
 httpd -V sẽ ra -D SUEXEC_BIN="/apache/bin/suexec" là vị trí lưu suEXE
-Để sử dụng suEXE trên VirtualHost. VD:
+
+VD sử dụng suEXE trên VirtualHost:
 <VirtualHost 123.123.123.123:80>
     ....
     SuexecUserGroup abc xyz
@@ -273,9 +268,3 @@ httpd -V sẽ ra -D SUEXEC_BIN="/apache/bin/suexec" là vị trí lưu suEXE
 => Ở host địa chỉ và cổng trên nếu chạy CGI với FastCHI or PHP-FPM thì nó sẽ chạy tới user là abc và group là xyz
 
 
-
-# Other
--> Dừng: publish global, dùng VirtualHost, self-sign SSL => để học tiếp phải đăng nhập được vào Router của wifi cơ
-
-
--Chạy apache server sẽ serve thư mục trong htdocs. VD Ta để 1 folder là 20194761 thì truy cập được index.html tự động với http://localhost/20194761

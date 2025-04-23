@@ -5,3 +5,8 @@ Apache server có httpd là 1 phần cài đặt cùng, nó là 1 http daemon x�
 Vd khi nhận request, apache server sẽ serve thư mục ở 1 port, hoặc execute 1 CGI script và trả lại kết quả.
 
 
+
+# Dừng
+-> publish global, dùng VirtualHost, self-sign SSL => để học tiếp phải đăng nhập được vào Router của wifi cơ
+
+
