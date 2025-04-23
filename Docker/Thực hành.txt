@@ -1,3 +1,4 @@
+//!!!!!!!!
 # Dùng linux
 -> Dùng image ubuntu
 Dùng lệnh bth trên container của image ubuntu: cat /etc/*release -> hiển thị thông tin container hiện tại

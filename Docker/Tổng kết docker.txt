@@ -1,3 +1,4 @@
+//!!!!!!!!!!
 # Basic
 Mặc định các images thường là chạy trên linux, cấu trúc thư mục là của linux. Ta chưa bao giờ thấy images window bao giờ cả.
 VD có thể mô phỏng 3 máy độc lập chạy 3 ứng dụng ở 3 network khác nhau. Mỗi network trong docker giống như 1 mạng LAN, có thể tạo 3 mạng LAN rồi trên mỗi mạng có các máy chạy độc lập. Máy A chạy mysql ở 1 cổng, máy B chạy php ở 1 cổng, mỗi container như dùng 1 máy tính độc lập có ip riêng và có các bộ cổng riêng luôn, tương tác với nhau thông qua port và ip address như bth.

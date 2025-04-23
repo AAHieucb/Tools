@@ -1,44 +1,31 @@
-//!!!!!!!
-# Dùng docker window
-WSL2 là phiên bản giống ubuntu nhất của window, dùng được rất nhiều ứng dụng của như VSC hay docker hoàn thiện hơn so với HyperV.
+# Docker window => bỏ k dùng
+WSL2 là phiên bản giống ubuntu nhất của window hoàn thiện hơn HyperV.
 Dùng WSL2 phải enable virtualization. Dù máy dùng bios mode UEFI hay legacy đều phải vào setup bios của máy tính khi khởi động để enable virtualization technology. 
 Full cài docker - wsl2: https://xuanthulab.net/cai-dat-va-chay-docker-trong-wsl2-windows.html
 Cài wsl2 + các lệnh wsl thg dùng: https://www.c-sharpcorner.com/article/how-to-install-windows-subsystem-for-linux-wsl2-on-windows-11
-
 Mở terminal ở bất cứ thư mục nào và gõ wsl sẽ mở wsl ở thư mục đó. 
-Trong FileExplorer cũng truy cập được vào cấu trúc thư mục của linux.
 
 -> Setup docker wsl2 cho máy win10
 Kích hoạt chế độ hyper-v trên máy tính: chạy powershell quyền admin -> Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All
 Enable virtualization trong BIOS nếu chưa có
+Docker có 2 bản window container và linux container. Chỉ dùng linux container với wsl2 thay vì window container.
+
 Setup wsl2: https://xuanthulab.net/cai-dat-va-chay-docker-trong-wsl2-windows.html
-
-Docker có 2 bản window container và linux container. Window container bị giới hạn rất nhiều nên docker dùng trên linux mới chạy được:
-- Right click biểu tượng trên taskbar window -> switch to window container => dùng window container
-- Để dùng linux container, máy phải cài nhân kernel của linux. Ở trên win10 có thể dùng linux container thông qua wsl2. 
-
---> Lỗi: start bị lỗi thiếu memory trong khi có đủ memory thì: vào settings -> Docker Engine -> chỉnh experimental là true và apply and restart.
-
-Fix lỗi k chạy được tạo tk khi vào ubuntu sau khi reinstall: vào powershell administrator -> wsl -l -> wsl --unregister ubuntu -> vào lại ubuntu sẽ cho tạo tk mới bth
-
 Uninstall wsl2 với: https://pureinfotech.com/remove-linux-distro-wsl/
 
 
 
+# So sánh docker với VM
+- Chạy Hypervisor trên HostOS (phần mềm quản lý nhiều máy ảo) -> trên Hypervisor sẽ chạy nhiều máy ảo khác nhau, mỗi máy ảo là 1 hệ điều hành riêng. Nó làm bằng cách phân chia CPU ra làm nhiều phần cho từng máy ảo và càng nhiều máy ảo sẽ càng đốt CPU (chia ở cấp độ phần cứng). Mỗi máy ảo có 1 hệ điều hành khác nhau và trong mỗi máy ảo là 1 môi trường đều có đầy đủ thư viện các thứ để chạy ứng dụng mà ta muốn chạy trên máy ảo đó.
+- Docker Engine chạy trên HostOS và trên nó sẽ có nhiều container. Chúng dùng chung hđh với HostOS, chỉ là cài thêm cac bins/libs để giống như ứng dụng chạy trên hđh ảo, nên tốc độ nhanh hơn và có thể chia sẻ tài nguyên cho nhau nhưng vẫn như dùng OS đó thật.
+Phần cứng - HostOS - Docker running có nhiều container - các ứng dụng trên Container
+
+
+
+
 # Other
--> Docker có 2 phiên bản CE cho nhóm nhỏ và EE cho doanh nghiệp
-Docker build và run ứng dụng trên 1 MT cách ly. Tốc độ nhanh và container rất nhẹ, tránh xung đột tránh xung đột phiên bản cho app 
-Phần cứng -> HostOS -> Docker running có nhiều container -> các ứng dụng trên Container(App, library)
-
-VD: ta có server muốn chạy trên linux mà chỉ có máy window thì dùng docker gói vào 1 cục linux và chạy trong docker ở máy nào cũng ok
-VD dự án có 2 người làm, 1 người dùng MacOS chạy nodejs v12, 1 người dùng Window chạy nodejs v14. Khi người này chạy ok, người kia dùng lại có lỗi do xung đột => Ta dùng docker làm môi trường đồng nhất cho cả 2 và sử dụng image node:14.x, người nào vào dự án chỉ cần chạy container lên là xong
-
-=> VĐ chính là docker giúp giải quyết xung đột phiên bản, chạy 1 cách cô lập, tránh trường hợp ứng dụng chỉ chạy trên máy của tôi, máy khác thì lỗi. 
-Hoàn toàn cài được docker trên máy production để chạy ứng dụng. Tức luôn đảm bảo dự án của ta chạy được ở mọi máy miễn là có cài docker
-VD: chạy webserver trên máy ta, bh chuyển lên EC2, thì phải vào EC2 cài docker qua cli, pull dự án từ git về có dockerfile rồi chạy dockerfile bth
-
--> So sánh docker với VM
-- Chạy Hypervisor trên HostOS (phần mềm quản lý nhiều máy ảo) -> trên Hypervisor sẽ chạy nhiều máy ảo khác nhau, mỗi máy ảo là 1 hệ điều hành riêng. Nó làm bằng cách phân chia CPU ra làm nhiều phần cho từng máy ảo và càng nhiều máy ảo sẽ càng đốt CPU (chia ở cấp độ phần cứng). Mỗi máy ảo có 1 hệ điều hành khác nhau và trong mỗi máy ảo là 1 môi trường đều có đầy đủ thư viện các thứ để chạy ứng dụng mà ta muốn chạy trên máy ảo đó. Các VM có thể chia sẻ tài nguyên cho nhau.
-- Docker Engine chạy trên HostOS và trên nó sẽ có nhiều container. Chúng dùng chung hđh với HostOS, chỉ là cài thêm cac bins/libs để giống như ứng dụng chạy trên hđh ảo, nên tốc độ nhanh hơn và có thể chia sẻ tài nguyên cho nhau nhưng vẫn như dùng OS đó thật. 
-
+-> Docker giúp giải quyết xung đột phiên bản, tránh trường hợp ứng dụng chỉ chạy trên máy của tôi, máy khác thì lỗi. Cài docker trên máy production dùng ok.
+VD dự án có 2 người làm, 1 người dùng MacOS chạy nodejs v12, 1 người dùng Window chạy nodejs v14. Khi người này chạy ok, người kia dùng lại có lỗi do xung đột => Ta dùng docker làm môi trường đồng nhất cho cả 2 và sử dụng image node:14.x, người nào vào dự án chỉ cần chạy container lên là xong.
+VD: chạy webserver trên máy ta, bh chuyển lên EC2, thì phải vào EC2 cài docker qua cli, pull dự án từ git về có dockerfile rồi chạy dự án trên EC2 bằng docker bth.
+Docker có 2 phiên bản CE cho nhóm nhỏ và EE cho doanh nghiệp
 
