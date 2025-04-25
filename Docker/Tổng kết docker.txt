@@ -1,29 +1,25 @@
-//!!!!!!!!!!
 # Basic
-Mặc định các images thường là chạy trên linux, cấu trúc thư mục là của linux. Ta chưa bao giờ thấy images window bao giờ cả.
-VD có thể mô phỏng 3 máy độc lập chạy 3 ứng dụng ở 3 network khác nhau. Mỗi network trong docker giống như 1 mạng LAN, có thể tạo 3 mạng LAN rồi trên mỗi mạng có các máy chạy độc lập. Máy A chạy mysql ở 1 cổng, máy B chạy php ở 1 cổng, mỗi container như dùng 1 máy tính độc lập có ip riêng và có các bộ cổng riêng luôn, tương tác với nhau thông qua port và ip address như bth.
-Dev[Docker pull, docker run...] -> Docker[Docker deamon, image <-- container] <-> Docker registry (docker hub)
-
-docker -- version
+-> docker -- version
 docker info
 docker => liệt kê lệnh con
 docker <lệnh> --help 
 
--> File .dockerignore sẽ bỏ qua cac thành phần k cần thiết vào image trong quá trình build
+-> .dockerignore
 
 
 
 # Dùng docker image
-Tải image của 1 ứng dụng và chạy thành 1 container độc lập. Image chỉ đọc và k thể sửa đổi. 
+Tải image của bất cứ ứng dụng nào và chạy thành container độc lập. 
 
--> Command
+-> Tổng kết:
 docker images => liệt kê image đang có. Image có sẵn trong hub.docker.com
 docker search <tên image muốn tìm> => search trên terminal, nên dùng các phiên bản official
 docker inspect <tên or id image or container> -> hiển thị chi tiết 1 image or container
 
-docker pull <tên image>:<tên phiên bản> => tên phiên bản xem trên hub.docker.com phần tag
+docker pull <tên image>:<tên version> => tên phiên bản trên hub.docker.com phần tag. VD: docker pull nginx:1.25
 docker pull <tên image> => k có tag phiên bản or tag là :latest sẽ tự tải về phiên bản mới nhất
 
+//!!!!!!!!!!
 docker image rm ubuntu:16.04 => xóa image đã có
 docker image rm <id của image muốn xóa chỉ cần vài chữ cái đầu> -> xóa image, nếu image tạo ra container mà container đang chạy thì k xóa được mà phải thêm tham số -f
 
@@ -81,6 +77,9 @@ VD vào terminal của container linux:
 
 VD: Chạy container máy chủ httpd riêng lắng nghe request gửi đến ở cổng 80. Ở trong 1 container linux khác: wget -O -<địa chỉ ip của http server của container trước> (web request tự gọi cổng 80) -> nó sẽ gửi trả về nội dung bên trong server. Có thể tạo file index.html bên trong server httpd thì wget sẽ biên dịch và hiển thị file html đó trên powershell luôn => Tức container linux call api tới container web server httpd (trong cùng 1 network mặc định)
 Tuy nhiên khi 1 container khởi tạo http server thì bên ngoài máy host k truy cập được server đó. Để làm được ta phải ánh xạ cổng 80 của container sang any cổng chưa dùng ở host. VD Khi đã ánh xạ cổng 80 sang 8888 của host chẳng hạn: thì mở browser với 127.0.0.1:8888 sẽ hiện ra index.html
+
+VD có thể mô phỏng 3 máy độc lập chạy 3 ứng dụng ở 3 network khác nhau. Mỗi network trong docker giống như 1 mạng LAN, có thể tạo 3 mạng LAN rồi trên mỗi mạng có các máy chạy độc lập. Máy A chạy mysql ở 1 cổng, máy B chạy php ở 1 cổng, mỗi container như dùng 1 máy tính độc lập có ip riêng và có các bộ cổng riêng luôn, tương tác với nhau thông qua port và ip address như bth.
+Dev[Docker pull, docker run...] -> Docker[Docker deamon, image <-- container] <-> Docker registry (docker hub)
 
 
 

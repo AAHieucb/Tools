@@ -29,3 +29,4 @@ VD dự án có 2 người làm, 1 người dùng MacOS chạy nodejs v12, 1 ng�
 VD: chạy webserver trên máy ta, bh chuyển lên EC2, thì phải vào EC2 cài docker qua cli, pull dự án từ git về có dockerfile rồi chạy dự án trên EC2 bằng docker bth.
 Docker có 2 phiên bản CE cho nhóm nhỏ và EE cho doanh nghiệp
 
+
