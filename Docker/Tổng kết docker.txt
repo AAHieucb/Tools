@@ -1,4 +1,6 @@
 # Basic
+Dev[Docker pull, docker run...] -> Docker[Docker deamon, image <-- container] <-> Docker registry (docker hub)
+
 -> docker -- version
 docker info
 docker => liệt kê lệnh con
@@ -19,7 +21,10 @@ docker pull <tên image> => k có tag phiên bản or tag là :latest sẽ tự 
 
 docker run 
   -it => optional, -i để interact được với container, -t là tương tác bằng terminal
+  -e <tên biến môi trường>=<giá trị biến môi trường> => optional
   --name "<tên đặt cho container>" => optional
+  --network <tên network> => optional, chạy image thành container thì connect vào network luôn
+  -p -8888:80 => optional, ánh xạ cổng 80 trong docker thành 8888 ngoài host.
   source=<tên ổ đĩa>,target=/home/disk2 => optional, đồng bộ folder /home/disk2 trên container và thư mục của 1 ổ đĩa ảo có từ trước. 
   -v <path tới folder trên host / tên volumn>:<path của nó tương ứng trên container> => optional, thay thế source/target, đồng bộ container folder với volumn or folder trên host
   -h <tên host container đó> => optional, set 1 hostname cho container, nó là hostname unique cho container trong network mà nó đang chạy
@@ -69,30 +74,28 @@ docker volume ls => liệt kê các ổ đĩa.
 docker volume inspect <tên ổ đĩa> => xem thông tin ổ đĩa nào
 docker volume rm <tên ổ đĩa>
 
-//!!!!!!!!
---> network
-docker network ls -> list ra các network trong docker. Docker có lệnh tạo và thao tác với hệ thống network giúp các container kết nối vào với nhau và kết nối ra bên ngoài. Nếu 1 container chạy bth kxđ network nó tự động vào default network đầu tiên trong list
-docker network inspect <tên network> -> xem thông tin network. Nhờ có các network mà bên trong các container linux chẳng hạn gọi được lệnh ping ra các trang web network bên ngoài. Lệnh này hiển thị các container trong network là gì và ip là bnh. 
-docker inspect <tên or id container> -> xem thông tin của container có cả network mà container này đang chạy trên
-docker run -it -e <tên biến môi trường>=<giá trị biến môi trường> --name "<tên>" --network <tên network> -p -8888:80 busybox -> chạy container với ánh xạ cổng 80 của nó thành cổng 8888 của host. Nếu k specific network sẽ dùng network đầu tiên.
+-> network: 1 container chạy bth kxđ network sẽ tự động vào default network đầu tiên trong list.
+docker network ls -> list ra các network trong docker
+docker network inspect <tên network> -> xem thông tin network, có các container nào.
+docker inspect <tên or id container> -> xem thông tin của container có cả network mà container này đang chạy trên đó
 docker network create --driver bridge <tên network> -> tạo ra 1 mạng cầu trong hệ thống. Có thể tạo ra nhiều network trong docker bên trong có nhiều container để cách ly các container này với container mạng khác. VD ping sang container mạng khác sẽ k có gì
 docker network rm <tên network>
-docker network connect <tên network> <tên container> => kết nối network nào vào container nào đang chạy. 1 container có thể kết nối với 2 network 1 lúc được
+docker network connect <tên network> <tên container> => kết nối 1 network vào 1 container đang chạy. Nhiều container kết nối vói nhau khi connect chung 1 network.
 
--> Tương tác network
-Trong hệ thông network docker, 2 container cùng thuộc 1 network có thể tương tác với nhau. Tương tác ra bên ngoài như nào thì tùy vào việc ánh xạ cổng như nào.
-VD vào terminal của container linux:
-- ping <id container khác ở trong network đó> => 2 container có thể trao đổi gói tin với nhau trong network đó. Ở đây thực chất 1 container chạy sẽ luôn có 1 cổng trong network. Lệnh ping của hệ điều hành linux (or phải cài apt-get update && apt-get install iputils-ping -y mới có) sẽ ping tới 1 ip address nào, thì docker khi dùng id or name sẽ tự hiểu là gọi ip address nên ở trên thực chất chỉ là ping tới 1 ip address của container khác trong mạng mà thôi.
-- ls /bin/ -la => trong container linux sẽ hiển thị mọi lệnh có trong container đó => inspect là thấy cái ipv4 liền
+--> 2 container cùng thuộc 1 network có thể tương tác với nhau. Còn tương tác ra bên ngoài như nào tùy vào việc ánh xạ cổng ra ngoài như nào.
 
-VD: Chạy container máy chủ httpd riêng lắng nghe request gửi đến ở cổng 80. Ở trong 1 container linux khác: wget -O -<địa chỉ ip của http server của container trước> (web request tự gọi cổng 80) -> nó sẽ gửi trả về nội dung bên trong server. Có thể tạo file index.html bên trong server httpd thì wget sẽ biên dịch và hiển thị file html đó trên powershell luôn => Tức container linux call api tới container web server httpd (trong cùng 1 network mặc định)
-Tuy nhiên khi 1 container khởi tạo http server thì bên ngoài máy host k truy cập được server đó. Để làm được ta phải ánh xạ cổng 80 của container sang any cổng chưa dùng ở host. VD Khi đã ánh xạ cổng 80 sang 8888 của host chẳng hạn: thì mở browser với 127.0.0.1:8888 sẽ hiện ra index.html
+VD: vào terminal của container linux
+- ping <id container khác ở trong network đó> => Có thể phải cài apt-get update && apt-get install iputils-ping -y mới có ping. Trong docker, chỉ cần dùng id container sẽ tự hiểu là ping tới ip address của container khác trong mạng. 
+- ls /bin/ -la => hiển thị mọi lệnh có trong container đó. Dùng inspect là thấy cái ipv4 của container, vì mỗi container có 1 ip riêng.
 
-VD có thể mô phỏng 3 máy độc lập chạy 3 ứng dụng ở 3 network khác nhau. Mỗi network trong docker giống như 1 mạng LAN, có thể tạo 3 mạng LAN rồi trên mỗi mạng có các máy chạy độc lập. Máy A chạy mysql ở 1 cổng, máy B chạy php ở 1 cổng, mỗi container như dùng 1 máy tính độc lập có ip riêng và có các bộ cổng riêng luôn, tương tác với nhau thông qua port và ip address như bth.
-Dev[Docker pull, docker run...] -> Docker[Docker deamon, image <-- container] <-> Docker registry (docker hub)
+VD: docker chạy container httpd lắng nghe request gửi đến ở cổng 80. Ở trong 1 container linux khác: wget -O -<địa chỉ ip của http server của container trước> (web request tự gọi vào cổng 80) -> nó sẽ gửi trả về nội dung bên trong server. Có thể tạo file index.html bên trong server httpd thì wget sẽ biên dịch và hiển thị file html đó trên powershell luôn => Tức container linux call api tới container web server httpd (trong cùng 1 network mặc định)
+Tuy nhiên khi 1 container khởi tạo http server thì bên ngoài máy host k truy cập được server đó. Để làm được ta phải ánh xạ cổng 80 của container sang any cổng chưa dùng ở host như 8888, thì mở browser với 127.0.0.1:8888 sẽ hiện ra index.html
 
+VD mô phỏng 3 máy độc lập chạy 3 ứng dụng ở 3 network khác nhau: mỗi network trong docker giống như 1 mạng LAN, ta tạo 3 mạng LAN rồi trên mỗi mạng có các máy chạy độc lập. Máy A chạy mysql ở 1 cổng, máy B chạy php ở 1 cổng, mỗi container như 1 máy tính độc lập có ip và cổng riêng, tương tác với nhau qua port và ip address như bth.
 
 
+
+//!!!!!!!!
 # Dùng Dockerfile
 Lưu các chạy container from scratch vào 1 file.
 Dùng docker k nên copy cả node_modules r bỏ npm install trong Dockerfile mà luôn để ignore node_modules ở môi trường ngoài và chạy npm i ở Dockerfile
