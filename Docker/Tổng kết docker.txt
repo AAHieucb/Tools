@@ -8,10 +8,8 @@ docker <lệnh> --help
 
 
 
-# Dùng docker image
-Tải image của bất cứ ứng dụng nào và chạy thành container độc lập. 
-
--> Tổng kết:
+# Tổng kết dùng lệnh docker
+-> image:
 docker images => liệt kê image đang có. Image có sẵn trong hub.docker.com
 docker search <tên image muốn tìm> => search trên terminal, nên dùng các phiên bản official
 docker inspect <tên or id image or container> -> hiển thị chi tiết 1 image or container
@@ -19,51 +17,59 @@ docker inspect <tên or id image or container> -> hiển thị chi tiết 1 imag
 docker pull <tên image>:<tên version> => tên phiên bản trên hub.docker.com phần tag. VD: docker pull nginx:1.25
 docker pull <tên image> => k có tag phiên bản or tag là :latest sẽ tự tải về phiên bản mới nhất
 
-docker run nginx:1.25 => tự tải r chạy container nginx version 1.25
+docker run 
+  -it => optional, -i để interact được với container, -t là tương tác bằng terminal
+  --name "<tên đặt cho container>" => optional
+  source=<tên ổ đĩa>,target=/home/disk2 => optional, đồng bộ folder /home/disk2 trên container và thư mục của 1 ổ đĩa ảo có từ trước. 
+  -v <path tới folder trên host / tên volumn>:<path của nó tương ứng trên container> => optional, thay thế source/target, đồng bộ container folder với volumn or folder trên host
+  -h <tên host container đó> => optional, set 1 hostname cho container, nó là hostname unique cho container trong network mà nó đang chạy
+  --volumns-from <tên container1> <tên image>:<tag> => optional, chạy image tạo container có cấu trúc thư mục của container1 và luôn đồng bộ.
+  --rm => optional, container tự bị remove ngay khi chạy xong lệnh và dừng
+  ubuntu:<phiên bản> => hoặc không có version, hoặc dùng <id của image>
+  <lệnh> <tham số của lệnh> => chạy container và thực hiện 1 lệnh r dừng container luôn
+VD: docker run --rm ubuntu echo "Hello" => Tạo container từ image ubuntu, r chạy echo "Hello", chạy xong và container dừng thì docker tự động xóa container đó.
+VD: docker run -it -v /Users/Desktop/folder:/home/folder ff85 thì container được tạo ra từ image có id bắt đầu bằng ff85 sẽ có thư mục home/folder và bên trong có content y hệt content trên thư mục desktop/folder của máy host. Mọi sửa đổi của container trên folder thì folder của host cũng tự cập nhập ngay lập tức và k bị mất khi xóa container về sau
+=> Folder máy host, volumn, folder container có thể đồng bộ realtime cho nhau. Thường chỉ dùng volumn khi các container muốn share data thôi, k thì cứ bind trực tiếp container và máy host. Nếu ổ đĩa gắn với máy host r, thì bind luôn ổ đĩa vói container là được. Chỉ cần dùng -v thay cho source/target
 
-//!!!!!!!!!!
-docker run
-  -it <tên images> => => cách nhanh nhất để chạy 1 container
-  
-docker run -it --name "<tên đặt cho container>" --rm -h <tên host container đó> ubuntu:<phiên bản> <lệnh> <tham số của lệnh> => Vd chạy image ubuntu thành 1 container xong thì thực hiện luôn lệnh nào. Option -i là interact được với container, -t là tương tác bằng terminal. -rm là option giúp container tự bị remove ngay khi chạy xong lệnh run, khi dừng container sẽ tự bị xóa luôn. Ta thêm nó khi chỉ cần chạy container đó thực hiện lệnh đó đúng 1 lần. Option -h để set 1 cái hostname cho container, nó sẽ là hostname unique cho container trong network mà nó đang chạy
-docker run -it -v <path tới folder chứa file của host os muốn container tương tác với>:<path của nó tương ứng trên container> --name "<tên đặt cho container>" <id của image> -> VD: docker run -it -v /Users/Desktop/folder:/home/folder ff85 thì cái container được tạo ra từ image có id bắt đầu bằng ff85 sẽ có thư mục home/folder và bên trong có content y hệt content trên thư mục desktop/folder của máy host. Mọi sửa đổi của container trên folder thì folder của host cũng tự cập nhập ngay lập tức và k bị mất khi xóa container về sau
-docker run -it --name "<tên đặt cho container2>" --volumns-from <tên container1> <tên image>:<tag> => chạy 1 image tạo container2 có cấu trúc thư mục của container1 và đồng bộ trực tiếp. Thao tác với file bên này thì bên kia cũng đổi theo
-
-docker image rm ubuntu:16.04 => xóa image đã có
-docker image rm <id của image muốn xóa chỉ cần vài chữ cái đầu> -> xóa image, nếu image tạo ra container mà container đang chạy thì k xóa được mà phải thêm tham số -f
-
-docker start <id or tên của container> => chạy 1 container đã exit trước đó(chưa xóa)
-docker ps -a => hiển thị containers đang chạy. Nếu thêm -a sẽ hiện mọi container kể cả container đã tắt
-docker restart <tên container>
-docker attach <id or tên container> => vào lại terminal tương tác của container đang chạy, chỉ có 1 terminal đó
-docker exec <tên container đang chạy> <lệnh muốn chạy trên container đó> => gọi chạy lệnh trên container từ ngoài máy host (k cần vào terminal container đó)
-docker exec -it <tên container> bash => lệnh bash thực chất là mở terminal 1 tiến trình khác giống attach ở đây. Nếu từ cái này mà exit thì container vẫn hoạt động vì nó chạy 2 tiến trình bash cùng tên và mới exit 1 cái còn 1 cái chạy bởi hàm run vẫn đang chạy
-exit => gọi trong terminal của container để dừng cái tiến trình đó, còn nếu dùng trên bash thì container vẫn chạy ở tiến trình khác
+docker ps -a => hiện mọi container đang chạy, -a là hiện mọi container kể cả container đã tắt
 CTRL+P, CTRL+Q => thoát terminal của container nhưng k tắt container
+docker attach <id or tên container> => vào lại terminal tương tác của container đang chạy, chỉ có 1 terminal đó
+
+docker exec <tên container đang chạy> <lệnh muốn chạy trên container đó> => gọi chạy lệnh trên container từ ngoài máy host (k cần vào terminal container đó)
+docker exec -it <tên container> bash => lệnh bash thực chất là mở terminal ở 1 tiến trình khác giống attach. Nếu từ cái này mà exit thì container vẫn hoạt động vì nó chạy 2 tiến trình bash cùng tên và mới exit 1 cái còn 1 cái chạy bởi hàm run vẫn đang chạy
+exit => gọi trong terminal của container để dừng cái tiến trình đó, còn nếu dùng trên bash thì container vẫn chạy ở tiến trình khác
 
 docker stop <id or tên container> => container đang chạy sẽ dừng lại
-docker rm <id or tên container> => xóa 1 container đã exit
-docker rm -f <id or tên container> => xóa 1 container dù đang chạy hay không
+docker start <id or tên của container> => chạy 1 container đã exit trước đó (chưa xóa)
+docker restart <tên container>
+docker rm -f <id or tên container> => rm là xóa 1 container đã exit, nhưng -f sẽ xóa container đó dù đang chạy hay không
 
-docker commit <tên or id container> <tên image tự đặt>:<tên version tự đặt> => Trong 1 container mà ta cài nhiều thứ xong mỗi lần xóa thì container đó mất or exit xong tắt máy thì container cx mất, ta có thể lưu nó thành image fix trong docker để lần sau chạy image đã lưu đó là có luôn container đó mà kp làm lại. Lệnh commit sẽ lưu container thành images và chạy docker images sẽ thấy images mới đó.
-docker save --output <link tới file>/<tên file tự đặt>.tar <id or tên image> => biến image thành file riêng k lưu trong docker nx, có thể share cho người khác file
+docker image rm ubuntu:16.04 => xóa image đã có
+docker image rm <id của image muốn xóa chỉ cần vài chữ cái đầu> -> xóa image, thêm -f để ép xoá image nếu có container của nó đang chạy.
+
+docker commit <tên or id container> <tên image tự đặt>:<tên version tự đặt> => Trong 1 container mà ta cài nhiều thứ xong mỗi lần xóa thì container đó mất or exit xong tắt máy thì container cx mất. Lệnh commit sẽ lưu thành image mới trong docker để lần sau chạy image đã lưu đó là có luôn container, k cần setup lại.
+docker save --output <link tới file>/<tên file tự đặt>.tar <id or tên image> => biến image thành file riêng k lưu trong docker nx, có thể share file cho người khác 
 docker load -i <link tới file image>.tar => load file thành image k có tên và tag
 docker tag <id của image> <tên tự đặt>:<tag tự đăt> => đặt tên và tag mới cho image
 docker image history <id or tên image> => hiển thị quá trình hình thành custom image này từ image cơ sở
 
 docker diff <tên or id container> => xem từ thời điểm tạo ra cho đến h thì container này đã thay đổi cấu trúc file như thế nào
+docker stats <container> <container> => giám sát tài nguyên mà các container tiêu tốn thời gian thực. Nếu k liệt kê container nó sẽ tự giám sát tất cả
 docker logs --tail 10 <tên container> => kiểm tra 10 dòng logs cuối của container nào
 docker logs -f <tên or id container> => terminal sẽ chờ thao tác gì đó với container này thì logs sẽ bắt theo thời gian thực
-docker stats <container> <container> => giám sát tài nguyên mà các container tiêu tốn thời gian thực. Nếu k liệt kê container nó sẽ tự giám sát tất cả
 
---> volume
-docker volume ls => liệt kê các ổ đĩa. Docker cho phép tạo ra các ổ đĩa ảo gắn vào các container để chúng thao tác chung với dữ liệu ổ đĩa đó. Ổ đĩa chỉ mất khi ta chủ động xóa nó
-docker volume create <tên ổ đĩa> => tạo ổ đĩa
+-> volume: Ổ đĩa ảo ta tạo ra. Có thể gắn với nhiều container để dùng chung data. Xoá container ổ đĩa k ảnh hưởng. Ổ đĩa chỉ mất khi chủ động xoá nó với rm.
+docker volume create
+  -opt type=none => type=none là không dùng kiểu thiết bị đặc biệt, chỉ muốn bind một thư mục local bình thường từ host, ko phải loop, tmpfs, hay network fs
+  -opt device=/User/... => là path trên máy host. Ổ đĩa sẽ ánh xạ tới thư mục trong host.
+  -opt o=bind => kiểu mount là bind, tức là đồng bộ trực tiếp giữa host và container.
+  <tên ổ đĩa tự đặt> => tạo ổ đĩa ảo
+
+docker volume ls => liệt kê các ổ đĩa. 
 docker volume inspect <tên ổ đĩa> => xem thông tin ổ đĩa nào
 docker volume rm <tên ổ đĩa>
-docker run -it --name "<tên>" source=<tên ổ đĩa>,target=/home/disk2 ubuntu:latest => chạy image tạo ra container có thư mục /home/disk2 kết nối với ổ đĩa ảo có từ trc. Mọi thao tác trên container này sẽ ảnh hưởng tới ổ đĩa trên và dù xóa container thì ổ đĩa vẫn có dữ liệu mới nhất sửa đổi. /home/disk2 là thư mục của ổ đĩa
-docker volume create -opt device=/User/...<path trên máy host> -opt type=none -opt o=bind <tên ổ đĩa tự đặt> => tạo ổ đĩa ánh xạ đến ổ đĩa trên host. Với các ổ đĩa mà đã ánh xạ tới ổ trong host thì khi ánh xạ ổ đĩa đó tới container ta dùng -v chứ k dùng source target nx (thật ra chả cần ánh xạ gì, dùng mẹ -v thôi cho nhanh) => VD: docker run -it -v <tên ổ đĩa>:/<link trong container có ổ đĩa này> ubuntu:lastest => khi đó container đó sẽ ánh xạ tới cả ổ đĩa host và ổ đĩa ảo
 
+//!!!!!!!!
 --> network
 docker network ls -> list ra các network trong docker. Docker có lệnh tạo và thao tác với hệ thống network giúp các container kết nối vào với nhau và kết nối ra bên ngoài. Nếu 1 container chạy bth kxđ network nó tự động vào default network đầu tiên trong list
 docker network inspect <tên network> -> xem thông tin network. Nhờ có các network mà bên trong các container linux chẳng hạn gọi được lệnh ping ra các trang web network bên ngoài. Lệnh này hiển thị các container trong network là gì và ip là bnh. 
