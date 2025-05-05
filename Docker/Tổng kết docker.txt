@@ -19,14 +19,18 @@ docker inspect <tên or id image or container> -> hiển thị chi tiết 1 imag
 docker pull <tên image>:<tên version> => tên phiên bản trên hub.docker.com phần tag. VD: docker pull nginx:1.25
 docker pull <tên image> => k có tag phiên bản or tag là :latest sẽ tự tải về phiên bản mới nhất
 
-//!!!!!!!!!!
-docker image rm ubuntu:16.04 => xóa image đã có
-docker image rm <id của image muốn xóa chỉ cần vài chữ cái đầu> -> xóa image, nếu image tạo ra container mà container đang chạy thì k xóa được mà phải thêm tham số -f
+docker run nginx:1.25 => tự tải r chạy container nginx version 1.25
 
-docker run -it <tên images> => cách nhanh nhất để chạy 1 container
+//!!!!!!!!!!
+docker run
+  -it <tên images> => => cách nhanh nhất để chạy 1 container
+  
 docker run -it --name "<tên đặt cho container>" --rm -h <tên host container đó> ubuntu:<phiên bản> <lệnh> <tham số của lệnh> => Vd chạy image ubuntu thành 1 container xong thì thực hiện luôn lệnh nào. Option -i là interact được với container, -t là tương tác bằng terminal. -rm là option giúp container tự bị remove ngay khi chạy xong lệnh run, khi dừng container sẽ tự bị xóa luôn. Ta thêm nó khi chỉ cần chạy container đó thực hiện lệnh đó đúng 1 lần. Option -h để set 1 cái hostname cho container, nó sẽ là hostname unique cho container trong network mà nó đang chạy
 docker run -it -v <path tới folder chứa file của host os muốn container tương tác với>:<path của nó tương ứng trên container> --name "<tên đặt cho container>" <id của image> -> VD: docker run -it -v /Users/Desktop/folder:/home/folder ff85 thì cái container được tạo ra từ image có id bắt đầu bằng ff85 sẽ có thư mục home/folder và bên trong có content y hệt content trên thư mục desktop/folder của máy host. Mọi sửa đổi của container trên folder thì folder của host cũng tự cập nhập ngay lập tức và k bị mất khi xóa container về sau
 docker run -it --name "<tên đặt cho container2>" --volumns-from <tên container1> <tên image>:<tag> => chạy 1 image tạo container2 có cấu trúc thư mục của container1 và đồng bộ trực tiếp. Thao tác với file bên này thì bên kia cũng đổi theo
+
+docker image rm ubuntu:16.04 => xóa image đã có
+docker image rm <id của image muốn xóa chỉ cần vài chữ cái đầu> -> xóa image, nếu image tạo ra container mà container đang chạy thì k xóa được mà phải thêm tham số -f
 
 docker start <id or tên của container> => chạy 1 container đã exit trước đó(chưa xóa)
 docker ps -a => hiển thị containers đang chạy. Nếu thêm -a sẽ hiện mọi container kể cả container đã tắt
