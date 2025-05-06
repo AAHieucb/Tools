@@ -95,49 +95,64 @@ VD mô phỏng 3 máy độc lập chạy 3 ứng dụng ở 3 network khác nha
 
 
 
-//!!!!!!!!
 # Dùng Dockerfile
-Lưu các chạy container from scratch vào 1 file.
-Dùng docker k nên copy cả node_modules r bỏ npm install trong Dockerfile mà luôn để ignore node_modules ở môi trường ngoài và chạy npm i ở Dockerfile
+Dockerfile lưu quá trình tạo container từ image vào 1 file, cả việc vài đặt và chạy container ra port.
+Exp là nên gọi npm i trong Dockerfile chứ k nên copy cả vào Dockerfile
 
--> VD dùng dockerfile: tạo image myimage:v1 từ image có sẵn centos, cài sẵn vài package htop, vim, httpd và thi hành nền httpd khi container chạy.
+-> VD usecase tạo image myimage:v1 từ image centos có sẵn, cài sẵn vài package htop, vim, httpd và thi hành nền httpd khi container chạy.
 
-1) Thao tác trên commandline rồi build thành 1 image
+C1 chỉ dùng commandline build thành 1 image:
 - docker pull centos
 - docker run -it --name cent centos 
-- yum update là lệnh update để có thể cài các gói vào centos 
+- yum update => lệnh update để có thể cài các gói vào centos 
 - yum install httpd httpd-tools -y 
-- httpd -v để check có httpd chưa
+- httpd -v => check có httpd chưa
 - yum install vim
+- yum install epel-release => htop là lệnh nằm trong các gói package mở rộng mà ta phải cài gói này trước
+- yum update -y => vì cài xong gói mở rộng phải update lại 
+- yum install htop -y, r chạy htop
 
-htop là lệnh nằm trong các gói package mở rộng mà ta phải cài gói trước: yum install epel-release -> yum update -y vì cài xong gói mở rộng phải update lại -> yum install htop -y -> htop
-
---> Thêm task là copy thư mục test.html ở trong máy vào trong 1 thư mục ở trong container
-
-- Dùng window container: Thoát ra terminal của host. Trong window bị lỗi deamon phải exit container rồi dùng cp rồi lại start container lại mới được. Ở TH này window container vẫn cho copy file nhưng thư mục trên container phải tạo hết từ trước nếu không sẽ báo lỗi directory k tồn tại: 
+- Bổ sung task là copy thư mục test.html ở trong máy vào trong 1 thư mục ở trong container
+Dùng window container: Thoát ra terminal của host. Trong window bị lỗi deamon phải exit container rồi dùng cp rồi lại start container lại mới được. Ở TH này window container vẫn cho copy file nhưng thư mục trên container phải tạo hết từ trước nếu không sẽ báo lỗi directory k tồn tại: 
 docker cp <link tới file(window phải dùng folder) test>.html <tên container>:<link trên container các thư mục phải có từ trước>
-VD: docker cp ./MyImages/test.html cent:/var/www/html/
-(Nếu docker cp ./MyImages/test.html cent:/var/www/html/ thì copy file test.html vào thư mục html. Còn docker cp ./MyImages/test.html cent:/var/www/html là sinh ra file html ở trong thư mục www có nội dung giống file test.html -> cần tránh nhầm)
+VD "docker cp ./MyImages/test.html cent:/var/www/html/" là copy file test.html vào thư mục html. Còn "docker cp ./MyImages/test.html cent:/var/www/html" là sinh ra file html ở trong thư mục www có nội dung giống file test.html => tránh nhầm
 
-=> Chú ý 1 container chạy httpd và 1 container hđh centos cài package httpd hơi khác nhau. 1 cái là container chạy máy chủ web biên dịch html js, còn 1 cái là cài 1 hệ điều hành rồi lại chạy 1 máy chủ web trên nó. Ở đây centos chạy httpd thì cổng 80 của cái centos đó chính là chạy httpd đó chứ kp cổng 80 của máy host.
-=> Khi dùng dockerfile, ta chỉ thao tác với 1 container OS và biến nó thành 1 image mới. Nó khác với việc chạy nhiều container 1 lúc (phải dùng docker compose). Trong thực tế có nhiều loại ứng dụng chuyên dùng để chạy các ứng dụng khác. VD ta cài php rồi cài mysql trên nó (php là TH đặc biệt cũng có myphpadmin quản lý mysql đi kèm)
+- Để lưu thành image: exit dừng container -> docker commit cent myimage:v1 -> có thể xóa container cent k cần nx -> chạy container từ myimage: docker run --rm -p 9876:80 myimage:v1 httpd -D FOREGROUND  => thì -rm vì khi nào dừng là xóa container luôn, -D là để nó chạy nền, mở browser cổng 9876 là vào được httpd -> các thư mục ta copy nó sẽ tự tìm đến file đó và lấy nên ta mở /test.html sẽ thấy
+Có thể copy file dự án từ local vào docker, build thành image rồi push lên docker hub. Khi đó bất cứ ai pull image về chạy đều có thể có cả dự án luôn mà k cần lên github nữa => thường thì vẫn dùng github lưu dự án kèm Docker
 
---> Để lưu thành image: exit dừng container -> docker commit cent myimage:v1 -> có thể xóa container cent k cần nx -> chạy container từ myimage: docker run --rm -p 9876:80 myimage:v1 httpd -D FOREGROUND  => thì -rm vì khi nào dừng là xóa container luôn, -D là để nó chạy nền, mở browser cổng 9876 là vào được httpd -> các thư mục ta copy nó sẽ tự tìm đến file đó và lấy nên ta mở /test.html sẽ thấy
-Có thể copy file dự án từ local vào docker, build thành image rồi push lên docker hub. Khi đó bất cứ ai pull image về chạy đều có thể có cả dự án luôn mà k cần lên github nữa. Thường thì vẫn dùng github lưu dự án kèm dockerfile
+=> Lưu ý 1 container chạy httpd và 1 container hđh centos cài package httpd là khác nhau. Khi dùng docker với httpd, bản chất nó chạy httpd trên 1 hđh linux tối giản, chỉ có các thứ cần thiết cho httpd, các gói yum hay apt và các lệnh của os sẽ k có trong image đó. 
+=> Thường thì ta dùng nhiều image độc lập tương tác trong 1 network, quản lý với docker compose, thay vì dùng 1 image và cài nhiều thú lên đó.
 
-2) Dùng Dockerfile
-Vc ta xây dựng myimage thủ công thế này có thể nhét vào trong dockerfile r khi cần thì docker sẽ tự chạy file đó tạo ra image cho ta luôn: tạo Dockerfile -> tải extension Dockerfile về để có highlight cú pháp -> code Dockerfile -> docker build -t <tên image k được viết hoa>:<tag> -f Dockerfile <link tới thư mục docker file, nếu là thư mục hiện tại thì để dấu chấm là được> => thế là có image
-Giả sử tạo lại image như bên trên thì ta chạy container nó tự có thư mục mặc định chứa test.html và chạy httpd sẵn r nên ta chỉ cần: docker run -p 6789:80 myimage:v1 => bật máy tính cổng 6789 ra để thấy file test.html => vì ở đây httpd chạy ở port 80 của centos, ta phải chạy port 80 của centos ra port 6789 của host os mới thấy được.
-Port 80 thực chất là mặc định, Vd ta gõ localhost/20194761 tức là mặc định localhost:80/20194761
+C2 dùng Dockerfile config quá trình xây container rồi build thành 1 image luôn:
+Tạo Dockerfile -> tải extension Dockerfile về để có highlight cú pháp -> code Dockerfile -> docker build -t <tên image k được viết hoa>:<tag> -f Dockerfile <link tới thư mục docker file, nếu là thư mục hiện tại thì để dấu chấm là được> => thế là có image
+Giả sử tạo lại image như bên trên thì ta chạy container nó tự có thư mục mặc định chứa test.html và chạy httpd sẵn r nên ta chỉ cần: docker run -p 6789:80 myimage:v1, bật máy tính cổng 6789 ra để thấy file test.html => vì ở đây httpd chạy ở port 80 của centos, ta phải chạy port 80 của centos ra port 6789 của host os mới thấy được.
 
-=> docker build bị lỗi ở bước nào khi build lại sẽ tiếp ở bước đó, nó có cơ chế lưu các bước build lại để kp build từ đầu mất tg.
+-> docker build bị lỗi ở 1 bước, khi build lại sẽ chạy tiếp từ bước đó nếu k có thay đổi, nó có cache từng bước build.
 
-=> Window bị lỗi với Dockerfille với mọi lệnh RUN. Cho đến h chưa ai fix đc, tốt nhất là dùng linux container
-=> Đây là cách xây dựng 1 nền tảng để chạy. VD ta có code server muốn build và run trên linux mà k có máy linux thì dùng docker tạo ra như này là có
+Mẹo:
+COPY package.json .
+RUN npm install
+COPY . .
+RUN npm run build
+=> Khi thay đổi code, docker sẽ k chạy lại npm i vì docker check package.json k đổi nên dùng cache k thực hiện loại
+
+-> Dockerfile có multistage giúp giảm kích thước image cuối cùng. 
+
+VD: 
+# Stage 1: Build
+FROM node:18 AS builder
+WORKDIR /app
+COPY . . 
+RUN npm install && npm run build
+# Stage 2: Run
+FROM nginx:alpine
+COPY --from=builder /app/dist /usr/share/nginx/html
+=> stage sau vẫn dùng data của stage trước, nhưng cuối cùng production dùng data stage cuối với kích thước nhỏ, k bao gồm node_modules và các file phụ.
 
 
 
-# Dùng dockercompose
+//!!!!!!!
+# Dùng docker-compose
 file.yaml tuân thủ đúng từng dấu cách dòng. Dockerfile kêt hợp với docker build chỉ tương tác 1 images trong khi docker compose tạo hẳn 1 app đầy đủ dịch vụ nhiều images đc
 VD docker-compose giúp combine các ứng dụng lại, vd tạo 1 dockerfile cung service mongodb tương tác với 1 dockerfile cung server nodejs.
 
