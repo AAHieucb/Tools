@@ -83,6 +83,8 @@ docker network rm <tên network>
 docker network connect <tên network> <tên container> => kết nối 1 network vào 1 container đang chạy. Nhiều container kết nối vói nhau khi connect chung 1 network.
 
 --> 2 container cùng thuộc 1 network có thể tương tác với nhau. Còn tương tác ra bên ngoài như nào tùy vào việc ánh xạ cổng ra ngoài như nào.
+IP của container có dạng 127.<a>.0.<b>, nếu 2 container cùng thuộc 1 network sẽ có cùng giá trị a còn b tăng dần
+2 container thuộc cùng 1 network thì có thể gõ tên trực tiếp trong lệnh. VD trong container B3 ping đến B4 chỉ cần "ping B4" là xong
 
 VD: vào terminal của container linux
 - ping <id container khác ở trong network đó> => Có thể phải cài apt-get update && apt-get install iputils-ping -y mới có ping. Trong docker, chỉ cần dùng id container sẽ tự hiểu là ping tới ip address của container khác trong mạng. 
@@ -197,10 +199,6 @@ services:
 # Các container mạnh
 swag: container giúp reverse proxy + SSL
 Watchtower: 1 container dùng trong hệ thống có nhiều docker container. Nó chạy trong background luôn đảm bảo image newest version, tự check, update image, reboots container
-
--> Alpine: container lý tưởng cho web server, nó là linux dựa trên busybox đơn giản.
-RUN apk add --no-cache git => apk add <tên gói> để cài 1 gói mới vào alpine với --no-cache là k cache ở command build image.
-RUN npm install --production --silient => npm install là cài các package nhưng --production tức nó bỏ qua các package trong devDependencies, còn --silent là k log output khi install
 
 
 

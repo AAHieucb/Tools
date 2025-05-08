@@ -1,22 +1,23 @@
-//!!!!!!!!
-# Dùng linux
--> Dùng image ubuntu
-Dùng lệnh bth trên container của image ubuntu: cat /etc/*release -> hiển thị thông tin container hiện tại
+# Dùng linux qua docker
+-> Image ubuntu
+Dùng lệnh bth trên container của image ubuntu: 
+cat /etc/*release -> hiển thị thông tin container hiện tại
 apt update -y -> 1 số lệnh trong ubuntu phải update mới có
 apt search <tên gói> -> search package để install
 apt install htop -> htop -> in ra các tiến trình đang chạy trong container. VD ta run xong lại exec bash thì có tổng 3 tiến trình đang chạy, 1 là run ban đầu, 2 là bash chạy trên 1 tiến trình mới kết nối với terminal của ta, 3 là lệnh htop đang dùng
-apt install iputils-ping -> ping google.com -> lệnh ping
+apt install iputils-ping -> ping google.com
 echo $<tên biến môi trường>
-=> Có thể tự do cài các package của ubuntu như vim, nano. Cứ lệnh nào của linux mà k có thì install vào. VD: apt install vim
+apt install vim => có thể install bất cứ lệnh nào của linux mà container k có sẵn như nano, vim.
 
--> Dùng image busybox: 1 image nhỏ gọn nhưng chứa nhiều công cụ nền tảng linux.
-Chú ý localhost luôn là 127.0.0.1 connect với các network thông qua NIC (network interface card) rồi tương tác với các container khác trong network có các ip khác có ip là 127.<a>.0.<b> -> nếu 2 container cùng thuộc 1 network sẽ có cùng giá trị a còn b tăng dần
-Khi 2 container thuộc cùng 1 network thì có thể gõ tên trực tiếp trong lệnh: VD trong container B3 ping đến B4 thay vì gõ ip của B4 ta chỉ cần: ping B4 là xong
+-> Image busybox: 1 image nhỏ gọn nhưng chứa nhiều công cụ nền tảng linux
 
-=> VD dùng container httpd và dùng container ubuntu rồi cài httpd trên đó là khác nhau. C2 k dùng vì docker đã dùng linux sẵn rồi nên có thể cài httpd container luôn
+-> Alpine: container lý tưởng cho web server, nó là linux dựa trên busybox đơn giả => thay thế ubuntu và busybox
+RUN apk add --no-cache git => apk add <tên gói> để cài 1 gói mới vào alpine với --no-cache là k cache ở command build image.
+RUN npm install --production --silient => npm install là cài các package nhưng --production tức nó bỏ qua các package trong devDependencies, còn --silent là k log output khi install
 
 
 
+//!!!!!!!!
 # Thực hành docker network, mysql, php, httpd kết nối wordpress
 Thực hành: Tạo network cầu tên www-net có 3 container chạy 3 dịch vụ mysql, php, httpd để tạo ra 1 web server hoàn chỉnh sau đó kết nối với wordpress trên hostOS
 => ref tới folder "Docker Basic / Thực hành"
