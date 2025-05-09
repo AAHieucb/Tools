@@ -17,21 +17,19 @@ RUN npm install --production --silient => npm install là cài các package như
 
 
 
-//!!!!!!!!
-# Thực hành docker network, mysql, php, httpd kết nối wordpress
-Thực hành: Tạo network cầu tên www-net có 3 container chạy 3 dịch vụ mysql, php, httpd để tạo ra 1 web server hoàn chỉnh sau đó kết nối với wordpress trên hostOS
+# Thực hành tạo network cầu tên www-net có 3 container chạy 3 dịch vụ mysql, php, httpd thành 1 web server hoàn chỉnh rồi kết nối với wordpress trên hostOS
 => ref tới folder "Docker Basic / Thực hành"
 
--> Tạo mạng: docker network create --driver nat www-net 
-Trên linux ta dùng bridge, trên window ta dùng nat, ở đây giả sử window container ta dùng nat
+-> Tạo mạng nat: docker network create --driver nat www-net => vì trên linux dùng bridge, trên window dùng nat, ở đây giả sử window container ta dùng nat
 
--> Dùng image php: Dịch vụ này biên dịch PHP, lắng nghe và tạo ra nhiều tiến trình trên cổng 9000 bắt các file.php
+-> Dùng image php biên dịch PHP, lắng nghe và tạo ra nhiều tiến trình trên cổng 9000 bắt các file.php
 - docker pull php:7.3-fpm => Phiên bản 7.3-fpm, fpm là FastCGI Process Manager
 - Tạo thư mục /docker/www ánh xạ chia sẻ dữ liệu giữa các container và host, giữa các container với nhau
-- docker run -d --name c-php -h php -v C:/Users/Admin/Desktop/docker:/home/docker/ --network www-net php:7.3-fpm => tham số -d sẽ chạy container trên background mà k hiển thị ra terminal của container đó ngay
+- docker run -d --name c-php -h php -v C:/Users/Admin/Desktop/docker:/home/docker/ --network www-net php:7.3-fpm
 - Vào trong thư mục docker và thêm vào index.html và test.php thì cái container php này có thể chạy được file php bằng: php <tên file php> -> php --version
-- Xong container php trong network chạy được file php. Nó luôn lắng nghe file php tới trên cổng 9000 (có thể đổi cổng trên docker desktop). Và ta muốn nếu có file php cần biên dịch thì http server phải gửi nó về cổng 9000 này. Container này dùng cổng 9000 của network www-net hiện tại và bên ngoài host k cần dùng nên k cần ánh xạ cổng
+- Cài xong container php trong network để chạy file php. Nó lắng nghe file php tới trên cổng 9000, file php cần biên dịch thì http server phải gửi nó về cổng 9000 này. Bên ngoài host k dùng nên k k cần ánh xạ ra ngoài.
 
+//!!!!!!!!
 -> Dùng image httpd: là Apache httpd, máy chủ web http tự động routing serve cấu trúc thư mục trong htdocs (khi dùng ngoài win bth)
 - docker pull httpd để tải bản latest
 - Chỉnh config như chạy php như nào và thao tác với các file nào: sửa file config trong /usr/local/apache2/conf/httpd.conf -> ý tưởng là chạy container lệnh copy file config từ docker ra thư mục ngoài host.

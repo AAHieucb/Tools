@@ -20,6 +20,7 @@ docker pull <tên image>:<tên version> => tên phiên bản trên hub.docker.co
 docker pull <tên image> => k có tag phiên bản or tag là :latest sẽ tự tải về phiên bản mới nhất
 
 docker run 
+  -d => optional, chạy detached mode ở chế độ nền
   -it => optional, -i để interact được với container, -t là tương tác bằng terminal
   -e <tên biến môi trường>=<giá trị biến môi trường> => optional
   --name "<tên đặt cho container>" => optional
