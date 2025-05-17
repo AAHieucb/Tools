@@ -37,7 +37,9 @@ services:
     build: . # Xây dựng container từ Dockerfile trong thư mục hiện tại.
     ports:
       - 3000:3000 # Ánh xạ cổng 3000 trên máy host với cổng 3000 trong container.
-    environment:
+    env_file: # Mặc định k có thì docker compose cũng tự load file .env 
+      - .env
+    environment: # ghi đè cả biến trong file .env định nghĩa trong env_file
       - NODE_ENV=production # Tạo biến môi trường
       - CHOKIDAR_USEPOLLING=true # Chokidar là thư viện file watching kiểu polling, phải có thì live reload mới hoạt động
     depends_on:

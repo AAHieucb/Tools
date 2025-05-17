@@ -101,6 +101,7 @@ VD mô phỏng 3 máy độc lập chạy 3 ứng dụng ở 3 network khác nha
 # Dùng Dockerfile
 Dockerfile lưu quá trình tạo container từ image vào 1 file, cả việc vài đặt và chạy container ra port.
 Exp là nên gọi npm i trong Dockerfile chứ k nên copy cả vào Dockerfile
+Luồng là tạo Dockerfile wrap dự án, dùng docker build để build ra image, dùng docker run để chạy dự án là image thành 1 container.
 
 -> VD usecase tạo image myimage:v1 từ image centos có sẵn, cài sẵn vài package htop, vim, httpd và thi hành nền httpd khi container chạy.
 
@@ -130,17 +131,22 @@ C2 dùng Dockerfile config quá trình xây container rồi build thành 1 image
 Tạo Dockerfile -> tải extension Dockerfile về để có highlight cú pháp -> code Dockerfile -> docker build -t <tên image k được viết hoa>:<tag> -f Dockerfile <link tới thư mục docker file, nếu là thư mục hiện tại thì để dấu chấm là được> => thế là có image
 Giả sử tạo lại image như bên trên thì ta chạy container nó tự có thư mục mặc định chứa test.html và chạy httpd sẵn r nên ta chỉ cần: docker run -p 6789:80 myimage:v1, bật máy tính cổng 6789 ra để thấy file test.html => vì ở đây httpd chạy ở port 80 của centos, ta phải chạy port 80 của centos ra port 6789 của host os mới thấy được.
 
--> docker build bị lỗi ở 1 bước, khi build lại sẽ chạy tiếp từ bước đó nếu k có thay đổi, nó có cache từng bước build.
-
-Mẹo:
-COPY package.json .
+->*** Hiểu bản chất: Nếu chạy dự án nodejs với npm start và chạy qua docker container đơn giản bằng cách clone code và npm i và npm start thì khác gì nhau?
+VD: 
+FROM node:latest
+WORKDIR /usr/beapp
+COPY package*.json ./
 RUN npm install
 COPY . .
-RUN npm run build
-=> Khi thay đổi code, docker sẽ k chạy lại npm i vì docker check package.json k đổi nên dùng cache k thực hiện loại
+EXPOSE 3001
+CMD ["npm", "start"]
+Nếu chỉ chạy ở máy ta đang có nodejs thì chạy qua docker chả khác mẹ gì. 
+Ta có thể build image Dockerfile 1 lần production rồi đáp image tới bất cứ đâu có docker là chạy được luôn, k cần pull code, k cần cài node. Thường dùng ở production chứ development nên cài nodejs trực tiếp luôn, vẫn có thể setup live reload khi chạy container cho môi trường dev nhưng k nên.
+Đưa sản phẩm cho khách, máy khách không cài nodejs hay dùng bất cứ OS nào cũng đều chạy ngon.
+Dễ scale với docker compose, khi mà dự án chia nhiều container khác nữa cho database, redis
+Nếu dùng CI/CD, hay hosting lên đâu, dùng Dockerfile chạy dự án thì lệnh sẽ đơn giản hơn và k quan tâm nền tảng hosting có OS nào.
 
--> Dockerfile có multistage giúp giảm kích thước image cuối cùng. 
-
+-> Dockerfile có multistage giúp giảm kích thước image cuối cùng. Cơ chế mỗi cục FROM là 1 stage
 VD: 
 # Stage 1: Build
 FROM node:18 AS builder
@@ -150,15 +156,55 @@ RUN npm install && npm run build
 # Stage 2: Run
 FROM nginx:alpine
 COPY --from=builder /app/dist /usr/share/nginx/html
-=> stage sau vẫn dùng data của stage trước, nhưng cuối cùng production dùng data stage cuối với kích thước nhỏ, k bao gồm node_modules và các file phụ.
+=> stage sau vẫn dùng data của stage trước, nhưng cuối cùng production dùng data stage cuối với kích thước nhỏ, k bao gồm toàn bộ node_modules và các file phụ.
+
+--> VD hoàn chỉnh react:
+# Stage 1: Build the React app
+FROM node:18-alpine AS build
+WORKDIR /app
+# Leverage caching by installing dependencies first
+COPY package.json package-lock.json ./
+RUN npm install --frozen-lockfile
+# Copy the rest of the application code and build for production
+COPY . ./
+RUN npm run build
+
+# Stage 2: Development environment
+FROM node:18-alpine AS development
+WORKDIR /app
+# Install dependencies again for development
+COPY package.json package-lock.json ./
+RUN npm install --frozen-lockfile
+# Copy the full source code
+COPY . ./
+# Expose port for the development server
+EXPOSE 3000
+CMD ["npm", "start"]
+
+# Stage 3: Production environment
+FROM nginx:alpine AS production
+# Copy the production build artifacts from the build stage
+COPY --from=build /app/build /usr/share/nginx/html
+# Expose the default NGINX port
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+
+- Nếu dùng development thì build đến step development thành image rồi run cái là có FE ở port 3000
+- Hàm EXPOSE hay CMD chỉ chạy khi build xong image và run nó, cũng chỉ có tác dụng khi ở stage cuối cùng. Nếu chạy cả Dockerfile thì stage development coi như vứt vì đầu ra của nó không dùng ở stage sau và lệnh EXPOSE CMD bỏ qua.
+
+--> docker build -t react-app-dev --target=development . => chạy multi-stage Dockerfile từ đầu đến hết stage development chứ kp chạy mỗi stage development. Kết quả vẫn ra 1 image chỉ chứa các bước được chạy.
 
 
 
 # Dùng docker-compose
 Dockerfile + docker build chỉ là biến từ 1 image thành 1 image khác, chạy ra 1 container. Còn docker-compose tạo 1 hệ thống nhiều container là các image khác nhau.
-docker-compose cũng giúp combine nhiều Dockerfile lại.
+docker-compose cũng giúp combine nhiều Dockerfile lại. Thường chỉ dùng 1 Dockerfile cho dự án hiện tại (trường build trong docker-compose), các services khác trong docker-compose sẽ dùng file config.
 
 -> Command docker-compose:
+docker-compose build => tìm trường field của từng service trong docker-compose là các file Dockerfile, tạo image từ các Dockerfile đó. Services k có trường build sẽ k làm gì
+docker compose up => chạy các image thành container, nó cũng tự build image nếu service có trường build mà image chưa có sẵn
+  -d => optional, detached mode chạy ngầm
+  --build => optional, ép luôn build lại image (theo trường build) khi chạy kể cả image đã có
 docker compose down -> xóa các thành phần chạy bằng docker-compose up
 docker compose ps -> hiện các container chạy bằng lệnh up (option -a)
 docker compose ps --service -> hiện các service của docker-compose đang chạy
@@ -188,12 +234,26 @@ Tương tự trích xuất my.cnf của mysql và chỉnh authentication -> tạ
 Tạo docker-compose.yml
 docker compose up -> tự chạy các lệnh trong file có tên docker-compose.yml -> phải ở cùng cấp thư mục chứa file đó -> mở cổng 9999 sẽ thấy dịch vụ -> tải mã nguồn joomla về -> giải nén và nhét vào source/sites1 -> mở web và cài đặt như wordpress thôi -> làm theo hướng dân của loomja là xong -> login tk admin
 
--> Docker biến môi trường kết hợp nodejs, có thể specific biến môi trường cho docker-compose trong file .env ở cùng cấp thư mục dự án nodejs. Nếu dùng ở 1 file với tên khác thì phải dùng kiểu:
+-> Usecase docker biến môi trường kết hợp nodejs, có thể specific biến môi trường cho docker-compose trong file .env ở cùng cấp thư mục dự án nodejs. Nếu dùng ở 1 file với tên khác thì phải dùng kiểu:
 services:
   myservice:
     env_file:
       - ./env_vars.txt
 => Các biến môi trường đó sẽ được dùng trong code nodejs lấy từ process.env.<>
+
+-> ***Quan trọng: Khi update code, phải làm gì để chạy lại dự án với code mới? Chỉ cần đảm bảo code mới nhất đó được update trên server, và restart lại server nếu cần. Thường thì exec lại Dockerfile và docker-compose là được.
+Mặc định phải dùng docker build, xoá container cũ và chạy lại container image mới khi dùng Dockerfile hoặc docker compose up --build khi dùng docker-compose để update code mới nhất từ host vào container và chạy lại container.
+Hiểu bản chất nếu ta mount thư mục host vào container thì code trên container tự update mới nhất rồi. Khi đó chỉ cần restart lại server, VD xoá container đi tạo lại, hoặc docker compose restart, hoặc setup live reload trên container thì cũng tự update thôi.
+
+VD server k dổi code, nhưng chỉ đổi config của nginx, thì docker compose restart là được, vì lệnh này sẽ run lại image thành container mà k build lại, trong khi việc mount file config được thực hiện lúc run chứ kp build.
+
+Lưu ý khi exec lại Dockerfile, VD khi build bị lỗi ở 1 bước và build lại thì docker tự check chạy tiếp từ bước đó nếu k có thay đổi, nó có cache từng bước build.
+Do đó khi code phải chú ý. VD: 
+COPY package.json .
+RUN npm install
+COPY . .
+RUN npm run build
+=> Khi thay đổi code, docker sẽ k chạy lại npm i vì docker check package.json k đổi nên dùng cache k thực hiện loại
 
 
 
