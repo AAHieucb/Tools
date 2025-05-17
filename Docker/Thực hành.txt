@@ -30,8 +30,8 @@ RUN npm install --production --silient => npm install là cài các package như
 - Cài xong container php trong network để chạy file php. Nó lắng nghe file php tới trên cổng 9000, file php cần biên dịch thì http server phải gửi nó về cổng 9000 này. Bên ngoài host k dùng nên k k cần ánh xạ ra ngoài.
 
 //!!!!!!!!
--> Dùng image httpd: là Apache httpd, máy chủ web http tự động routing serve cấu trúc thư mục trong htdocs (khi dùng ngoài win bth)
-- docker pull httpd để tải bản latest
+-> Dùng image httpd của apache là máy chủ web http tự động routing serve cấu trúc thư mục trong htdocs (win)
+- docker pull httpd 
 - Chỉnh config như chạy php như nào và thao tác với các file nào: sửa file config trong /usr/local/apache2/conf/httpd.conf -> ý tưởng là chạy container lệnh copy file config từ docker ra thư mục ngoài host.
 (Lỗi window container: không dùng được lệnh cp với file mà chỉ dùng được với thư mục nên ta phải copy cả thư mục ra và chỉnh file conf bên trong thư mục. Còn phải thêm -r vào lệnh cp mới đc)
 VD: docker run --rm -v C:/Users/Admin/Desktop/docker/:/home/docker/ httpd cp -r /usr/local/apache2/conf /home/docker/conf => thực hiện 1 lệnh lấy thư mục đó ra host r xóa container luôn. Chú ý đường dẫn k có space, nếu window có thì phải lưu tạm vào đâu r copy ra
