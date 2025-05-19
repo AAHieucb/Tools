@@ -1,3 +1,366 @@
+# Các container khác
+swag: container giúp reverse proxy + SSL
+Watchtower: 1 container dùng trong hệ thống có nhiều docker container. Nó chạy trong background luôn đảm bảo image newest version, tự check, update image, reboots container
+
+
+
+# Nodejs
+-> Dockerfile
+FROM node:23
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+EXPOSE 3001
+CMD ["npm", "run", "start:pm2"]
+
+-> docker-compose.yml
+services:
+  nodeapp:
+    build: .
+    expose: 
+      - "3001" # Expose port ra ngoài cổng nội bộ, chỉ các container khác cùng mạng mới thấy. Dùng khi mạng nhiều container tương tác nhau
+    ports:
+      - "3001:3001" # Ánh xạ port ra ngoài host
+    env_file:
+      - ./env_vars.txt
+
+
+
+# Reactjs
+-> Dockerfile
+FROM node:18-alpine AS build # Stage 1: Build the React app
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm install # Leverage caching by installing dependencies first
+COPY . ./
+RUN npm run build
+
+FROM node:18-alpine AS development # Stage 2: Development environment => chạy riêng
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm install
+COPY . ./
+EXPOSE 3000
+CMD ["npm", "start"]
+
+FROM nginx:alpine AS production # Stage 3: Production environment => chạy riêng
+COPY --from=build /app/build /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+
+-> docker-compose.yml
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "80:80"
+
+-> docker compose dev:
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true # để có live reload, phải thêm usePolling cho vite
+
+
+
+# NextJS
+-> Dockerfile khi build standalone:
+FROM oven/bun:alpine AS base # set oven/bun:alpine làm image cơ sở
+
+FROM base AS deps # stage 1 kế thừa image cơ sở, mỗi stage là 1 container tạm thời
+WORKDIR /app # cd vào thư mục app 
+COPY package.json bun.lockb ./ # copy 2 files từ ngoài máy vào folder gốc của container
+RUN bun install --frozen-lockfile # Chạy lệnh trên cmd của container
+
+FROM base AS builder # Stage 2 cũng kế thừa image cơ sở
+WORKDIR /app # 1 stage mới phải set lại
+COPY --from=deps /app/node_modules ./node_modules # stage mới phải copy file từ stage cũ là deps qua nếu muốn dùng vì chúng độc lập nhau
+COPY . .
+RUN bun run build
+
+FROM base AS runner # Stage 3
+WORKDIR /app
+ENV NODE_ENV=production
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+EXPOSE 3000 # Docker dự kiến lắng nghe cổng nào, chú ý bên ngoài k truy cập được nếu k ánh xạ. EXPOSE chỉ là tài liệu mô tả k có cũng k sao
+CMD ["bun", "run", "server.js"]
+
+-> docker compose:
+services:
+  app:
+    build: .
+    ports:
+      - "3000"
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf # Dùng nginx forward từ port 80 vào 3000
+    depends_on:
+      - app
+
+
+
+# docker-compose.yml options khác
+services:
+  web:
+    cap_add:
+      - NET_ADMIN # container này có quyền quản trị mạng, sẽ có thể thay đổi cấu hình mạng
+    env_file: # Mặc định k có thì docker compose cũng tự load file .env 
+      - .env
+    environment: # ghi đè cả biến trong file .env định nghĩa trong env_file
+      - NODE_ENV=production # Tạo biến môi trường
+    depends_on:
+      - db # db phải được khởi động trước
+    networks:
+      - my_network # Kết nối web vào mạng my_network trong docker
+    stdin_open: true # Giữ cho stdin luôn mở ngay cả khi không có đầu vào.
+    tty: true # Cấp phát một TTY (pseudo-TTY) cho container, giúp nó có thể hoạt động như một terminal thực sự.
+    command: npm start # Lệnh tự chạy khi container khởi động, thường dockerfile có r thì khỏi cần
+    volumes:
+      - type: bind # Xác định kiểu volumn là bind trực tiếp từ host vào container
+        source: ./app
+        target: /app
+        consistency: cached # ưu tiên đọc dữ liệu từ container hơn là đồng bộ ngay với máy host, tối ưu hiệu suất bằng cách giảm số lần đồng bộ giữa host và container.
+  
+
+  
+# postgres
+-> docker-compose:
+services: 
+  db:
+    image: postgres:latest
+    container_name: test-nextjs-container1
+    restart: no
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Gắn volume postgres_data ở máy thường để lưu data PostgreSQL, tránh mất dữ liệu khi container bị xóa.
+    networks:
+      - my_network
+  cron: # Tạo cron xoá db định kỳ
+    image: alpine/curl # image Alpine Linux có cURL để thực hiện các request HTTP.
+    command: > # Tạo 1 cronjob gửi yêu cầu đến http://web:3000/db/clear mỗi 10p, rồi khởi động trình quản lý crond ở chế độ nền (crond -f -l 2).
+      sh -c "
+        echo '*/10 * * * * curl -X POST http://web:3000/db/clear' > /etc/crontabs/root && \ 
+        crond -f -l 2
+      "
+    depends_on:
+      - web
+    networks:
+      - my_network
+volumes:
+  postgres_data: # Khai báo là có volumn postgre_data, k thêm cấu hình gì cả, phần services có config r
+networks:
+  my_network: # Tạo mạng chung để các container giao tiếp vói nhau
+    name: my_network
+    driver: bridge # Mạng cầu 
+
+--> restart: giống pm2 chạy nodejs
+no => Không tự động khởi động lại (mặc định).
+always => Luôn khởi động lại container nếu bị dừng, nếu ta thủ công gây dừng mới k khởi động lại, reboot docker sẽ tự khởi động lại
+on-failure => Chỉ khởi động lại nếu container thoát với mã lỗi (non-zero exit code).
+unless-stopped => Luôn khởi động lại, trừ khi dừng container thủ công hoặc reboot docker.
+
+
+
+# deploy.sh trên ubuntu:
+# Set env vars dùng trong cmd
+POSTGRES_USER="myuser"
+POSTGRES_PASSWORD=$(openssl rand -base64 12) # Generate a random 12-character password
+POSTGRES_DB="mydatabase"
+SECRET_KEY="my-secret"
+NEXT_PUBLIC_SAFE_KEY="safe-key"
+DOMAIN_NAME="nextselfhost.dev"
+EMAIL="your-email@example.com"
+REPO_URL="https://github.com/leerob/next-self-host.git"
+APP_DIR=~/myapp
+SWAP_SIZE="1G"
+
+# Update package list and upgrade existing packages
+sudo apt update && sudo apt upgrade -y
+
+# Thêm swap space
+sudo fallocate -l $SWAP_SIZE /swapfile # Tạo 1 file swapfile có kích thước $SWAP_SIZE mà k cần ghi dữ liệu rỗng vào. 
+sudo chmod 600 /swapfile # chỉ cho phép root đọc và ghi
+sudo mkswap /swapfile # định dạng tệp đó thành vùng nhớ swap
+sudo swapon /swapfile # kích hoạt swap file để dùng nó
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab # thêm swap vào /etc/fstab để giữ lại kể cả khi reboot VPS. Cần thêm logic /etc/fstab k có mới thêm lại
+
+# Install Docker
+sudo apt install apt-transport-https ca-certificates curl software-properties-common -y
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" -y
+sudo apt update
+sudo apt install docker-ce -y
+# Install Docker Compose
+sudo rm -f /usr/local/bin/docker-compose
+sudo curl -L "https://github.com/docker/compose/releases/download/v2.24.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+# Wait for the file to be fully downloaded before proceeding
+if [ ! -f /usr/local/bin/docker-compose ]; then
+  echo "Docker Compose download failed. Exiting."
+  exit 1
+fi
+sudo chmod +x /usr/local/bin/docker-compose # cấp quyền thực thi (+x) cho file docker-compose để chạy như một lệnh trong terminal.
+# Ensure Docker Compose is executable and in path
+sudo ln -sf /usr/local/bin/docker-compose /usr/bin/docker-compose
+# Verify Docker Compose installation
+docker-compose --version
+if [ $? -ne 0 ]; then
+  echo "Docker Compose installation failed. Exiting."
+  exit 1
+fi
+# Ensure Docker starts on boot and start Docker service
+sudo systemctl enable docker
+sudo systemctl start docker
+
+# Clone the Git repository
+if [ -d "$APP_DIR" ]; then
+  echo "Directory $APP_DIR already exists. Pulling latest changes..."
+  cd $APP_DIR && git pull
+else
+  echo "Cloning repository from $REPO_URL..."
+  git clone $REPO_URL $APP_DIR
+  cd $APP_DIR
+fi
+
+# For Docker internal communication ("db" is the name of Postgres container)
+DATABASE_URL="postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@db:5432/$POSTGRES_DB"
+# For external tools (like Drizzle Studio)
+DATABASE_URL_EXTERNAL="postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:5432/$POSTGRES_DB"
+# Thủ công tạo và ghi thêm biến vào .env vì .env trên git k có gì
+echo "POSTGRES_USER=$POSTGRES_USER" > "$APP_DIR/.env"
+echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> "$APP_DIR/.env"
+echo "POSTGRES_DB=$POSTGRES_DB" >> "$APP_DIR/.env"
+echo "DATABASE_URL=$DATABASE_URL" >> "$APP_DIR/.env"
+echo "DATABASE_URL_EXTERNAL=$DATABASE_URL_EXTERNAL" >> "$APP_DIR/.env"
+# These are just for the demo of env vars
+echo "SECRET_KEY=$SECRET_KEY" >> "$APP_DIR/.env"
+echo "NEXT_PUBLIC_SAFE_KEY=$NEXT_PUBLIC_SAFE_KEY" >> "$APP_DIR/.env"
+
+# Install Nginx
+sudo apt install nginx -y
+# Remove old Nginx config (if it exists)
+sudo rm -f /etc/nginx/sites-available/myapp
+sudo rm -f /etc/nginx/sites-enabled/myapp
+# Stop Nginx temporarily to allow Certbot to run in standalone mode
+sudo systemctl stop nginx
+# Obtain SSL certificate using Certbot standalone mode
+sudo apt install certbot -y
+sudo certbot certonly --standalone -d $DOMAIN_NAME --non-interactive --agree-tos -m $EMAIL
+# Ensure SSL files exist or generate them
+if [ ! -f /etc/letsencrypt/options-ssl-nginx.conf ]; then
+  sudo wget https://raw.githubusercontent.com/certbot/certbot/main/certbot-nginx/certbot_nginx/_internal/tls_configs/options-ssl-nginx.conf -P /etc/letsencrypt/
+fi
+if [ ! -f /etc/letsencrypt/ssl-dhparams.pem ]; then
+  sudo openssl dhparam -out /etc/letsencrypt/ssl-dhparams.pem 2048
+fi
+# Create Nginx config with reverse proxy, SSL support, rate limiting, and streaming support
+sudo cat > /etc/nginx/sites-available/myapp <<EOL
+limit_req_zone \$binary_remote_addr zone=mylimit:10m rate=10r/s;
+server {
+  listen 80;
+  server_name $DOMAIN_NAME;
+  # Redirect all HTTP requests to HTTPS
+  return 301 https://\$host\$request_uri;
+}
+server {
+  listen 443 ssl;
+  server_name $DOMAIN_NAME;
+  ssl_certificate /etc/letsencrypt/live/$DOMAIN_NAME/fullchain.pem; // SSL support
+  ssl_certificate_key /etc/letsencrypt/live/$DOMAIN_NAME/privkey.pem;
+  include /etc/letsencrypt/options-ssl-nginx.conf;
+  ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+  limit_req zone=mylimit burst=20 nodelay; // Enable rate limiting
+  location / {
+    proxy_pass http://localhost:3000; # Config reverse proxy
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade \$http_upgrade;
+    proxy_set_header Connection 'upgrade';
+    proxy_set_header Host \$host;
+    proxy_cache_bypass \$http_upgrade;
+    proxy_buffering off; # Disable buffering for streaming support, cần cho nextjs
+    proxy_set_header X-Accel-Buffering no;
+  }
+}
+EOL
+sudo ln -s /etc/nginx/sites-available/myapp /etc/nginx/sites-enabled/myapp # Create symbolic link if it doesn't already exist
+sudo systemctl restart nginx # Restart Nginx to apply the new configuration
+# Build and run the Docker containers from the app directory (~/myapp)
+cd $APP_DIR
+sudo docker-compose up --build -d
+# Check if Docker Compose started correctly
+if ! sudo docker-compose ps | grep "Up"; then
+  echo "Docker containers failed to start. Check logs with 'docker-compose logs'."
+  exit 1
+fi
+
+
+
+
+
+//!!!!!!!
+-> github action: 
+name: Next Deployment
+on:
+  push:
+    branches: [production] # Chạy khi push lên nhánh production
+jobs:
+  deploy:
+    runs-on: ubuntu-latest # Tạo một job tên deploy, chạy trên môi trường ubuntu-latest.
+    steps:
+    - name: Deploy using ssh
+      uses: appleboy/ssh-action@master # Dùng appleboy/ssh-action giúp kết nối SSH đến server.
+      with:
+        host: ${{ secrets.HOST }} # Thông tin kết nối server
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PASSWORD }}
+        port: 22
+        script: |  # Lệnh chạy trên server
+          cd /home/next-deploy-vps
+          git fetch origin
+          git checkout production
+          git pull
+          npm install
+          npm run build
+          pm2 reload next-demo
+            
+
+
+-> .dockerignore:
+node_modules
+npm-debug.log
+Dockerfile
+.dockerignore
+.git
+.gitignore
+.env
+
+
+
+
+
 # Dùng linux qua docker
 -> Image ubuntu
 Dùng lệnh bth trên container của image ubuntu: 

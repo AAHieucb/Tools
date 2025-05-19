@@ -22,11 +22,8 @@ Phần cứng - HostOS - Docker running có nhiều container - các ứng dụn
 
 
 
-
 # Other
--> Docker giúp giải quyết xung đột phiên bản, tránh trường hợp ứng dụng chỉ chạy trên máy của tôi, máy khác thì lỗi. Cài docker trên máy production dùng ok.
-VD dự án có 2 người làm, 1 người dùng MacOS chạy nodejs v12, 1 người dùng Window chạy nodejs v14. Khi người này chạy ok, người kia dùng lại có lỗi do xung đột => Ta dùng docker làm môi trường đồng nhất cho cả 2 và sử dụng image node:14.x, người nào vào dự án chỉ cần chạy container lên là xong.
-VD: chạy webserver trên máy ta, bh chuyển lên EC2, thì phải vào EC2 cài docker qua cli, pull dự án từ git về có dockerfile rồi chạy dự án trên EC2 bằng docker bth.
-Docker có 2 phiên bản CE cho nhóm nhỏ và EE cho doanh nghiệp
+-> Docker có 2 phiên bản CE cho nhóm nhỏ và EE cho doanh nghiệp
+Chạy dự án trên máy của ta ok, nhưng deploy lên EC2 thì phải cài lại mọi thứ trên EC2 from scratch. Dùng docker thì chỉ cài docker trên EC2 là xong.
 
 
