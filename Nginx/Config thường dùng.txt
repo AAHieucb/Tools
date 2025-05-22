@@ -1,0 +1,23 @@
+-> default.conf:
+server {
+    listen 80;
+    server_name localhost;
+    location / { # vào / thì
+        proxy_pass https://nodeapp:3001; # truyền qua đây
+
+        # proxy_http_version 2; # Bản free k dùng được http2 với server upstream (phía sau proxy), default http1.1
+        proxy_ssl_verify off; # browser gọi vào nginx, nginx gọi đến upstream server dùng https thì có check cert của server đó k
+        proxy_ssl_trusted_certificate /etc/nginx/certs/server.crt;
+        proxy_ssl_verify_depth 2; 
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+--> proxy_ssl_verify_depth 2; # mức độ sâu tối đa của chuỗi chứng chỉ mà Nginx kiểm tra khi xác minh chứng chỉ SSL của server upstream (server phía sau nginx).
+Chỉ có hiệu lực khi proxy_ssl_verify on;
+Ở đây cho phép xác minh đến 2 tầng chứng chỉ. Tức: server cert -> intermediate CA -> root CA. Nếu chuỗi chứng chỉ dài hơn 2 tầng thì xác minh sẽ thất bại.
+

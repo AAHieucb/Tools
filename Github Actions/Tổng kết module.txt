@@ -1,66 +1,24 @@
 # Basic
-Quy trình CI: push code lên, CI sẽ check sự thay đổi và tiến hành build code, chạy test case, đưa ra thông báo lỗi nếu có (qua email).
-Quy tình CD sau đó: deploy lên các môi trường khác nhau, release version mới và monitor ứng dụng ở các môi trường
-Ta có thể trigger build mỗi khi push code hoặc tự động CI ở 1 mốc tg cố định trong ngày. Tuy nhiên để deploy lên production, chỉ nên làm tay hoặc confirm từ người có quyền để đảm bảo deliver sản phẩm tới người dùng là hoàn hảo
-
-Các event có thể trigger: https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#push
-Tương tác với repo qua API => ít dùng: https://docs.github.com/en/rest/repos?apiVersion=2022-11-28#create-a-repository-dispatch-event
+Tương tác với repo qua API được: https://docs.github.com/en/rest/repos?apiVersion=2022-11-28#create-a-repository-dispatch-event
 
 -> Events ---trigger---> Workflows ---Use---> Actions
-Có nhiều actions và workflow có sẵn được cộng đồng tạo có thể dùng. Có thể tự tạo actions và cho lên marketplace.
-Có thể viết actions bằng bất cứ ngôn ngữ nào miễn có thể compiled ra JS, tối thiểu phải có 2 file là index.js và action.yml config cho chạy index.js
-1 actions có thể pull code từ git hay setup các tool chain lớn. VD Trên marketplace có sẵn các actions như setup java jdk, setup .net core sdk, setup go evironment,..
-K nên tạo 1 action làm quá nhiều thứ vì rất khó debug cũng như khi thêm bớt các step tính năng mới sẽ phải viết lại actions. Steps có thể là 1 action hoặc commands
+Các event có thể trigger: https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#push
+Thường dùng push, pull_request, public, schedule (tự động chạy sau 1 khoảng tg), workflow_dispatch (trigger 1 actions thủ công qua 1 nút, có thể biến thành api để call từ xa)
 
+Có nhiều actions và workflow có sẵn có thể dùng. Có thể viết actions bằng bất cứ ngôn ngữ nào miễn có thể compiled ra JS, tối thiểu phải có 2 file là index.js và action.yml config cho chạy index.js. Nên chia nhỏ và k tạo 1 action làm quá nhiều thứ vì rất khó debug cũng như khi thêm bớt các step tính năng mới sẽ phải viết lại actions
+Có thể tự tạo actions và cho lên marketplace. 1 actions có thể pull code từ git hay setup các tool chain lớn. VD marketplace có sẵn các actions như setup java jdk, setup .net core sdk, setup go evironment.
 Khi tạo actions và nhiều người khác dùng nó, xong ta code sửa đổi actions thì nên tạo ra version mới cho nó. Tránh những người khác chạy action version lỗi khi dùng với version code của repo hiện tại. VD báo rằng 1 acion này dùng với repo nhánh có version v1.0.0:
 steps:
   - name: My Action Step
     uses: owner/repo@v1.0.0
-=> Nên viết docs cho github actions báo những tham số cần điền hay version của actions
+=> Thường có docs cho github actions báo những tham số cần điền hay version của actions
 
--> Workflows: file yml phải để trong folder .github/workflows
-Mọi thứ luôn bắt đầu bằng event được xác định ở đầu file yml. Vd: push, pull_request, public, schedule (tự động chạy sau 1 khoảng tg), workflow_dispatch (trigger 1 actions thủ công, có thể biến thành api để mỗi khi call api đó là actions được thực hiện),...
-Khi dùng workflow_dispatch là phải vào tab Actions và ấn chạy thủ công workflow đó
-
-Có thể dùng docker sẽ chỉ chạy được trên linux vm của github actions. Đó là dùng container actions
+Kết hợp docker thì chỉ chạy được trên linux vm của github actions.
 Có thể dùng secret or biến global trong phạm vi repo hay organization 1 nhóm các projects đều được.
 
---> Matrix build giúp viết code 1 lần mà chạy build nhiều lần chạy trên các nền tảng và version khác nhau theo tham số truyền vào. 
-
---> Vd: 
-name: Node CI
-on: [push]  # Bắt event push
-jobs: 
-  build: 
-    runs-on: ${{ matrix.os }}  # Buộc có runs-on để biết chạy trên nền tảng nào
-    strategy:
-      matrix:  # VD 1 job tự động build lại 9 lần mỗi khi push code (3 os, 3 version nodejs)
-        node-version: [8.x, 10.x, 12.x]
-        os: [macos-latest, window-latest, ubuntu-18.04]
-    steps:
-    - uses: actions/checkout@v1
-    - name: Use Node.JS ${{ matrix.node-version }}
-      uses: actions/setup-node@v1  # Dùng actions có sẵn, actions này giúp setup ứng dụng nodejs
-      with: 
-        node-version: ${{ matrix.node-version }}
-    - name: npm install, build and test
-      run: |  # Chạy shell-script
-        npm ci
-        npm run build --if-present
-        npm test
-      env: 
-        CI: true
-=> Ở đây chỉ có 1 job là build, có thể tạo nhiều jobs. Các jobs sẽ tự chạy đồng thời, nếu muốn theo thứ tự thì thêm trường needs vào. VD dùng linux sẽ tự dùng github hosted runner for linux.
-=> ref tới actions public của người khác thông qua: <user>/<name of repo>@v<version>. VD: actions/setup-node@v1   
-
---> Starter workflow: workflow có sẵn để dùng tiếp k cần tạo từ scratch. Chọn từ tab Actions của github
-VD: "Simple workflow" chứa minimal mọi thứ cần để setup, rồi chọn đủ loại actions có sẵn thêm vào từ marketplace online ngay trong tab Actions của github
-
-Thông thường trong mọi steps job đều có: - uses: actions/checkout@v3
-=> Luôn dùng, nó sẽ checkout repo vào runner để thực hiện workflow. Nch là buộc có để workflow access vào code trong repo mà thực hiện chứ
 
 
-
+//!!!!!!!!!
 # Tổng hợp syntax basic cho file yml 
 URL: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#on
 
@@ -191,6 +149,126 @@ Event -> Runner1[Job1[run action -> run script -> run action]] -> Runner2[Job2[r
 
 -> Có thể tạo workflow dùng github actions bất cứ lúc nào bằng cách tạo file .yaml đặt trong .github/workflows
 Khi có workflow, github actions sẽ check code được pushed và cài BATS(Bash Automated Testing System) testing framework rồi chạy command hiển thị version: bats -v
+
+
+
+--> Matrix build giúp viết code 1 lần mà chạy build nhiều lần chạy trên các nền tảng và version khác nhau theo tham số truyền vào. 
+name: Node CI
+on: [push]  # Bắt event push
+jobs: 
+  build: 
+    runs-on: ${{ matrix.os }}  # Buộc có runs-on để biết chạy trên nền tảng nào
+    strategy:
+      matrix:  # VD 1 job tự động build lại 9 lần mỗi khi push code (3 os, 3 version nodejs)
+        node-version: [8.x, 10.x, 12.x]
+        os: [macos-latest, window-latest, ubuntu-18.04]
+    steps:
+    - uses: actions/checkout@v1
+    - name: Use Node.JS ${{ matrix.node-version }}
+      uses: actions/setup-node@v1  # Dùng actions có sẵn, actions này giúp setup ứng dụng nodejs
+      with: 
+        node-version: ${{ matrix.node-version }}
+    - name: npm install, build and test
+      run: |  # Chạy shell-script
+        npm ci
+        npm run build --if-present
+        npm test
+      env: 
+        CI: true
+=> Ở đây chỉ có 1 job là build, có thể tạo nhiều jobs. Các jobs sẽ tự chạy song song, nếu muốn theo thứ tự thì thêm trường needs vào. VD dùng linux sẽ tự dùng github hosted runner for linux.
+=> ref tới actions public của người khác thông qua: <user>/<name of repo>@v<version>. VD: actions/setup-node@v1   
+
+--> Starter workflow: workflow có sẵn để dùng tiếp k cần tạo từ scratch. Chọn từ tab Actions của github
+VD: "Simple workflow" chứa minimal mọi thứ cần để setup, rồi chọn đủ loại actions có sẵn thêm vào từ marketplace online ngay trong tab Actions của github
+
+Thông thường trong mọi steps job đều có: - uses: actions/checkout@v3
+=> Luôn dùng, nó sẽ checkout repo vào runner để thực hiện workflow. Nch là buộc có để workflow access vào code trong repo mà thực hiện chứ
+
+-> Mãtrisx build có thể phưucs tạp:
+Matrix build trong GitHub Actions giúp bạn chạy cùng một job với nhiều biến đầu vào khác nhau — như chạy trên nhiều phiên bản Node.js, nhiều hệ điều hành, hoặc nhiều cấu hình khác nhau — mà không phải viết lại code lặp đi lặp lại.
+
+🔹 Cấu trúc cơ bản của matrix
+yaml
+Sao chép
+Chỉnh sửa
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [14, 16, 18]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm install
+      - run: npm test
+✅ Điều gì đang xảy ra?
+Bạn chỉ viết 1 job duy nhất, nhưng GitHub sẽ tự động lặp lại job đó cho từng giá trị trong matrix.node.
+
+Kết quả: job test sẽ chạy 3 lần, tương đương:
+
+node: 14
+
+node: 16
+
+node: 18
+
+👉 Mỗi lần chạy là một môi trường riêng biệt, song song.
+
+🔹 Matrix nhiều chiều (nhiều biến)
+yaml
+Sao chép
+Chỉnh sửa
+strategy:
+  matrix:
+    os: [ubuntu-latest, windows-latest]
+    node: [16, 18]
+➡️ GitHub sẽ tạo 4 tổ hợp:
+
+os	node
+ubuntu-latest	16
+ubuntu-latest	18
+windows-latest	16
+windows-latest	18
+
+🔹 Loại bỏ tổ hợp không hợp lệ (exclude / include)
+Bạn có thể loại trừ tổ hợp không muốn chạy:
+
+yaml
+Sao chép
+Chỉnh sửa
+strategy:
+  matrix:
+    os: [ubuntu-latest, windows-latest]
+    node: [16, 18]
+    exclude:
+      - os: windows-latest
+        node: 18
+➡️ Tổ hợp windows-latest + node 18 sẽ bị bỏ qua.
+
+Hoặc thêm giá trị đặc biệt chỉ cho một tổ hợp:
+
+yaml
+Sao chép
+Chỉnh sửa
+strategy:
+  matrix:
+    os: [ubuntu-latest, windows-latest]
+    node: [16, 18]
+    include:
+      - os: ubuntu-latest
+        node: 18
+        extra_flag: true
+
+🔹 Khi nào nên dùng matrix?
+Test trên nhiều phiên bản Node/Python/Java...
+
+Test trên nhiều hệ điều hành (Ubuntu / Windows / macOS)
+
+Kiểm tra nhiều cấu hình / biến môi trường
 
 
 

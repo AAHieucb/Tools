@@ -1,6 +1,6 @@
 # Basic
 Envolve là tiền thân của Firebase được gg mua lại. Firebase có nhiều tính năng:
-- Cloud firestore cung real-time database kết nối an toàn SSL, phù hợp với ứng dụng vừa và nhỏ Vì query phức tạp thì NoSQL sẽ gặp vấn đề.
+- Cloud firestore cung real-time database kết nối an toàn SSL, phù hợp với ứng dụng vừa và nhỏ vì query phức tạp thì NoSQL sẽ gặp vấn đề.
 - Authentication cung cấp pp xác thực qua email, tk google, facebook, password: https://firebase.google.com/docs/auth/web/firebaseui?hl=vi
 - Firebase cloud messaging là hệ thống đẩy thông báo tới nh thiết bị khác nhau. VD dùng để xây dựng ứng dụng chat realtime.
 - Remote Config giúp cập nhật ứng dụng nhanh chóng không cần xuất bản mới lên play store. Nó cũng giúp ứng dụng cập nhật dữ liệu ngay lập tức VD người dùng xóa ứng dụng tải lại thì config của ứng dụng phải thủ công làm lại thì firebase sẽ cài đặt thông số lên máy chủ để người dùng cập nhập ngay lập tức.
@@ -15,21 +15,19 @@ Envolve là tiền thân của Firebase được gg mua lại. Firebase có nhi�
 Tạo 1 dự án -> build -> realtime database -> create database -> start in test mode là mở bất kỳ ai, start in locked mode là phải cấp quyền, với các ứng dụng thực thì phải dùng locked mode -> mục data -> thêm file json or tự gõ theo nhánh -> để gõ: ấn nút mở xuống và gõ tên, mở xuống lại gõ tiếp, khi được ít nhất 2 cấp có thể dừng và ấn Add, sau đó mở rộng tiếp -> tương tác với DB qua url bên trên. Mỗi 1 nhánh tạo ra 1 đường link đến file json như ở VD thì nhánh One trong Pets có url là .../Pets/One.json
 Ta có thể chỉnh quyền ở tab rules, read và write là true hết thì mọi ứng dụng bên ngoài đều có thể chỉnh sửa database của ta -> publish rules
 
--> Setup kiểm soát quyền db: Ta vào firebase chỉnh 2 rules là: "auth.uid != null" => sẽ thành giới hạn ứng dụng nào được truy câp vào database. Giả sử yêu cầu phải login gg: 
--> Lấy apikey: Project Overview -> Add web app -> Register App là xong -> trong phần Your App npm có trường apikey cần lấy
--> Trong docs có hướng dẫn, ví dụ với curl là https://firebase.google.com/docs/reference/rest/auth#section-create-email-password -> trong app: (theo docs) ta chỉ cần POST data vào link JSON kèm api key là đc. Data đó có các trường payload json được xđ từ trước, ở th này là email, password, returnSecureToken -> chuyển sang json và post vào link kia
--> Project firebase -> authentication -> sign-in method -> email/password enabled(tắt CORS extension) -> khi có người tham gia vào project sẽ hiện ở mục user -> như v là họ đã sign up vào ứng dụng của ta bằng địa chỉ gmail của họ
-Nếu họ tiếp tục signup bằng địa chỉ email đó sẽ báo lỗi vì firebase check trùng. Ở mục user, ta có toàn quyền disable account hay delete account. Sau khi sign up lần sau họ có thể sign in với link sign in tương tự trong docs. Khi đã signin cũng như sign up thì họ đã có thể get post data vào cơ sở dữ liệu như bth r đó. Còn có kiểu sign-in ẩn danh.
--> Khi người dùng signIn thành công, ta phải xử lý database cho phép người dùng lấy thông tin(là authenticated database call) => có 2 cách để làm điều này https://firebase.google.com/docs/database/rest/auth: 1 là dùng Google OAuth2, 2 là dùng idToken.
+Setup kiểm soát quyền db: Ta vào firebase chỉnh 2 rules là: "auth.uid != null" => sẽ thành giới hạn ứng dụng nào được truy câp vào database. Giả sử yêu cầu phải login gg sẽ cần lấy apikey: Project Overview -> Add web app -> Register App là xong -> trong phần Your App npm có trường apikey cần lấy
+Trong docs có hướng dẫn, ví dụ với curl là https://firebase.google.com/docs/reference/rest/auth#section-create-email-password -> trong app chỉ cần POST data vào link JSON kèm api key là đc. Data đó có các trường payload json được xđ từ trước, ở th này là email, password, returnSecureToken -> chuyển sang json và post vào link kia
+Project firebase -> authentication -> sign-in method -> email/password enabled -> khi có người tham gia vào project sẽ hiện ở mục user -> như v là họ đã sign up vào ứng dụng của ta bằng địa chỉ gmail của họ. Nếu họ tiếp tục signup bằng địa chỉ email đó sẽ báo lỗi vì firebase check trùng. Ở mục user, ta có toàn quyền disable account hay delete account. Sau khi sign up lần sau họ có thể sign in với link sign in tương tự trong docs. Khi đã signin cũng như sign up thì họ đã có thể get post data vào cơ sở dữ liệu như bth r đó. Còn có kiểu sign-in ẩn danh.
+Khi người dùng signIn thành công, ta phải xử lý database cho phép người dùng lấy thông tin (authenticated database call) => có 2 cách để làm điều này https://firebase.google.com/docs/database/rest/auth: 1 là dùng Google OAuth2, 2 là dùng idToken.
 Với C2 trả về 1 cái tokenId trong response, nếu k sẽ ra error. Ta parse trường idToken và nhét vào trường auth của url thì cái url đó sẽ valid với user hiện tại thao tác ok.
 
 
 
 # Hosting Firebase
--> Host web tĩnh: free thì chỉ dùng được 1GB
-Login firebase là google account -> create project -> tên dự án, chọn cả set up firebase hosting và gõ tên url web ra -> continue -> </> -> tên app -> register -> continue to console -> build -> hosting -> get started-> cd vào thư mục chứa thư mục public của dự án -> npm install -g firebase-tools -> firebae login(làm 1 lần) -> firebase init -> space để chọn, enter để xác nhận(có thể chọn nh options) -> nó bảo có chọn thư mục public là nơi ta có thể gõ tên thư mục vào, để là public thì ấn enter(có sẵn public và index.html bên trong r) -> k chọn github, dự án của ta phải có file gốc là index.html, k chọn overwrite cái index.html của ta, k chọn single page -> firebase deploy -> refresh trang
+-> Host web tĩnh: free được 1GB
+Login firebase là google account -> create project -> tên dự án, chọn cả set up firebase hosting và gõ tên url web ra -> continue -> </> -> tên app -> register -> continue to console -> build -> hosting -> get started-> cd vào thư mục chứa thư mục public của dự án -> npm install -g firebase-tools -> firebae login (làm 1 lần) -> firebase init -> space để chọn, enter để xác nhận (có thể chọn nh options) -> nó bảo có chọn thư mục public là nơi ta có thể gõ tên thư mục vào, để là public thì ấn enter(có sẵn public và index.html bên trong r) -> k chọn github, dự án của ta phải có file gốc là index.html, k chọn overwrite cái index.html của ta, k chọn single page -> firebase deploy -> refresh trang
 
-Lỗi routing trong ReactJS khi deploy firebase => fix sửa file firebase.json thành:
+--> Lỗi routing trong ReactJS khi deploy firebase => fix sửa file firebase.json thành:
 {
   "hosting": {
     "public": "build",
@@ -43,12 +41,12 @@ Lỗi routing trong ReactJS khi deploy firebase => fix sửa file firebase.json 
   }
 } => Khi chuyển route, nó bị lỗi khi k tìm thấy route đó trong server hosting vì mặc định server chỉ host / or đường dẫn xđ trong package json, vì ta dùng single page nên phải redirect mọi url vào index.html để từ đó nó chạy các component Switch Route bên trong trỏ đến đúng trang cần lấy. MPA sẽ khác
 
-Dùng firebase connect github(hosting CI/CD): Tiếp tục từ npm install -g firebase-tools -> firebase init hosting -> ... -> Chọn dùng github Yes -> xđ user/repo -> grant access theo url hiện ra(làm 1 lần) -> xđ nhánh -> xđ câu lệnh trước và sau khi deploy -> Có option chọn mỗi khi merge pull request, app sẽ tự động deploy lại (thực ra cứ push lên git là nó tạo ra phiên bản mới ngay) -> nếu gắn với git phải push lên 1 lần mới đc
+-> Có thể connect github(hosting CI/CD): Tiếp tục từ npm install -g firebase-tools -> firebase init hosting -> ... -> Chọn dùng github Yes -> xđ user/repo -> grant access theo url hiện ra(làm 1 lần) -> xđ nhánh -> xđ câu lệnh trước và sau khi deploy -> Có option chọn mỗi khi merge pull request, app sẽ tự động deploy lại (thực ra cứ push lên git là nó tạo ra phiên bản mới ngay) -> nếu gắn với git phải push lên 1 lần mới đc
 
 -> Hosting nextjs khi tạo web tĩnh: dùng SSG export tĩnh ra trước
-1) firebase experiments:enable webframeworks -> firebase init hosting -> làm bth tự nhận diện project theo framework phổ biến => bản trả phí mới được.
-2) Làm thủ công NextJS hosting + CICD (Nếu k cần CICD chỉ cần bỏ đoạn setup git là được):
-... -> firebase init hosting -> chọn vừa config được, vừa chơi GitAction -> setup url, nhánh, các thứ. Chọn url directory là out k dùng public -> Khi dùng nextjs có thể kp single page router như bth thì có thể dùng như dưới. Khi đó MPA(tức router của trang chính k trỏ đến các trang con mà người dùng chủ động gõ url vào trang con) thì phải dùng dynamic link như dưới:
+URL: https://tsykin.com/blog/how-to-deploy-nextjs-to-firebase-hosting?utm_source=reddit&utm_medium=referral&utm_content=comment
+Có 2 cách là firebase tự setup sẵn theo loại project k nên dùng, mà nên set thủ công NextJS hosting + CICD (Nếu k cần CICD chỉ cần bỏ đoạn setup git là được):
+firebase experiments:enable webframeworks -> firebase init hosting -> chọn config và cả git action -> setup url, nhánh, các thứ -> Chọn url directory là out k dùng public -> Khi dùng nextjs có thể kp single page router như bth thì có thể dùng như dưới. Khi đó MPA (tức router của trang chính k trỏ đến các trang con mà người dùng chủ động gõ url vào trang con) thì phải dùng dynamic link như dưới:
 {
   "hosting": {
     "public": "out",
@@ -66,12 +64,10 @@ Dùng firebase connect github(hosting CI/CD): Tiếp tục từ npm install -g f
     ]
   }
 }
-Để chạy được, các lệnh github ta k set gì hết. Thêm lệnh npm run build và npm run export vào package.json để tạo ra thư mục out (tương đương thư mục bulid và public của react)
-Mỗi lần gọi lệnh npm run export sẽ tạo ra file index.html trong out ok. Nhưng đôi khi để chạy được các lệnh này, 1 vài tính năng của Next sẽ lỗi. VD khi dùng next/image thẻ <Image/> thì phải thêm config unoptimize: true vào vì khi dùng next export thì cái Image Optimizer mặc định k tương thích (chỉ chạy bằng next start mới có tương thích) (Thực tế có loại next image optimizer khác có thể dùng nhưng ở đây ta chỉ đơn giản disable nó)
+Để chạy được, các lệnh github ta k set gì hết. Thêm lệnh npm run build và npm run export vào package.json để tạo ra thư mục out
+Mỗi lần gọi lệnh npm run export sẽ tạo ra file index.html trong out ok. Nhưng đôi khi để chạy được các lệnh này, 1 vài tính năng của Next sẽ lỗi. VD khi dùng next/image thẻ <Image/> thì phải thêm config unoptimize: true vào vì khi dùng next export k optimize image.
 Trong gitignore cũng phải xóa out đi vì phải push cả nó lên git. Mỗi khi có git action (push, merge) lên đúng 1 nhánh của git sẽ kích hoạt gitaction gắn với firebase chạy lần lượt các lệnh cần thiết deploy dự án. Có thê xem trạng thái trong mục Action của dự án trên github.
-
-=> Mỗi lần sửa đổi: chạy build và export -> push lên git sau khi đổi thư mục out xong -> là xong. Tức cái lệnh chạy trước khi deploy là k bao gồm lệnh build (Thực chất có thể dùng lệnh build ở đó)
-Môi khi update thì check cả 2 url .web.app và .firebaseapp.com thì mới được bản update mới nhất 
+Mỗi lần sửa đổi: chạy build và export -> push lên git sau khi đổi thư mục out là xong. Check cả 2 url .web.app và .firebaseapp.com thì mới được bản update mới nhất 
 
 -> Hosting React: làm tương tự -> ở thư mục chưa public -> npm run build -> ... -> chọn folder public hay k thì ta gõ build vào
 Ta k cần phải vào web firebase và tạo sẵn 1 app nx mà chỉ cần -> create a new project (k dùng existing project) -> gõ tên project (là url web hiển thị, k viết hoa) -> enter tiếp để xác nhận dùng project id cùng tên luôn -> goi single app hay k tức là có dồn tất cả vào file index.html hay k thì chọn có -> ...
@@ -82,7 +78,7 @@ Firebase lỗi reload khi reload trang lại theo url mới của ứng dụng v
     "destination": "/index.html"
   }
 ]
-Tức là ta vào bằng 1 url của react-router-dom thì firebase k chạy app nên k nhận diện được. Nhưng khi thêm code trên thì nó sẽ chạy tiếp vào index.html để xử lý dom và cho ra kết quả miễn là gọi đến url host là server đó
+Tức là ta vào bằng 1 url của react-router-dom thì firebase k chạy app nên k nhận diện được. Đoạn code trên là chạy tiếp vào index.html để xử lý dom và cho ra kết quả.
 => refer tói dự án "Projects / Tinkerbellgarden"
 
 

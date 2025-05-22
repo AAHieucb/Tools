@@ -4,6 +4,49 @@ Watchtower: 1 container dùng trong hệ thống có nhiều docker container. N
 
 
 
+# dotnet
+-> github action:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dotnet-version: ['3.0', '3.1.x', '5.0.x' ]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
+        uses: actions/setup-dotnet@v1.7.2
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+      - name: Install dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+      - name: Test
+        run: dotnet test --no-restore --verbosity normal
+
+
+
+# Mongodb
+-> docker compose:
+db:
+  image: mongo
+  container_name: nestjs-basic-db
+  restart: always
+  networks:
+    - app-network
+  ports:
+    - '${DB_PORT}:27017'
+  environment:
+    MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
+    MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+    MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+  volumes:
+    - ./server:/data/db
+    - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro # File mongo-init.js trên máy host được copy vào container và set chỉ đọc (ro: read only).
+
+
+
 # Nodejs
 -> Dockerfile
 FROM node:23
@@ -24,6 +67,34 @@ services:
       - "3001:3001" # Ánh xạ port ra ngoài host
     env_file:
       - ./env_vars.txt
+
+-> github action: build một ứng dụng Nodejs và push lên Azure Web App
+env: # Khai báo một số biến để sử dụng
+  AZURE_WEBAPP_NAME: your-app-name    # tên ứng dụng
+  AZURE_WEBAPP_PACKAGE_PATH: '.'      # đường dẫn đến ứng dụng
+  NODE_VERSION: '10.x'                # version sử dụng
+jobs:
+  build-and-deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ env.NODE_VERSION }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+    - name: npm install, build, and test
+      run: |
+        npm install
+        npm run build --if-present # --if-present hay
+        npm run test --if-present
+    - name: 'Deploy to Azure WebApp'
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: ${{ env.AZURE_WEBAPP_NAME }}
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
 
 
@@ -72,7 +143,7 @@ services:
       - .:/app
       - /app/node_modules
     environment:
-      - CHOKIDAR_USEPOLLING=true # để có live reload, phải thêm usePolling cho vite
+      - CHOKIDAR_USEPOLLING=true # để có live reload, phải thêm usePolling cho vite, phải thêm watchOptions trong tsconfig.json nếu dùng typescript
 
 
 
@@ -116,76 +187,7 @@ services:
     depends_on:
       - app
 
-
-
-# docker-compose.yml options khác
-services:
-  web:
-    cap_add:
-      - NET_ADMIN # container này có quyền quản trị mạng, sẽ có thể thay đổi cấu hình mạng
-    env_file: # Mặc định k có thì docker compose cũng tự load file .env 
-      - .env
-    environment: # ghi đè cả biến trong file .env định nghĩa trong env_file
-      - NODE_ENV=production # Tạo biến môi trường
-    depends_on:
-      - db # db phải được khởi động trước
-    networks:
-      - my_network # Kết nối web vào mạng my_network trong docker
-    stdin_open: true # Giữ cho stdin luôn mở ngay cả khi không có đầu vào.
-    tty: true # Cấp phát một TTY (pseudo-TTY) cho container, giúp nó có thể hoạt động như một terminal thực sự.
-    command: npm start # Lệnh tự chạy khi container khởi động, thường dockerfile có r thì khỏi cần
-    volumes:
-      - type: bind # Xác định kiểu volumn là bind trực tiếp từ host vào container
-        source: ./app
-        target: /app
-        consistency: cached # ưu tiên đọc dữ liệu từ container hơn là đồng bộ ngay với máy host, tối ưu hiệu suất bằng cách giảm số lần đồng bộ giữa host và container.
-  
-
-  
-# postgres
--> docker-compose:
-services: 
-  db:
-    image: postgres:latest
-    container_name: test-nextjs-container1
-    restart: no
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-    ports:
-      - '5432:5432'
-    volumes:
-      - postgres_data:/var/lib/postgresql/data # Gắn volume postgres_data ở máy thường để lưu data PostgreSQL, tránh mất dữ liệu khi container bị xóa.
-    networks:
-      - my_network
-  cron: # Tạo cron xoá db định kỳ
-    image: alpine/curl # image Alpine Linux có cURL để thực hiện các request HTTP.
-    command: > # Tạo 1 cronjob gửi yêu cầu đến http://web:3000/db/clear mỗi 10p, rồi khởi động trình quản lý crond ở chế độ nền (crond -f -l 2).
-      sh -c "
-        echo '*/10 * * * * curl -X POST http://web:3000/db/clear' > /etc/crontabs/root && \ 
-        crond -f -l 2
-      "
-    depends_on:
-      - web
-    networks:
-      - my_network
-volumes:
-  postgres_data: # Khai báo là có volumn postgre_data, k thêm cấu hình gì cả, phần services có config r
-networks:
-  my_network: # Tạo mạng chung để các container giao tiếp vói nhau
-    name: my_network
-    driver: bridge # Mạng cầu 
-
---> restart: giống pm2 chạy nodejs
-no => Không tự động khởi động lại (mặc định).
-always => Luôn khởi động lại container nếu bị dừng, nếu ta thủ công gây dừng mới k khởi động lại, reboot docker sẽ tự khởi động lại
-on-failure => Chỉ khởi động lại nếu container thoát với mã lỗi (non-zero exit code).
-unless-stopped => Luôn khởi động lại, trừ khi dừng container thủ công hoặc reboot docker.
-
-
-
-# deploy.sh trên ubuntu:
+-> deploy.sh cho nextjs trên VPS ubuntu
 # Set env vars dùng trong cmd
 POSTGRES_USER="myuser"
 POSTGRES_PASSWORD=$(openssl rand -base64 12) # Generate a random 12-character password
@@ -245,11 +247,9 @@ else
   cd $APP_DIR
 fi
 
-# For Docker internal communication ("db" is the name of Postgres container)
-DATABASE_URL="postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@db:5432/$POSTGRES_DB"
-# For external tools (like Drizzle Studio)
-DATABASE_URL_EXTERNAL="postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:5432/$POSTGRES_DB"
-# Thủ công tạo và ghi thêm biến vào .env vì .env trên git k có gì
+# Thêm biến vào .env vì từ git không có gì
+DATABASE_URL="postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@db:5432/$POSTGRES_DB" # For Docker internal communication
+DATABASE_URL_EXTERNAL="postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:5432/$POSTGRES_DB" # For external tools (like Drizzle Studio)
 echo "POSTGRES_USER=$POSTGRES_USER" > "$APP_DIR/.env"
 echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> "$APP_DIR/.env"
 echo "POSTGRES_DB=$POSTGRES_DB" >> "$APP_DIR/.env"
@@ -307,6 +307,7 @@ server {
 EOL
 sudo ln -s /etc/nginx/sites-available/myapp /etc/nginx/sites-enabled/myapp # Create symbolic link if it doesn't already exist
 sudo systemctl restart nginx # Restart Nginx to apply the new configuration
+
 # Build and run the Docker containers from the app directory (~/myapp)
 cd $APP_DIR
 sudo docker-compose up --build -d
@@ -316,12 +317,7 @@ if ! sudo docker-compose ps | grep "Up"; then
   exit 1
 fi
 
-
-
-
-
-//!!!!!!!
--> github action: 
+-> github action cho nextjs deployment
 name: Next Deployment
 on:
   push:
@@ -345,10 +341,78 @@ jobs:
           npm install
           npm run build
           pm2 reload next-demo
+
+
+
+# docker-compose.yml options khác
+services:
+  web:
+    cap_add:
+      - NET_ADMIN # container này có quyền quản trị mạng, sẽ có thể thay đổi cấu hình mạng
+    env_file: # Mặc định k có thì docker compose cũng tự load file .env 
+      - .env
+    environment: # ghi đè cả biến trong file .env định nghĩa trong env_file
+      - NODE_ENV=production # Tạo biến môi trường
+    depends_on:
+      - db # db phải được khởi động trước
+    networks:
+      - my_network # Kết nối web vào mạng my_network trong docker
+    stdin_open: true # Giữ cho stdin luôn mở ngay cả khi không có đầu vào.
+    tty: true # Cấp phát một TTY (pseudo-TTY) cho container, giúp nó có thể hoạt động như một terminal thực sự.
+    command: npm start # Lệnh tự chạy khi container khởi động, thường dockerfile có r thì khỏi cần
+    volumes:
+      - type: bind # Xác định kiểu volumn là bind trực tiếp từ host vào container
+        source: ./app
+        target: /app
+        consistency: cached # ưu tiên đọc dữ liệu từ container hơn là đồng bộ ngay với máy host, tối ưu hiệu suất bằng cách giảm số lần đồng bộ giữa host và container.
+  
+
+
+# postgres
+-> docker-compose:
+services: 
+  db:
+    image: postgres:latest
+    container_name: test-nextjs-container1
+    restart: no
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Gắn volume postgres_data ở máy thường để lưu data PostgreSQL, tránh mất dữ liệu khi container bị xóa or restart
+    networks:
+      - my_network
+  cron: # Tạo cron xoá db định kỳ
+    image: alpine/curl # image Alpine Linux có cURL để thực hiện các request HTTP.
+    command: > # Tạo 1 cronjob gửi yêu cầu đến http://web:3000/db/clear mỗi 10p, rồi khởi động trình quản lý crond ở chế độ nền (crond -f -l 2).
+      sh -c "
+        echo '*/10 * * * * curl -X POST http://web:3000/db/clear' > /etc/crontabs/root && \ 
+        crond -f -l 2
+      "
+    depends_on:
+      - web # Là cái services web mở port để call api vào đó, ở đây k ghi
+    networks:
+      - my_network
+volumes:
+  postgres_data: # Khai báo là có volumn postgre_data, k thêm cấu hình gì cả, phần services có config r
+networks:
+  my_network: # Tạo mạng chung để các container giao tiếp vói nhau
+    name: my_network
+    driver: bridge # Mạng cầu 
+
+--> restart: giống pm2 của nodejs quyết định khởi động lại bất cứ container nào tự động khi crash hay không
+no => Không tự động khởi động lại (mặc định).
+always => Luôn khởi động lại container nếu bị dừng, nếu ta thủ công gây dừng mới k khởi động lại, reboot docker sẽ tự khởi động lại
+on-failure => Chỉ khởi động lại nếu container thoát với mã lỗi (non-zero exit code).
+unless-stopped => Luôn khởi động lại, trừ khi dừng container thủ công hoặc reboot docker.
+=> Nếu set là no, khi crash container sẽ k khởi động lại mà ta phải khởi động tay, cũng như nodejs server bị crash thì phải tự chạy lại.
             
 
 
--> .dockerignore:
+# .dockerignore:
 node_modules
 npm-debug.log
 Dockerfile
@@ -356,8 +420,6 @@ Dockerfile
 .git
 .gitignore
 .env
-
-
 
 
 
@@ -392,25 +454,23 @@ RUN npm install --production --silient => npm install là cài các package như
 - Vào trong thư mục docker và thêm vào index.html và test.php thì cái container php này có thể chạy được file php bằng: php <tên file php> -> php --version
 - Cài xong container php trong network để chạy file php. Nó lắng nghe file php tới trên cổng 9000, file php cần biên dịch thì http server phải gửi nó về cổng 9000 này. Bên ngoài host k dùng nên k k cần ánh xạ ra ngoài.
 
-//!!!!!!!!
--> Dùng image httpd của apache là máy chủ web http tự động routing serve cấu trúc thư mục trong htdocs (win)
+-> Dùng image httpd của apache tự động routing serve thư mục trong htdocs (win)
 - docker pull httpd 
-- Chỉnh config như chạy php như nào và thao tác với các file nào: sửa file config trong /usr/local/apache2/conf/httpd.conf -> ý tưởng là chạy container lệnh copy file config từ docker ra thư mục ngoài host.
-(Lỗi window container: không dùng được lệnh cp với file mà chỉ dùng được với thư mục nên ta phải copy cả thư mục ra và chỉnh file conf bên trong thư mục. Còn phải thêm -r vào lệnh cp mới đc)
+- Chỉnh config php thao tác với các file nào trong /usr/local/apache2/conf/httpd.conf -> chạy 1 lệnh clone file từ docker ra host rồi sửa để bind lại (lỗi window container: không dùng được lệnh cp với file mà chỉ dùng được với thư mục nên ta phải copy cả thư mục ra và chỉnh file conf bên trong thư mục. Còn phải thêm -r vào lệnh cp mới đc)
 VD: docker run --rm -v C:/Users/Admin/Desktop/docker/:/home/docker/ httpd cp -r /usr/local/apache2/conf /home/docker/conf => thực hiện 1 lệnh lấy thư mục đó ra host r xóa container luôn. Chú ý đường dẫn k có space, nếu window có thì phải lưu tạm vào đâu r copy ra
--> Sửa đổi file httpd.conf để mỗi khi chạy file php thì nó tự gọi php-fpm: ta nạp các module, uncomment các module mod_proxy.so -> thêm vào cuối file handler rằng mỗi khi gặp file đuôi .php thì sẽ gọi đến proxy redirect đến container c-php cổng 9000 xử lý: AddHandler "proxy:fcgi://c-php:9000" .php -> thiết lập thư mục làm việc mặc định của nó chứa file index.html và php của ta -> chỉnh DocumentRoot và Directory
+-> Sửa httpd.conf để mỗi khi chạy file php thì nó tự gọi php-fpm: ta nạp các module, uncomment các module mod_proxy.so -> thêm vào cuối file handler rằng mỗi khi gặp file đuôi .php thì sẽ gọi đến proxy redirect đến container c-php cổng 9000 xử lý: AddHandler "proxy:fcgi://c-php:9000" .php -> thiết lập thư mục làm việc mặc định của nó chứa file index.html và php của ta -> chỉnh DocumentRoot và Directory
 -> Tạo container từ image httpd dùng file config đó thì chỉ cần ánh xạ file config đó vào container là được: 
 docker run --network www-net --name c-httpd -h httpd -p 9999:80 -p 443:443 -v C:/Users/Admin/Desktop/docker/:/home/docker -v C:/Users/Admin/Desktop/docker/conf:/usr/local/apache2/conf httpd => máy chủ apache chạy trên cổng 9999 ánh xạ vào cổng 80 của apache còn 443 https kệ nó cần dùng nhưng chưa dùng. Bh muốn gửi request đến apache từ host, ta gửi vào 9999 -> mở trình duyệt -> localhost:9999 -> Gọi localhost:9999/test.php -> vì thư mục mặc định ta set là docker/www nên ta lấy được file này luôn và nó sẽ gọi đến c-php để chạy file (nhờ c-php ms chạy được .php) 
-=> Server đang chạy k được tắt đi
 
 -> Dùng image mysql: tương tự file config lưu vào 1 thư mục, chỉ cần lấy ra sửa và ánh xạ vào. Thông tin về configuration các images xem trong hub.docker.com
-- docker pull mysql
-- mysql phiên bản mới nhất có thay đổi hệ thống login, ta muốn dùng phổ biến phiên bản login như cũ thì phải chỉnh sửa file config nhưng trong window ta copy cả thư mục: docker run --rm -v C:/Users/Admin/Desktop/docker/:/home/docker/ mysql cp -r /etc/mysql /home/docker/confmsql -> chỉnh my.cnf thêm vào cuối: default-authentication-plugin=mysql_native_password -> ta cũng tạo thêm thư mục db lưu cơ sở dữ liệu của mysql vào mà ta sẽ ánh xạ ra từ container.
+- docker pull mysql 
+- Chuyển về dùng hệ thống login cũ của mysql (bỏ):
+(Win) Copy cả thư mục: docker run --rm -v C:/Users/Admin/Desktop/docker/:/home/docker/ mysql cp -r /etc/mysql /home/docker/confmsql -> chỉnh my.cnf thêm vào cuối: default-authentication-plugin=mysql_native_password -> cũng cần tạo thêm thư mục db lưu cơ sở dữ liệu của mysql vào mà ta sẽ ánh xạ ra từ container.
 - image này chú ý phải set khi chạy container với port 3306, root là password MYSQL_ROOT_PASSWORD, database lưu trong /var/lib/mysql cần ánh xạ để lấy ra ngoài trong TH xóa container thì vẫn còn
 - docker run -e MYSQL_ROOT_PASSWORD=1234 -v C:/Users/Admin/Desktop/docker/confmsql:/etc/mysql -v C:/Users/Admin/Desktop/docker/db:/var/lib/mysql --network www-net --name c-mysql mysql
 => Ở đây ta k ánh xạ cổng 3306 vì ta k có nhu cầu bên ngoài truy cập vào mysql mà chỉ cần các container trong cùng network truy cập vào database mà thôi thì cổng nó giữ nguyên là 3306 trong network. Nếu bên ngoài muốn thao tác các hàm SQL với database bên trong mới phải ánh xạ cổng
 
-Vào bash của c-mysql: 
+--> Vào bash của c-mysql: 
 mysql -u root -p1234 -h <ip> => -p k có dâu cách sẽ điền pass luôn, có dấu cách thì điền k ai nhìn thấy, -u là username -> lệnh này sẽ connect từ container này vào sql server tương tác cmd, tham số -h là kết nối vào địa chỉ ip container nào thì đang ở trong container này r nên k cần nx
 Thao tac bên trong sql cmd:
 show database;
@@ -422,42 +482,35 @@ show databases;
 select User from user;
 exit;
 
--> Dùng wordpress ở bên ngoài máy host là window tương tác với các dịch vụ trong container
-Hiện tại đã có dịch cụ c-php lắng nghe file php trên cổng 9000 để biên dịch, còn dịch vụ c-httpd là 1 web server apache serve thư mục www ở cổng 9999. Nó được config khi người dùng vào cổng đó lấy file php thì redirect file php đó container c-php qua cổng 9000 biên dịch r mới gửi trả client.
+-> Dùng wordpress máy host tương tác với service trong container
+Hiện tại đã có c-php lắng nghe file php trên cổng 9000 để biên dịch, còn dịch vụ c-httpd là 1 web server apache serve thư mục www ở cổng 9999. Nó được config khi người dùng vào cổng đó lấy file php thì redirect file php đó container c-php qua cổng 9000 biên dịch r mới gửi trả client.
 Còn c-mysql lấy được database bất cứ lúc nào ở port 3306. 
 
-Ta sẽ cài wordpress: xóa test.php và index.html k cần nx -> tải wordpress trên trang chủ -> giải nén lấy source -> copy toàn bộ vào www -> mở web localhost:9999 lên sẽ hiện ra danh sách file vì apache ta chưa cấu hình file mặc định mà index.html k có nên nó hiển thị tất cả các file trong thư mục luôn. Mở index.php -> lúc này tương tác với web để setup wordpress và db.
-Để set up database, ta cần có sẵn database ta sẽ lấy là mysql container có từ trc. Nhập vào mọi thứ. database host là ip của database nhưng nên nhớ trong docker khi cùng 1 network thì chỉ cần nhập tên nó cx tự hiểu là ip nên là c-mysql là xong.
-Khi xuất hiện lỗi thì container sẽ báo lỗi xem bằng log. Ở đây có lỗi, để chạy được ta cần cài thêm các extension cho php vì nó không tương tác được với wordpress. Mở container php: 
+Cài wordpress: xóa test.php và index.html k cần nx -> tải wordpress trên trang chủ -> giải nén lấy source -> copy toàn bộ vào www -> mở web localhost:9999
+Setup db tuwf c-mysql. Nhập vào host và ip của db nhưng trong docker khi cùng mạng chỉ cần nhập tên container là tự hiểu nên ip để là c-mysql là xong. 
+Khi xuất hiện lỗi thì container sẽ báo lỗi xem bằng log. Với php cần cài thêm extension mới xem log được. Mở container php: 
 php -m -> liệt kê các extension được cài trong php. Ta cần cài thêm 2 cái nx
 docker-php-ext-install mysqli
 docker-php-ext-install pdo_mysql
 Ra ngoài host -> docker restart c-php -> khởi động lại sau khi cài 2 extension
-Ta dùng tk vừa mới tạo là testuser để truy cập vào database nhưng tk vừa tạo chưa có quyền truy cập vào database nào hết nên ta phải cấp quyền cho nó -> mở container của mysql vào tk root: GRANT ALL ON <tên database muốn cấp quyền(có thể tạo mới)>.* TO 'test_user'; -> nếu vào bằng tk của testuser sẽ thấy có thêm database mà ta đã cấp quyền. Ta phải GRANT ALL ON chứ GRANT SELECT ON sẽ chỉ cấp mỗi quyền select
-Sau đó đăng nhập vào tk admin là xong trang web với wordpress hoàn chỉnh. apache k set thư mục mặc định nên ta phải chọn index.php để vào trang quản trị. Ta set mặc định điều này bằng cách thêm vào DirectoryIndex trong httpd.conf là index.php -> sau đó restart lại c-httpd (k đc thì xóa đi r chạy lại) => bh khi vào localhost:9999 là nó tự động render index.php mặc định của wordpress
+Ta dùng tk vừa mới tạo là testuser để truy cập vào database nhưng tk vừa tạo chưa có quyền truy cập vào database nào hết nên ta phải cấp quyền cho nó -> mở container của mysql vào tk root: GRANT ALL ON <tên database muốn cấp quyền(có thể tạo mới)>.* TO 'test_user'; -> nếu vào bằng tk của testuser sẽ thấy có thêm database mà ta đã cấp quyền. Ta phải GRANT ALL ON chứ GRANT SELECT ON sẽ chỉ cấp mỗi quyền select.
+Sau đó đăng nhập vào tk admin là xong web hoàn chỉnh. Apache k set thư mục mặc định nên ta phải chọn index.php để vào trang quản trị. Ta set mặc định điều này bằng cách thêm vào DirectoryIndex trong httpd.conf là index.php -> sau đó restart lại c-httpd -> khi vào localhost:9999 là nó tự động render index.php mặc định của wordpress
 
-=> Như v 1 server đầy đủ phải có 1 database và 1 máy chủ web. Máy chủ web ở đây là http nếu dùng html thì k cần php làm gì nhưng wordpress chạy index.php nên cần images php ở đây. Đó là đk tối thiểu.
-
-=> Quy trình: httpd là máy chủ web là lớp ngoài cùng tương tác với front-end trực tiếp, nó chứa 1 tập hợp file và cung 1 cổng, khi ta gửi GET đến cổng đó thì nó gửi trả lại file front-end đã xác định; mysql là database của backend, nơi mà data được lưu => đó là đk tối thiểu để chạy 1 backend cho web app là 2 cục này phải cùng 1 mạng là xong.
-
--> Chạy hệ quản trị SQL server 2017 của microsoft trên linux bằng docker
+-> Chạy hệ quản trị SQL server 2017 của microsoft trên linux bằng docker => chạy cần rất nhiều bộ nhớ.
 docker pull mcr.microsoft.com/mssql/server:2017-latest
 Mặc định nó có user quản trị là 'sa' và cổng kết nối là 1433. Database lưu tại: /var/opt/mssql. Khi chạy container để thiết lập biến môi trường cho tk quản trị thì là SA_PASSWORD=..., ta cũng phải chấp nhận điều khoản người dùng cuối khi chạy container là ACCEPT_EULA=Y
 Công cụ kết nối vào sql server là sqlcmd (/opt/mssql-tools/bin/sqlcmd) giúp tương tác với server ngay tại container với cú pháp "sqlcmd -S host -U user -P password
-=> Chạy nó cần rất nhiều bộ nhớ, k đủ sẽ lỗi 
+V là có SQL Server thao tác bằng commandline nhưng chưa có GUI. SQL Management Studio chỉ có trên window, nhưng Azure Data Studio có trên cả 3 hđh nên dùng cho stable.
 
 Tạo ổ đĩa ánh xạ vào sql server: docker volume create mssql -> docker run -it --name sqlserver -p 1433:1433 -v mssql:/var/opt/mssql -e SA_PASSWORD=1234 -e ACCEPT_EULA=Y <id image>
 Tương tác trong terminal sqlserver: cd /opt/mssql-tools/bin/ -> ./sqlcmd -S localhost -U SA -P 1234 (cái -S localhost thì k có cũng đc) -> thao tác: select name from master.dbo.sysdatabase -> go -> create database abc -> go
 
-V là có SQL Server thao tác bằng commandline nhưng chưa có GUI. SQL Management Studio chỉ có trên window, nhưng Azure Data Studio có trên cả 3 hđh nên có thể dùng thay thế SSMS -> vào azure -> ta có thể kết nối với database trong sql server trên docker vừa tạo -> nhập vào tên server localhost, đăng nhập vào -> connect -> tạo query
 
 
-
-# Dùng image haproxy
+# Image haproxy
 Dùng Haproxy làm server cân bằng tải cho docker, yêu cầu gửi tới Haproxy trước r chuyển hướng tới server thích hợp
 
-docker pull haproxy 
-File cấu hình ở /etc/haproxy/haproxy.cfg -> tạo nó và ánh xạ vào container. 
+docker pull haproxy -> Sửa file cấu hình ở /etc/haproxy/haproxy.cfg -> tạo và ánh xạ vào container. 
 
 VD tạo file có 2 khối front-end:
 - Yêu cầu gửi tới cổng 80 thì khối front-end http-in xử lý và gửi tới 2 server backend. Nếu testhaproxy1.com thì gửi khối 1 có 1 server yahoo.com xử lý. Nếu là testhaproxy2.com thì gửi tới khối 2 có 3 server google.com, bing.com, wikipedia.org xử lý
@@ -472,62 +525,31 @@ Sau khi chạy nếu như ta truy cập vào cổng 8080 or 443 với host là t
 
 
 
-# Thực hành docker hub
-VD: Tạo 1 dự án docker nestjs và push lên docker hub, sau đó nhiều người vào code dự án trực tiếp trên container ảo docker mà k lo môi trường.
-Mọi người pull push code từ git để code chung dự án nhưng máy mỗi người có hđh khác nhau gây conflict. Giải pháp là tạo riêng mỗi người 1 VM, phải connect vào qua SSH key để code trực tiếp trên đó. Giải pháp của docker tương tự nhưng k cần máy ảo riêng. 
+# Thực hành push image chạy code lên docker hub
+Mọi người vẫn pull push code qua git bth, nhưng muốn chạy dự án phải pull image từ docker hub về chạy. Bất kể máy hđh nào đều chạy được hết.
+Giải pháp của docker tương tự kiểu tạo riêng mỗi người 1 VM cùng hđh, phải connect vào qua SSH key để code trên VM vậy. 
 Quy trình:
-- Tạo được image như bth với dockerfile và dự án nestjs
+- Tạo được image như bth với dockerfile copy code dự án vào container.
 - Push lên dockerhub: 
-Cần đăng nhập docker ở máy local và đăng nhập docker hub online: vào https://hub.docker.com/settings/security và tạo accesstoken mới và cắm vào terminal
+Login docker local và docker hub online (https://hub.docker.com/settings/security) và cắm access token vào terminal.
 docker tag <tên image> <tên user trên dockerhub>/<tên image>
 docker push <tên user trên dockerhub>/<tên image>
 - Bây giờ ai muốn dùng chỉ cần pull code từ git về bth nhưng chạy dự án qua docker là xong. 
-Đây cũng là cách chạy ở đa số các nền tảng khi hỗ trợ deploy bằng docker, nhưng chỉ cần Dockerfile thôi. Vd github actions deploy có thể dùng Dockerfile tạo môi trường chạy 
+Đây cũng là giải pháp deploy ở nhiều nền tảng khi yêu cầu dự án chỉ cần có 1 Dockerfile là nền tảng sẽ host được.
 
-VD: docker run --name testhieu -p 3000:3000 -d hieucuopbien123/testhieu:latest
-docker exec -it 22d801b5bf39 /bin/sh
-=> Dev có 1 container chạy code dự án: Máy host -- Máy ảo docker ubuntu[chứa code dự án và chạy code dự án]
-
-- Đó là cách chạy nhưng ta chưa thể đụng vào code dự án mà chỉnh sửa các thứ từ máy host. Do đó ta phải chạy câu lệnh cp để copy code dự án chính vào máy local của ta và đồng bộ file 2 môi trường. Bản chất là máy local và container dùng chung kernel và bộ nhớ.
-VD máy win: C:\Users\Ryan.Nguyen\Desktop\test truy xuất được từ wsl2 với '/mnt/c/Users/Ryan.Nguyen/Desktop/test'
-=> Tức ta copy vào folder đó trên máy ảo là máy host tự cập nhật. Sau đó bind thư mục ở local với thư mục của máy ảo để "sửa file ở máy host thì file máy ảo cũng đổi theo". Ở đây máy ảo làm việc trên thư mục /nest, máy host làm việc tại /mnt/c/Users/Ryan.Nguyen/Desktop/test
-Sau khi đã copy:
-Nếu là powershell: docker run --name testhieu -p 3000:3000 -v 'C:/Users/Ryan.Nguyen/Desktop/Tài liệu/Tools/Docker/Docker/Docker Intermediate/Thực hành docker hub':/nest hieucuopbien123/testhieu
-Nếu dùng wsl2 terminal: docker run --name testhieu -p 3000:3000 -v '/mnt/c/Users/Ryan.Nguyen/Desktop/Tài liệu/Tools/Docker/Docker/Docker Intermediate/Thực hành docker hub':/nest hieucuopbien123/testhieu
+- Khi đó cần phải bind thư mục để sửa file máy host, code trên container cũng đổi theo, kết hợp live reload.
+VD window powershell: docker run --name testhieu -p 3000:3000 -v 'C:/Users/Ryan.Nguyen/Desktop/Tài liệu/Tools/Docker/Docker/Docker Intermediate/Thực hành docker hub':/nest hieucuopbien123/testhieu
+VD nếu dùng wsl2 terminal: docker run --name testhieu -p 3000:3000 -v '/mnt/c/Users/Ryan.Nguyen/Desktop/Tài liệu/Tools/Docker/Docker/Docker Intermediate/Thực hành docker hub':/nest hieucuopbien123/testhieu
 Hoặc chạy ngay từ đầu: docker run --name testhieu -p 3000:3000 -v $(pwd):/nest hieucuopbien123/testhieu
 
-Thay vì mỗi lần sửa code là khởi động lại container, ta dùng luôn node --watch hay nodemon để hot reload.
-Hot reload với docker phải config thêm nếu dùng typescript: config watchOptions trong tsconfig.json. Câu lệnh --watch phải thêm --tsc trong package.json
-
--> Nhanh: Code js bth và tạo docker file -> Chạy các câu lệnh trong Docker file và build thành 1 images với các options như EXPOST, CMD -> Push lên dockerhub public -> Mọi người pull về -> Mọi người run cùng 1 hđh linux -> Mn copy và bind file để code như bth ở máy host.
 
 
+# Thực hành deploy docker cho 1 server NodeJS Express sử dụng PM2 quản lý 2 instance và Nginx làm Reserve Proxy
+-> Cấu hình nginx làm load balancer giữa các server độc lập
+Nếu máy local chạy 2 instance PM2 tại cùng 1 port thì nginx chả có vai trò gì ở đây
+Nếu máy local chạy 2 instance server tại 2 port trên cùng máy hoặc 2 máy độc lập, nginx có thể phân phối tải cho từng ứng dụng
 
-# Dùng docker cho deployment
-VD deploy 1 server NodeJS Express sử dụng PM2 quản lý 2 instance và Nginx làm Reserve Proxy và đóng gói bằng Docker
-
-PM2 chạy nhiều instance trên cùng 1 port tự load balancing, tận dụng tối đa CPU, tự khởi động lại server nếu lỗi.
-
--> Nginx dùng làm reverse proxy đến nhiều server backend độc lập, hiệu suất cao, cấu hình load balancer giữa các server, bảo mật SSL/TLS, chặn DDoS
-Cấu hình nginx làm load balancer giữa các server độc lập.
-VD1: máy local chạy 2 instance PM2 tại cùng 1 port thì nginx chả có vai trò gì ở đây
-VD2: máy local chạy 2 instance server tại 2 port trên cùng máy, nginx có thể phân phối tải cho từng ứng dụng. Nhưng điều này k đem lại lợi ích gì vì khả năng xử lý k tăng
-VD3: 2 máy chủ vật lý độc lập chạy server ở 2 ip khác nhau, lúc này là mở rộng chiều ngang thì nginx có thể load balancing giữa các máy ok
-
--> Khi chưa dùng docker:
-Tạo 1 ứng dụng server express -> Chạy ứng dụng đó bằng pm2 command -> Chạy nginx cấu hình cho cổng đang listen của server express 
-
--> Quy trình dùng thêm Docker:
-- Tạo 1 ứng dụng express:
-const express = require('express');
-const app = express();
-const port = process.env.PORT || 3000;
-app.get('/', (req, res) => {
-  res.send('Hello World!');
-});
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
-});
+-> Quy trình:
 - Cài đặt và cấu hình pm2 trong file ecosystem.config.js:
 module.exports = {
   apps: [{
@@ -597,17 +619,10 @@ networks:
     driver: bridge
 => Chạy nginx và server express ở 2 container độc lập v mới chuẩn
 
-Xây dựng docker container và chạy với: docker-compose up --build
+- Chạy với: docker-compose up => tự build nếu chưa từng build
+Nếu ta sửa code server, để deploy với code mới: docker-compose build => luôn build lại image docker 
 
-- Nếu ta sửa code server, để deploy được code mới:
-docker-compose build => build lại image docker 
-
-docker-compose up -d => khởi động lại docker container
-Cờ -d trong lệnh trên có nghĩa là "detach", cho phép Docker container chạy ở chế độ nền.
-
-=> Ở đây ta đóng gói tất cả thành container đơn lẻ cô lập ứng dụng với môi trường phụ thuộc bên ngoài. 
-Giả sử ta muốn chuyển toàn bộ server sang 1 máy chủ mới (và bỏ máy chủ cũ) thì máy chủ mới chỉ cần cài đặt docker và chạy lệnh build hoặc pull image về là sẽ có 1 phiên bản mô phỏng đầy đủ hoàn toàn. Máy chủ mới k cần cài nodejs hay nginx sẵn làm gì. Giúp giảm thiểu sự phụ thuộc vào môi trường chạy máy chủ, đảm bảo tính đồng nhất của ứng dụng
-=> Thật ra docker thường chỉ dùng cho quá trình deploy, còn code nên làm riêng từng máy pull từ git về cho nhanh. Khi deploy, bất kể máy đích là gì chỉ cần cài docker và chạy image là được.
+- Giả sử ta muốn chuyển toàn bộ server sang 1 máy chủ mới (và bỏ máy chủ cũ) thì có thể build thành 1 image chứa cả code cho máy chủ mới pull về, hoặc lặp lại các bước là pull code từ git về và tải docker và tương tự, các bước đó cho vào 1 file deploy.sh. Máy chủ mới k cần cài nodejs hay nginx sẵn làm gì
 
 -> Như v server nginx và nodejs sẽ nằm trên cùng 1 máy. Giả sử ta muốn mở rộng giúp server nodejs chịu tải tốt hơn bằng cách dùng từ 1 thành 2 máy chủ vật lý thì cần:
 Cài đặt docker trên máy chủ mới
@@ -631,70 +646,12 @@ http {
     }
   }
 }
-Rồi khởi động lại nginx là được
-=> Mọi traffic đến máy chủ đầu tiên rồi 1 phần được đưa sang máy chủ thứ 2 xử lý logic rồi gửi lại về máy chủ 1 r về người dùng.
-=> Hệ thống lớn sẽ dùng riêng 1 load balancer chứ không làm v, VD haproxy hay chính nginx cũng có thể được cấu hình thành 1 load balancer
+Restart nginx là được.
+=> Mọi traffic đến máy chủ đầu tiên rồi 1 phần được đưa sang máy chủ thứ 2 xử lý logic rồi gửi lại về máy chủ 1 r về người dùng. Hệ thống lớn sẽ dùng riêng 1 load balancer chứ không làm v, VD haproxy hay nginx cấu hình load balancer trên 1 máy chủ vật lý riêng.
 
--> Để giải quyết, ta có thể cấu hình load balancing tại cấp độ DNS. Giả sử có nhiều máy chủ ở các IP riêng. 
-Ta cấu hình DNS sử dụng load balancing, điều này phụ thuộc vào nhà cung cấp DNS. VD 1 trang web có 2 IP khác nhau:
+--> Có thể cấu hình load balancing tại cấp độ DNS, điều này phụ thuộc vào nhà cung cấp DNS. VD 1 trang web có 2 IP khác nhau:
 example.com.  A  192.0.2.1
 example.com.  A  192.0.2.2
-=> Việc cấu hình cấp độ DNS k dùng load balancer tập trung nữa mà ngay từ khi frontend gửi request, browser lấy ip của server qua DNS thì đã tự có load balancing phân bổ tới server hợp lý rồi.
-Load balancing ở cấp độ DNS có hạn chế lớn nhất là việc k thể tự xử lý khi máy chủ gặp sự cố, nó sẽ tiếp tục gửi request đến đó trừ khi ta thủ công cập nhật file cấu hình. Có nhiều pp khác cũng giúp xử lý điều này như việc ta cấu hình để user ở các vùng miền khác nhau sẽ tự gọi vào các server ở gần họ. 
-
--> 2 kiểu hosting phổ biến:
-- Dùng PaaS cung sẵn 1 môi trường, ta upload code và cài đặt các thú cần thiết. Khi chạy thì url tự động public ra mạng internet. Như kiểu ta code trên 1 máy remote ấy. Có nền tảng cho code trực tiếp trên cloud, có nền tảng cho dùng FTP upload file rồi chạy command
-- Self-hosting tự triển khai ở máy local chạy trên 1 port, cấu hình router public ip ra ngoài, mua tên miền đổi ip đó thành tên chữ.
-VD có thể cấu hình nginx với tên miền:
-server {
-  listen 80;
-  server_name your_domain.com; # Thay 'your_domain.com' bằng tên miền hoặc địa chỉ IP của server
-  location / {
-    proxy_pass http://127.0.0.1:3000;  # Điều hướng yêu cầu đến ứng dụng Express chạy trên cổng 3000
-    proxy_http_version 1.1;
-    proxy_set_header Upgrade $http_upgrade;
-    proxy_set_header Connection 'upgrade';
-    proxy_set_header Host $host;
-    proxy_cache_bypass $http_upgrade;
-  }
-}
-=> Người dùng vào your_domain.com sẽ chạy vào http://127.0.0.1:3000
-=> Cấu hình router xong thì vào ip của router sẽ vào luôn máy ta chứ k cần config gì thêm ở code server.
-
--> PM2 klq gì tới hosting. VD dùng PM2 để chia môi trường production và development với biến NODE_ENV:
-// File: ecosystem.config.js
-module.exports = {
-  apps: [
-    {
-      name: 'my-app',
-      script: 'app.js',
-      watch: true,
-      env_production: {
-        NODE_ENV: 'production'
-      },
-      env_development: {
-        NODE_ENV: 'development'
-      }
-    }
-  ]
-};
-Chạy production: pm2 start ecosystem.config.js --env production
-Chạy development: pm2 start ecosystem.config.js --env development
-
-Config server thông qua biến môi trường:
-const express = require('express');
-const app = express();
-const port = 3000;
-if (process.env.NODE_ENV === 'production') {
-  // Cài đặt cho môi trường production
-} else if (process.env.NODE_ENV === 'development') {
-  // Cài đặt cho môi trường development
-}
-app.get('/', (req, res) => {
-  res.send('Hello from Node.js app!');
-});
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
-});
-
+Ngay từ khi frontend gửi request, browser lấy ip của server qua DNS thì đã tự có load balancing phân bổ tới server hợp lý rồi.
+Load balancing ở cấp độ DNS có hạn chế lớn nhất là việc k thể tự xử lý khi máy chủ gặp sự cố, nó sẽ tiếp tục gửi request đến đó trừ khi ta thủ công cập nhật file cấu hình.
 
