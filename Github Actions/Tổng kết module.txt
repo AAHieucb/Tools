@@ -16,23 +16,25 @@ steps:
 Kết hợp docker thì chỉ chạy được trên linux vm của github actions.
 Có thể dùng secret or biến global trong phạm vi repo hay organization 1 nhóm các projects đều được.
 
+-> Chọn từ tab actions của github có "Simple workflow"
 
 
-//!!!!!!!!!
-# Tổng hợp syntax basic cho file yml 
-URL: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#on
 
+# Code file yml
+URL tổng hợp syntax: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#on
+
+-> Tổng hợp:
 name: CI
 on:
   push:
     branches: [ "main" ]
-  push: 
+  push: # or
     branches:
       - develop
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
-  repository_dispatch: 
+  repository_dispatch: # Trigger từ 1 external souce hoặc other workflow
     types: [MyCustomEventName]
 jobs:
   build:
@@ -40,37 +42,40 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix: 
-        node-version: [10.x]
+        node-version: [18.x]
     steps:
       - uses: actions/checkout@v3
       - name: Run a one-line script ${{matrix.node-version}}
         uses: actions/setup-node@v1
-        with:
+        with: # with chỉ dùng cung tham số cho action trong uses
           node-version: ${{matrix.node-version}}
-        run: |
+        run: | # or, uses và run k thể dùng chung, uses là đã dùng hàm run có sẵn của nó rồi
           echo Add other actions to build,
           echo test, and deploy your project.
-          echo ${{github.event.client_payload.paramA}}
+          echo ${{github.event.client_payload.paramA}} # dữ liệu gửi kèm repository_dispatch
         env: 
           CI: true
           GITHUB_TOKEN: ${{secrets.SOMETHING_ELSE}}
         if: ${{ 'aaa' = 'aaa' }}
-      - uses: actions/upload-artifact@master
+      - uses: actions/upload-artifact@master # để upload tệp từ workflow lên github để tải về sau khi job hoàn thành
         with:
           name: webpack artifacts
-          path: public/
+          path: public/ # Sau khi generate, artifact sẽ lưu trong thư mục public là các file bundled JS và optimized css.
   deploy:
     runs-on: ubuntu-latest
     needs: [build]
-    if: github.event.ref == 'refs/heads/main'
-    if: github.event_name == 'pull_request'
-    environment: 
+    if: github.event.ref == 'refs/heads/main' # ref đầy đủ của nhánh/tag được dùng trong sự kiện
+    if: github.event_name == 'pull_request' # or, chỉ được 1 dòng if. Kiểu sự kiện kích hoạt workflow là "push" "workflow_dispatch" "repository_dispatch" "schedule"
+    environment: # Khai báo môi trường triển khai, theo tab Environments của github
       name: Development
       url: "http://dev.myapp.com"
     steps:
       - uses: actions/checkout@v3
       - name: Run test
         run: echo Test is ${{secrets.MY_SECRET}}
+        env:
+          arg1: hello
+          arg2: hello
         if: ${{env.arg1 == env.arg2}}
       - name: Test repo dispatch 
         uses: peter-evans/repository_dispatch@v1.1.2
@@ -79,167 +84,58 @@ jobs:
           event-type: MyCustomEventName
           client-payload: '{"testboolean": 123}'
 
-- Ở đây có dùng actions/upload-artifact@master để upload artifact sinh ra bởi webpack. Sau khi generate, artifact sẽ lưu trong thư mục public, nó cũng dùng để lưu bundled JS file, optimized CSS file ấy.
-- Sau with có thể là bất cứ thứ gì tùy vào actions, nó cung options cho actions hiện tại
-
-Cơ chế basic là định nghĩa điều kiện chạy workflow này với on
-Định nghĩa các jobs và mỗi jobs có:
-  các điều kiện để chạy được jobs
-  từng steps thực hiện jobs:
-    Mỗi steps có thể use các package
-    with để thêm params cho các package sử dụng
-    run để cụ thể việc chạy lệnh nào
-
--> VD cấu hình workflow events: 1 event có thể trigger 1 workflow khi nó xảy ra trên repo và trả về 1 commithash và git ref. VD:
+-> Master cấu hình workflow event: Còn rất nhiều cách để trigger workflow như tạo comment hay xóa branch
 
 on: push 
-
 on: [push, pull_request] 
 
-on: 
+on:
   push: 
     branches: 
       - main
   pull_request: 
     branches: 
       - main
-  page_build:
-  release:
+  page_build: # dùng riêng cho Github Pages khi nó được build lại, cần làm gì khi build xong
+  release: 
     types:
-      - created
-=> Trong github có cái gọi là Github Pages cho phép user host và publish static websites trực tiếp từ repo. Kết hợp với CI/CD thì thay đổi code repo là github tự build và host lên cho ta. Với domain có sẵn, nó free. Ở đây page_build bắt sự kiện khi có code thay đổi và Github Pages rebuild lại websites.
-=> Release created event là khi 1 bản release mới được phát hành. Ta có thể trigger bằng cách ấn nút Releases trong repo. Mỗi release tương ứng 1 version mới được phát hành
+      - created # Release created event khi 1 bản release mới được phát hành. Ta có thể trigger bằng cách ấn nút Releases trong repo.
 
 on:
   push:
-    paths-ignore:
-    - 'docs/**'
-=> Bắt event push khi code đổi nhưng trừ folder docs thay đổi thì k tính. Ngược với:
+    paths-ignore: 
+    - 'docs/**' # Bắt event push khi code đổi nhưng trừ folder docs thay đổi thì k tính.
+
 on:
   push:
     paths:
-    - '**.js'
+    - '**.js' # Ngược lại cái trên
 
 --> Trigger workflow theo schedule định sẵn bằng POSIX cron syntax:
 on:
   schedule:
-    - cron:  '*/15 * * * *' // thực hiện trigger mỗi 15 phút
-=> Nó sẽ thực thi trên sources của commit mới nhất của default branch. Cú pháp Cron syntax có 5 trường ngăn khoảng trắng:
+    - cron:  '*/15 * * * *' # thực hiện trigger mỗi 15 phút
+
+Cái này thực thi trên sources của commit mới nhất của default branch. Cú pháp Cron syntax có 5 trường ngăn khoảng trắng:
 <Phút> <giờ> <ngày trong tháng> <tháng> <ngày trong tuần>
-Toán tử: 
-* là tất cả giá trị;
-
-, là giá trị trong danh sách
+Toán tử: * là tất cả giá trị; , là giá trị trong danh sách
 VD: 2,10 4,5 * * * là chạy ở phút thứ 2, 10 và giờ thứ 4,5 của mọi ngày 
-
 - là khoảng giá trị
 VD: 0 4-6 * * * => mỗi 0 phút, từ 4-6 giờ của mọi ngày
-
 / là bước nhảy giá trị
 VD: 20/15 * * * * là chạy mỗi 15 phút từ phút thứ 20 mỗi giờ (tức chạy ở các phút 20, 35, 50 của mỗi giờ)
 
-=> Còn rất nhiều cách để trigger workflow như tạo comment hay xóa branch,...
-
--> Jobs: có thể là 1 script do ta viết or 1 action
-Mỗi job được chạy trong 1 virual machine runner or 1 container riêng.
-Event -> Runner1[Job1[run action -> run script -> run action]] -> Runner2[Job2[run action -> run script]]
-=> Default các job sẽ run parallel, ta có thể setup run tuần tự. 
-
---> Runner là 1 server máy ảo chạy cái workflow, có sẵn đủ linux, window, macos. Nếu ta cần các điều kiện phần cứng phức tạp có thể host riêng 1 runner. 1 runner chỉ chạy được 1 job 1 lúc.
-
--> Có thể tạo workflow dùng github actions bất cứ lúc nào bằng cách tạo file .yaml đặt trong .github/workflows
-Khi có workflow, github actions sẽ check code được pushed và cài BATS(Bash Automated Testing System) testing framework rồi chạy command hiển thị version: bats -v
-
-
-
---> Matrix build giúp viết code 1 lần mà chạy build nhiều lần chạy trên các nền tảng và version khác nhau theo tham số truyền vào. 
-name: Node CI
-on: [push]  # Bắt event push
+--> Matrix build giúp viết code 1 lần mà chạy build nhiều lần chạy trên các nền tảng và version khác nhau theo tham số. 
+Chỉ dùng khi cần test trên nhiều phiên bản, hđh. Mỗi lần chạy là một môi trường riêng biệt, song song.
+VD: 
 jobs: 
   build: 
-    runs-on: ${{ matrix.os }}  # Buộc có runs-on để biết chạy trên nền tảng nào
     strategy:
-      matrix:  # VD 1 job tự động build lại 9 lần mỗi khi push code (3 os, 3 version nodejs)
+      matrix: # VD 1 job tự động build lại 9 lần mỗi khi push code (3 os, 3 version nodejs)
         node-version: [8.x, 10.x, 12.x]
         os: [macos-latest, window-latest, ubuntu-18.04]
-    steps:
-    - uses: actions/checkout@v1
-    - name: Use Node.JS ${{ matrix.node-version }}
-      uses: actions/setup-node@v1  # Dùng actions có sẵn, actions này giúp setup ứng dụng nodejs
-      with: 
-        node-version: ${{ matrix.node-version }}
-    - name: npm install, build and test
-      run: |  # Chạy shell-script
-        npm ci
-        npm run build --if-present
-        npm test
-      env: 
-        CI: true
-=> Ở đây chỉ có 1 job là build, có thể tạo nhiều jobs. Các jobs sẽ tự chạy song song, nếu muốn theo thứ tự thì thêm trường needs vào. VD dùng linux sẽ tự dùng github hosted runner for linux.
-=> ref tới actions public của người khác thông qua: <user>/<name of repo>@v<version>. VD: actions/setup-node@v1   
 
---> Starter workflow: workflow có sẵn để dùng tiếp k cần tạo từ scratch. Chọn từ tab Actions của github
-VD: "Simple workflow" chứa minimal mọi thứ cần để setup, rồi chọn đủ loại actions có sẵn thêm vào từ marketplace online ngay trong tab Actions của github
-
-Thông thường trong mọi steps job đều có: - uses: actions/checkout@v3
-=> Luôn dùng, nó sẽ checkout repo vào runner để thực hiện workflow. Nch là buộc có để workflow access vào code trong repo mà thực hiện chứ
-
--> Mãtrisx build có thể phưucs tạp:
-Matrix build trong GitHub Actions giúp bạn chạy cùng một job với nhiều biến đầu vào khác nhau — như chạy trên nhiều phiên bản Node.js, nhiều hệ điều hành, hoặc nhiều cấu hình khác nhau — mà không phải viết lại code lặp đi lặp lại.
-
-🔹 Cấu trúc cơ bản của matrix
-yaml
-Sao chép
-Chỉnh sửa
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node: [14, 16, 18]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Use Node.js ${{ matrix.node }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node }}
-      - run: npm install
-      - run: npm test
-✅ Điều gì đang xảy ra?
-Bạn chỉ viết 1 job duy nhất, nhưng GitHub sẽ tự động lặp lại job đó cho từng giá trị trong matrix.node.
-
-Kết quả: job test sẽ chạy 3 lần, tương đương:
-
-node: 14
-
-node: 16
-
-node: 18
-
-👉 Mỗi lần chạy là một môi trường riêng biệt, song song.
-
-🔹 Matrix nhiều chiều (nhiều biến)
-yaml
-Sao chép
-Chỉnh sửa
-strategy:
-  matrix:
-    os: [ubuntu-latest, windows-latest]
-    node: [16, 18]
-➡️ GitHub sẽ tạo 4 tổ hợp:
-
-os	node
-ubuntu-latest	16
-ubuntu-latest	18
-windows-latest	16
-windows-latest	18
-
-🔹 Loại bỏ tổ hợp không hợp lệ (exclude / include)
-Bạn có thể loại trừ tổ hợp không muốn chạy:
-
-yaml
-Sao chép
-Chỉnh sửa
+VD loại bỏ tổ hợp không hợp lệ:
 strategy:
   matrix:
     os: [ubuntu-latest, windows-latest]
@@ -247,13 +143,8 @@ strategy:
     exclude:
       - os: windows-latest
         node: 18
-➡️ Tổ hợp windows-latest + node 18 sẽ bị bỏ qua.
 
-Hoặc thêm giá trị đặc biệt chỉ cho một tổ hợp:
-
-yaml
-Sao chép
-Chỉnh sửa
+VD thêm giá trị đặc biệt chỉ cho một tổ hợp:
 strategy:
   matrix:
     os: [ubuntu-latest, windows-latest]
@@ -262,59 +153,62 @@ strategy:
       - os: ubuntu-latest
         node: 18
         extra_flag: true
+run: |
+  echo "Running build for Node.js ${{ matrix.node }} on ${{ matrix.os }}"
+  if [ "${{ matrix.extra_flag }}" = "true" ]; then
+    echo "Extra flag is enabled! Running additional steps..."
+  else
+    echo "Normal build"
+  fi
 
-🔹 Khi nào nên dùng matrix?
-Test trên nhiều phiên bản Node/Python/Java...
-
-Test trên nhiều hệ điều hành (Ubuntu / Windows / macOS)
-
-Kiểm tra nhiều cấu hình / biến môi trường
-
+-> Jobs có thể là 1 script do ta viết or 1 action. Mỗi job được chạy độc lập trong 1 virual machine runner or 1 container riêng.
+Event -> Runner1[Job1[run action -> run script -> run action]] -> Runner2[Job2[run action -> run script]]
+Default các job sẽ run parallel, ta có thể setup run tuần tự. 
+Runner là 1 server máy ảo chạy cái workflow, có sẵn đủ linux, window, macos. Nếu ta cần các điều kiện phần cứng phức tạp có thể host riêng 1 runner. 1 runner chỉ chạy được 1 job 1 lúc.
+Khi có workflow, github actions sẽ check code được pushed và cài BATS(Bash Automated Testing System) testing framework rồi chạy command hiển thị version: bats -v
 
 
-# Debug 
+
+# Debug github action
 Có thể xem log trong github
 
-Dùng secret ACTIONS_STEP_DEBUG. VD:
+Muốn log show chi tiết thông tin debug của từng bước, show warning và lỗi. Dùng ACTIONS_STEP_DEBUG có sẵn của github. VD:
 steps:
   - name: My Step
     run: echo "Hello, World!"
     env:
-      ACTIONS_STEP_DEBUG: true
-=> Sẽ show chi tiết thông tin debug của từng bước, show warning và lỗi chi tiết. Nó tạo nhiều output đầu ra nên chỉ dùng khi thực sự cần.
+      ACTIONS_STEP_DEBUG: true # Nó tạo nhiều output đầu ra nên chỉ dùng khi thực sự cần.
 
-Dùng github actions extension của VS sẽ tự check lỗi logic và chỉ dẫn cho file yml. Nó chỉ hoạt động khi file yml đặt trong đúng folder .github\workflows => nên dùng
+Luôn dùng github actions extension của VS sẽ tự check lỗi logic và chỉ dẫn cho file yml. Nó chỉ hoạt động khi file yml đặt trong đúng folder .github\workflows
 
--> Trong github actions có Super-Linter là repo giúp check faulty code của đủ loại ngôn ngữ mà github hỗ trợ. Việc check bằng super linter trước khi commit giúp tránh các lỗi cơ bản => cũng k cần thiết mấy vì thg build thành công mới push code chứ
-VD dùng:
-- name: Run Super-Linter
-        uses: github/super-linter@v4
-        env:
-          VALIDATE_ALL_CODEBASE: true
-=> Để chạy super linter trước khi thực hiện tiếp cái khác bên dưới
+-> Trong github actions có Super-Linter là repo giúp check faulty code của đủ loại ngôn ngữ mà github hỗ trợ. Việc check bằng super linter trước khi commit giúp tránh các lỗi cơ bản => k cần thiết mấy vì thg build thành công mới push code chứ
+VD 
+- name: Run Super-Linter # Để chạy super linter trước khi thực hiện tiếp cái khác bên dưới
+  uses: github/super-linter@v4
+  env:
+    VALIDATE_ALL_CODEBASE: true
 
 
 
 # Environment
 Ta có thể phân chia môi trường Dev, QA, PreProd, Prod. Mỗi môi trường có biến secret riêng và k ảnh hưởng lẫn nhau.
-
-Protection rules giúp xác định đk, VD chỉ deploy khi admin cho phép, chỉ deploy với code ở 1 branch cụ thể, tích hợp thêm các API của bên thứ 3, wait timer,... Theo dõi tất cả trong Deployments Activity log
-
 Environment ở trạng thái waiting tức đang chờ approval, inactive là chưa chạy lần nào, active là đã chạy, queued là đang chạy 
+Protection rules giúp xác định đk, VD chỉ deploy khi admin cho phép, chỉ deploy với code ở 1 branch cụ thể, tích hợp thêm các API của bên thứ 3, wait timer. Theo dõi tất cả trong Deployments Activity log
 
 -> Dùng environment:
 - Tab settings của repo hoặc organization. Chỉ có trong public repo hoặc enterprise private repo
 - Thêm config protection rules
 - Chọn branch có thể dùng kiểu: release/* thì mọi branch prefix release/ sẽ có thể deploy vào env này
-- Tạo 1 job có kiểu:
+- Tạo 1 job trong github actions có kiểu:
 environment: 
   name: Development
   url: "http://dev.myapp.com"
 sẽ tự deploy vào môi trường Development tạo từ trước và deploy với domain url phải bắt đầu bằng http/https. Có cách dùng dynamic url mà k fix cứng như này
-=> Tức là bên cạnh các đk if và needs, dùng environment chỉ là để thêm điều kiện protection rules nữa vào thôi. Mỗi env có 1 protection rules giúp ta chọn protection rule nào ok
+=> Ngoài các đk if và needs, dùng environment chỉ là để thêm điều kiện protection rules nữa vào thôi. Mỗi env có 1 protection rules.
 
 
 
+//!!!!!!!!!
 # Self-hosted runner
 -> Github hosted runner là máy ảo cung cấp bởi github để chạy các quy trình của github actions. Nó cung các loại runner khác nhau như ubuntu, windows, macOs.
 Mỗi job chạy trên 1 runner
@@ -362,6 +256,7 @@ with:
   token: ${{ secret.REPO.PAT }}
   event-type: MyCustomEventName
   client-payload: '{"testboolean": 123}'
+
 
 
 # VD Thực hành github actions + docker
