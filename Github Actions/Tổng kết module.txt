@@ -208,41 +208,41 @@ sẽ tự deploy vào môi trường Development tạo từ trước và deploy 
 
 
 
-//!!!!!!!!!
 # Self-hosted runner
--> Github hosted runner là máy ảo cung cấp bởi github để chạy các quy trình của github actions. Nó cung các loại runner khác nhau như ubuntu, windows, macOs.
-Mỗi job chạy trên 1 runner
+-> Github hosted runner là máy ảo cung bởi github để chạy job trong github actions. 1 job - 1 runner. Các loại runner khác nhau như ubuntu, windows, macOs.
+Runner tự động clear hết mọi instance sau khi thực hiện từng job xong. Tối ưu tài nguyên nhưng bất tiện vì nếu ta tải các file về máy ảo, lần sau chạy phải tải lại và lặp lại quy trình.
+Bản free chạy trên máy ảo 2000 phút 1 tháng. 
 
-Bản miễn phí được dùng chạy free trên máy ảo 2000 phút 1 tháng. 
-Github hosted runner được quản lý bởi github. Nó tự động clear hết mọi instance sau khi thực hiện từng job xong. Điều này giúp tối ưu nhưng cũng bất tiện vì nếu ta tải các file về máy ảo, lần sau chạy nó phải tải lại và lặp lại quy trình từ đầu
+-> Có thể setup chạy github actions trên self hosted runner là máy ảo trên hạ tầng của ta để tuỳ ý quản lý hoàn toàn cách chạy và k giới hạn.
+VD nếu ta build 1 application cần dùng đến GPU chẳng hạn mà github hosted runner k có thì ta phải tự setup self hosted runner có GPU của ta. Có thể tuỳ ý customize chạy 1 runner vừa build .net app, vừa build nodejs app nhưng nên tách ra.
+Khi tự setup, k nên dùng self hosted runner cho public repo vì người ngoài có thể lợi dụng nó, nếu dùng nên thêm firewall và ip allowed list cho an toàn.
 
--> Ta có thể chạy github actions trên self hosted runner là máy ảo chạy trên hạ tầng của ta. Từ đó ta có thể quản lý hoàn toàn máy chủ và customize đủ thứ. 
-K nên dùng self hosted runner cho public repo vì người ngoài có thể lợi dụng nó, nếu dùng nên thêm firewall và ip allowed list cho an toàn.
-VD: nếu ta build 1 application cần dùng đến GPU chẳng hạn mà github hosted runner k có thì ta phải tự setup self hosted runner có GPU của ta. 
+--> Để tạo 1 self hosted runner: Github cung sẵn script chỉ cần tải về và chạy trên self hosted VM, rồi config authentication với token là nó sẽ lắng nghe các event từ repo để thực hiện jobs tương ứng thôi. URL: https://docs.github.com/en/actions/hosting-your-own-runners
+VM self hosted phải đảm bảo cài đầy đủ các framework, dependency cần thiết để chạy ứng dụng mà ta phải setup thủ công.
 
---> Để tạo self hosted runner: Github cung sẵn script chỉ cần tải về và chạy trên self hosted VM, rồi config authentication với token là nó sẽ lắng nghe các event từ repo để thực hiện jobs tương ứng thôi. URL: https://docs.github.com/en/actions/hosting-your-own-runners
-VM selft hosted phải đảm bảo cài đầy đủ các framework, dependency cần thiết chạy ứng dụng mà ta phải setup thủ công.
-
--> Khi có nhiều self hosted runner, có thể gom thành 1 runner group. Vd group chia theo từng đội dev, chia theo repo và organization hay nhóm các runner linux lại với nhau. Ta có thể chạy 1 runner vừa build .net app, vừa build nodejs app nhưng nên tách ra.
+--> Khi có nhiều self hosted runner, có thể gom thành 1 runner group. Vd group chia theo từng team, chia theo repo và organization hay nhóm các runner linux lại với nhau. 
 Nên cấu hình dedicated user cho runner vì có các actions cần lệnh sudo, có actions không cần, ta nên phân quyền cho những user nào được quyền chạy các actions tương ứng. 
 
 
 
 # Secrets
--> Các biến có sẵn của github
-GITHUB_TOKEN là biến secret dùng để tương tác với repo, nó có thể truy cập bởi mọi actions. Nó tự động được thay đổi liên tục khi dùng để bảo mật nên có bắt được cũng k dùng được. Phải tạo token trước trong github để dùng.
-
-Organization secret sẽ áp dụng với mọi repo trong organization, phải trả phí mới có. Repo secret free sẽ ghi đè organization secret nếu trùng tên.
-Environment secret sẽ ghi đè cả 2 repo secret và organization secret khi dùng đúng môi trường đó. Chỉ user có quyền mới add và edit được secret đó
-
-Secret k thể lấy ra dùng trong app. Khi fork 1 repo, sẽ k fork được secret.
+Secret trong github acion k thể lấy ra dùng trong app. Khi fork 1 repo cũng k fork được secret.
 Có thể dùng secret qua API hay cli hay trong file github.action nhưng k thể xem được giá trị hay in ra
 
-Tạo secret: vào settings của repo -> Ấn secrets để dùng secret của repo. Có thể vào Environment để tạo secret cho từng môi trường
+-> Tạo secret: vào settings của repo -> Ấn secrets để dùng secret của repo. Có thể vào Environment để tạo secret cho từng môi trường
 Có tool Azure key vault trong marketplace giúp lấy secret ra output variables của các actions để dùng trong workflow
 
+Organization secret sẽ áp dụng với mọi repo trong organization => trả phí
+Repo secret free sẽ ghi đè organization secret nếu trùng tên.
+Environment secret sẽ ghi đè cả 2 repo secret và organization secret khi dùng đúng môi trường đó. Chỉ user có quyền mới add và edit được secret đó
+
+-> GITHUB_TOKEN là biến secret mà github tự sinh ra, dùng để tương tác với repo như push, merge.
+Nó tự động thay đổi liên tục khi dùng để bảo mật. Các action cần tương tác với repo phải truyền tham số GITHUB_TOKEN mới được cấp quyền
 
 
+
+
+//!!!!!!!!!
 # Automation Parameter.
 VD ta bắt khi 1 event custom xảy ra thì lấy giá trị dùng trong workflow:
 on:
