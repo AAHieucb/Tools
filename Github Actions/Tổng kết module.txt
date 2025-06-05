@@ -241,16 +241,14 @@ Nó tự động thay đổi liên tục khi dùng để bảo mật. Các actio
 
 
 
-
-//!!!!!!!!!
-# Automation Parameter.
-VD ta bắt khi 1 event custom xảy ra thì lấy giá trị dùng trong workflow:
+# Event parameter
+VD trigger khi 1 event custom xảy ra thì lấy giá trị dùng trong workflow:
 on:
   repository_dispatch:
     types: [MyCustomEventName]
-Thì sau đó ta có thể dùng parameter của event trong workflow. Vd: echo ${{github.event.client_payload.testboolean}}
+Sau đó có thể dùng parameter của event trong workflow. Vd: echo ${{github.event.client_payload.testboolean}}
 
-Trong actions định nghĩa event ta có thể định nghĩa client-payload:
+VD trong actions định nghĩa event, có thể định nghĩa client-payload:
 uses: peter-evans/repository_dispatch@v1.1.2
 with: 
   token: ${{ secret.REPO.PAT }}
@@ -259,23 +257,8 @@ with:
 
 
 
-# VD Thực hành github actions + docker
-=> ref tới "Tools / Docker / Thực hành docker hub"
-
--> Quy trình: Dev push code lên github -> Github trigger actions -> Action1 sẽ push image đã build lên docker hub -> Action2 sẽ deploy thông qua server bên thứ 3 là digital ocean -> Cụ thể actions này dùng thẳng SSH key để connect điều khiển server -> Server này có hosting public nhưng k có domain, action sẽ yêu cầu nó pull image mà github vừa push lên docker hub về chạy như trong "Tools / Docker / Thực hành docker hub"
-
--> Deploy server với digital ocean => Bỏ vì mất phí
-Vào https://cloud.digitalocean.com/projects -> create a droplet
-Tutorial: https://viblo.asia/p/cicd-github-actions-va-cac-kien-thuc-co-ban-EoW4oRMrVml
-
-Nếu CICD thành công mà public ip k hiển thị khi vào web thì AWS phải enable tường lửa public port ra ngoài, với Digital Ocean thì mặc định mở mọi port r
-Điều đặc biệt là khi kết hợp với docker, ta k cần quan tâm command trên server là gì hay hđh nào, kể cả server máy window cũng được, chỉ cần chạy lệnh của docker là mọi thứ done hết
-
-
-
-# VD dùng github actions tạo dynamic file readme
-Ý tưởng là tạo ra 1 file readme template và code template cho file đó bằng markdown. Rồi tạo 1 github actions riêng nhận data và filter vào chỗ trống đó. Có thể dùng Go Template để làm điều này
-Github Actions có thể chạy với cron job, ta xác định ktg nó fetch lại data update tự động vào template cho cronjob. Rồi commit lên là xong.
-=> Sau đó cứ mỗi time interval cronjob sẽ tự chạy lại actions của ta để update data vào readme.template và cho ra output là Readme.md show ra trên git.
+# Dùng github actions tạo dynamic file readme
+Có thể tạo 1 file readme template và code template cho file đó bằng markdown. Rồi tạo 1 github actions riêng nhận data fill vào chỗ trống đó.
+Set github actions chạy với cron job, định kỳ fetch lại data update tự động vào readme.template cho ra output là Readme.md show ra trên git.
 URL: https://dev.to/jacktt/creating-dynamic-readmemd-file-388o?fbclid=IwAR2XUYI_UdIzb-Owtk4H8-JCy8zvDKLBYec5OrJLViCeb0EnkNffMTcIl-U
 

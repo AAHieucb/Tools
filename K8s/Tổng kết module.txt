@@ -2,7 +2,7 @@
 -> Cấu trúc basic:
 Master[etcd, controller, manager, scheduler <-> kube apiserver] <-> Worker1[Container] | <- Load balancer <- User
                                                                 <-> Worker2[Container] | 
-Kubenetes cluster gồm 1 master và nhiều worker node:
+1 k8s cluster gồm 1 master và nhiều worker node:
 - Master Server là máy chủ chính điều khiển cả cụm máy
 etcd lưu cấu hình chung cả cụm máy. etcd chạy tại máy master và là 1 dự án open source cung cấp dịch vụ lưu trữ dữ liệu theo key-val
 kube-apiserver chạy tại máy master cung API để client tương tác với K8s
@@ -13,18 +13,18 @@ Container có thể là docker or các nền tảng khác để chạy container
 Kubelet chạy trên mọi máy node để giám sát chạy hay dừng các ứng dụng trên node
 kube-proxy cung proxy để các ứng dụng ngoài vào mạng cluster tùy theo traffic
 
--> Glasskube là package manager cho kubernetes, giúp deploy, cài đặt, làm mọi thứ với kubernetes dễ hơn.
-
 
 
 # Tạo K8s
-Cần ít nhất 1 máy chạy K8s và Docker (Nếu chỉ có 1 máy sẽ tạo ra 1 cluster chỉ có 1 master node). Máy đầu tiên khởi tạo là master, các máy khác kết nối vào là worker.
+Cần ít nhất 1 máy chạy k8s và Docker. Nếu chỉ có 1 máy sẽ tạo ra 1 cluster chỉ có 1 master node vì máy đầu tiên khởi tạo là master, các máy khác kết nối vào là worker.
+
 Để chạy K8s có nhiều cách:
 - Dùng tool minikube
 - Mua từ các nhà cung cấp như Azure, GG Cloud, AWS
 - Dùng ngay K8s trong Docker Desktop: Docker Desktop phiên bản mới tích hợp sẵn K8s, chỉ cần kích hoạt mà k cần cấu hình phức tạp là có cluster chỉ có 1 node. Nó thg dùng cho development chứ production phải có nhiều node.
 
--> Tạo K8s cluster từ Docker Desktop: Settings -> Enable Kubernetes là xong
+-> Tạo K8s cluster từ Docker Desktop: Settings -> Enable Kubernetes
+
 kubectl là trình cli tương tác vói K8s: 
 kubectl version --short
 kubectl cluster-info => show url để connect vào
@@ -32,15 +32,16 @@ kubectl get nodes => lấy mọi node trong cluster. Nếu chạy 1 node thì ch
 kubectl get pods -A => show các pods chạy trong mọi namespace (khi có -A option)
 kubectl describe node/<tên node> => Hiển thị thông tin về 1 node trong k8s. VD pods: 110 là cluster này chứa max 110 container bên trong
 
--> Thực hành tạo K8s nhiều nodes => có thể triển khai vào hệ thống thực tế:
+-> Thực hành tạo K8s nhiều nodes:
 master.xtl có ip 192.168.10.100 là node master
 worker1.xtl và worker2.xtl có ip 192.168.10.101 và 192.168.10.102 là 2 workers
 Tất cả đều chạy HĐH CentOS7, cài Docker và K8s
-=> Để tạo nhiều node thì phải có nhiều máy. Ta có thể giả lập có nhiều máy bằng VM Virtual Box.
 
---> Nếu cài CentOS7 Docker K8s thủ công trên từng máy sẽ tốn thời gian. Ta dùng công cụ Vagrant để tự động hóa quá trình tạo máy ảo và cài ứng dụng trên máy ảo ez. Vagrant tương thích với nhiều loại VM như HyperV, VM Virtual Box
-Chỉ cần tạo file Vagrantile setup cách tạo máy ảo như nào là Vagrant tự động tạo
+--> Để tạo nhiều node thì phải có nhiều máy, giả lập có nhiều máy bằng VM Virtual Box. 
+Dùng tool Vagrant để tự động hóa tạo máy ảo và cài ứng dụng trên máy ảo, thay vì vào từng máy cài thủ công. Vagrant tương thích với nhiều loại VM như Virtual Box, k dùng window.
+Chỉ cần tạo file Vagrantile setup cho 3 máy cách tạo máy ảo rồi chạy vagrant up.
 Tải Vagrant: https://xuanthulab.net/su-dung-vagrant-tao-va-quan-ly-may-ao.html
+URL: https://www.youtube.com/watch?v=yOBeQNGX278&list=PLwJr0JSP7i8D-QS50lYsXpAg-jYoqxMVy
 
 Các lệnh basic nhất để thao tác:
 vagrant version
@@ -50,38 +51,30 @@ vagrant halt => dừng máy ảo
 vagrant reload => khởi động lại máy ảo, có đọc lại cấu hình trong Vagrantfile
 vagrant destroy => xóa máy ảo
 
----> Tạo các file Vagrantfile cho 3 máy và chạy vagrant up
-=> Lỗi với máy window khi dùng Vagrantfile với VMBox => K dùng Vagran với window
-URL: https://www.youtube.com/watch?v=yOBeQNGX278&list=PLwJr0JSP7i8D-QS50lYsXpAg-jYoqxMVy
-
---> Sau khi tạo máy ảo mà có enable SSH, ta có thể kết nối vào máy ảo bằng SSH. VD: ssh root@192.168.10.100 -> nhập password là vào được terminal của VM
-Vào máy master, chạy: kubeadm init --apiserver-advertise-address=172.16.10.100 --pod-network-cidr=192.168.0.0/16
-=> Lệnh này giúp cấu hình nó thành master node của k8s cluster. Trong 1 cluster thì các node muốn liên lạc với nhau phải thông qua 1 cái plugin network (như hình Cấu trúc.png). Tham số --pod-network-cidr sẽ dùng plugin network tên là Calico trong K8s. Sau đó phải cài calico
-
-Ở máy master: kubeadm token create --print-join-command
-=> Nhập output vào client sẽ kết nối tới master node từ worker node thông qua token
+--> SSH vào máy muốn cấu hình thành master. VD: ssh root@192.168.10.100 -> nhập password
+Chạy: kubeadm init --apiserver-advertise-address=172.16.10.100 --pod-network-cidr=192.168.0.0/16 => Lệnh cấu hình thành master node của k8s cluster. Trong 1 cluster thì các node muốn liên lạc với nhau phải thông qua 1 plugin network (ref ảnh Cấu trúc.png). --pod-network-cidr để dùng plugin network tên là Calico trong K8s. Sau đó phải cài Calico.
+Ở máy master: kubeadm token create --print-join-command => Nhập output vào client sẽ kết nối tới master node từ worker node thông qua token
 
 Chạy xong là có 2 K8s, 1 là từ Docker Desktop, 1 là từ Docker nhiều node tự tạo:
 Dùng kubectl ở bên ngoài máy host sẽ truy cập vào k8s của Docker Desktop
 Dùng kubectl ở trong máy ảo node master sẽ truy cập vào k8s nhiều node tự tạo
-=> Trong thực tế ta có thể triển khai system k8s ở bất cứ đâu và muốn dùng kubectl ở ngay máy host mà truy cập được vào. 
 
-Ta phải connect kubectl ở máy host vào k8s ở remote:
-kube config view => phải chạy trong git bash, nó show kubectl hiện tại đang connect tới k8s cluster nào và thông tin tk xác thực để connect với cluster đó.
-Tức để kubectl local connect được tới cluster khác thì phải xem được thông tin cluster và tk xác thực để login vào cluster đó. Thông tin này được lưu tại: ~/.kube/config
-=> Ta vào master node ở remote, lấy file config ở remote ra, lấy file config ở local ra. Trộn 2 files lại với nhau và thế vào file config ở local. Lúc đó kubectl ở local sẽ connect được tới 1 trong 2 systems k8s
+--> Có thể dùng kubectl ở host để truy cập vào system k8s được triển khai ở bất cứ đâu. Phải có tk xác thực để login vào cluster đó. Thông tin này được lưu tại: ~/.kube/config
+Ta vào master node ở remote, lấy file config ở remote ra, lấy file config ở local ra. Trộn 2 files lại với nhau và thế vào file config ở local. Lúc đó kubectl ở local sẽ connect được tới 1 trong 2 systems k8s
 Chi tiết cách trộn: https://www.youtube.com/watch?v=yOBeQNGX278&list=PLwJr0JSP7i8D-QS50lYsXpAg-jYoqxMVy => phút 35
 
+kube config view => phải chạy trong git bash, nó show kubectl hiện tại đang connect tới k8s cluster nào và thông tin tk xác thực để connect với cluster đó.
 kubectl config get-contexts => lấy list các kube cluster được kết nối trong kubectl hiện tại theo config
 kubectl config use-context <name context> => set kubectl connect với cluster nào.
 
-Laptop quản lý - dùng kubectl - có nhiều context là các cluster khác nhau
+Laptop quản lý - dùng kubectl - nhiều context là các cluster khác nhau
 Mỗi cluster có 1 master node và nhiều worker node
 Mỗi node có docker và các pods
-Mỗi pods chứa nhiều container khác nhau thuộc cùng 1 mạng mà có thể chia sẻ tài nguyên và cùng vòng đời - Các container chạy từng ứng dụng cụ thể trong hệ thống
+Mỗi pods chứa nhiều container khác nhau (mỗi container là 1 ứng dụng cụ thể trong hệ thống) thuộc cùng 1 mạng mà có thể chia sẻ tài nguyên và cùng vòng đời
 
 
 
+//!!!!!!!
 # Dùng K8s Dashboard
 Để tránh lag thì nên mở rộng dùng wsl2 với nhiều bộ nhớ và CPU hơn. Nếu bị lag:
 Window + R -> %USERPROFILE% -> Tạo file .wslconfig nếu chưa có -> Thêm vào:
