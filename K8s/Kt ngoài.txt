@@ -6,3 +6,6 @@ Docker compose quản lý nhiều container trên 1 máy. K8s quản lý các co
 Glasskube là package manager cho kubernetes, giúp deploy, cài đặt, làm mọi thứ với kubernetes dễ hơn.
 
 
+
+# 
+

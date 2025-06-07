@@ -74,23 +74,23 @@ Mỗi pods chứa nhiều container khác nhau (mỗi container là 1 ứng dụ
 
 
 
-//!!!!!!!
 # Dùng K8s Dashboard
-Để tránh lag thì nên mở rộng dùng wsl2 với nhiều bộ nhớ và CPU hơn. Nếu bị lag:
+K8s Dashboard là tool quản lý như kubectl nhưng là trên giao diện. Chỉ cần cài trong máy xong muốn dùng giao diện cho hệ thống k8s nào thì connect vào.
+
+-> Dùng dashboard trên wsl2 thì nên mở rộng bộ nhớ và CPU để tránh lag => bỏ
 Window + R -> %USERPROFILE% -> Tạo file .wslconfig nếu chưa có -> Thêm vào:
 [wsl2]
 memory=8GB                                
 swap=4GB                           
 processors=4
--> Restart lại docker (tốt nhất là tắt máy bật lại)
+Rồi restart lại docker (tốt nhất là tắt máy bật lại)
 
-K8s Dashboard là công cụ quản lý như kubectl nhưng là trên giao diện. Nó độc lập với k8s, ta chỉ cài trong máy xong muốn dùng giao diện cho hệ thống k8s nào thì connect vào
-
--> Version 3 là breakchange, ta dùng tạm version 2
-Tải file version 2.7: https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
+-> K8s dashboard version 2 => bỏ, dùng version 3 rồi
+Version 2.7: https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
 Tổng hợp mọi phiên bản: https://github.com/kubernetes/dashboard/releases
-Đảm bảo là k8s đang chạy trong máy là có 1 cluster
+Chạy dashboard cần đảm bảo là k8s đang chạy trong máy và có ít nhất 1 cluster
 
+//!!!!!!!
 --> Chạy Dashboard với many nodes
 Sửa dùng NodePort để Dashboard export ra ngoài qua 1 cổng. Cổng mặc định trong k8s hợp lệ là 30000-32767, sau này có thể sửa khi chạy cluster với tham số --service-node-portrange:
 kind: Service
@@ -194,6 +194,7 @@ Run: kubectl apply -f redis-pod.yaml
 
 
 
+//!!!!!!!
 # Dùng K9s
 Tool cli giống kubectl tương tác với cluster k8s nhưng trực quan hơn.
 
