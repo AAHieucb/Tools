@@ -1,0 +1,43 @@
+-> Chạy dashboard theo config dashboard.yml:
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    k8s-app: kubernetes-dashboard
+  name: kubernetes-dashboard
+  namespace: kubernetes-dashboard
+spec:
+  type: NodePort
+  ports:
+    - port: 443
+      targetPort: 8443
+      nodePort: 31000 # Cổng dashboard default trong khoảng 30000-32767, có thể sửa khi tạo và chạy cluster với tham số --service-node-portrange (VD minikube)
+  selector:
+    k8s-app: kubernetes-dashboard
+
+
+
+-> Chạy container redis trên 1 node k8s với redis-pod.yaml:
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:latest
+        ports:
+        - containerPort: 6379
+      nodeSelector:
+        redis-node: true
+
+

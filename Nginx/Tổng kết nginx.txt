@@ -1,19 +1,18 @@
 # Basic
-Web server tối thiểu phải serve được html. Apache, Nginx chuyên php; IIS của Microsoft dành cho asp, aspx; Sun Java system dành cho jsp
-
--> Nginx làm web server: chặn DDoS, load balancer, xử lý 10000 kết nối đồng thời mà chiếm ít bộ nhớ, mã hóa SSL, cache txt css ảnh tĩnh trả dữ liệu luôn để k cần gọi tới server
-=> NGINX thường dùng khi trang web có lưu lượng truy cập cao với nội dung tĩnh, vẫn có thể kết hợp Apache để tận dụng lợi thế xử lý nhanh. VD:
-Client <--> Front-end <--> Backend(Php,..) - Apache
-                      <--> Static content(txt, js, css, images, video,..) - NGINX
-Cloudflare chống DDoS tốt nên có thể dùng như 1 lớp reverse proxy trước nginx, cứ cần thêm cái gì thì add nó như 1 lớp reserve proxy forward liên tục tới đích là được.
-
--> Cài đặt window: download NGINX trên Mainline -> giải nén vào ổ C -> vào chạy file nginx.exe -> mở browser localhost -> tắt thì mở ctrl shift escape để end task.
-Để chạy react với nginx: npm run build r nhét output có index.html vào nginx r chạy nginx như bth
+Nginx làm web server chặn DDoS, load balancer, xử lý 10000 kết nối đồng thời mà chiếm ít bộ nhớ, mã hóa SSL, cache txt css ảnh tĩnh trả dữ liệu luôn để k cần gọi tới server.
+Cloudflare chống DDoS tốt nên có thể kết hợp dùng như 1 lớp reverse proxy trước nginx, cứ cần thêm cái gì thì add nó như 1 lớp reserve proxy forward liên tục tới đích là được.
 
 
 
-# Config Nginx basic
+# Config Nginx 
 URL search: https://viblo.asia/p/tim-hieu-va-huong-dan-setup-web-server-nginx-OREGwBwlvlN
+
+nginx -t => lệnh check cú pháp của file nginx đang dùng có chuẩn không
+nginx -t -c /etc/nginx/nginx.conf => lệnh check cú pháp của 1 file nginx config cụ thể có chuẩn không
+
+-> Nginx có thể có nhiều file config và thường thì nó tự nạp tất cả file .conf trong thư mục như /etc/nginx/conf.d/
+Đặt tên tuỳ ý nhưng nên code server khác nhau trong các file config để k xảy ra trường hợp đè nhau hay ưu tiên lấy cái nào trước.
+Có thể chỉ định thêm các file nào với "include". Cơ chế nó nối nội dung các file config vào mà thôi.
 
 -> Các module trong file:
 - http: các chỉ thị từ tất cả các module liên quan đến HTTP. Có thể tạo nhiều khối và các khối chỉ thị sau sẽ đè lên trước.
@@ -23,9 +22,9 @@ URL search: https://viblo.asia/p/tim-hieu-va-huong-dan-setup-web-server-nginx-OR
 => VD ta tạo khối http cấu hình web và bên trong có nhiều khối server, mỗi khối server ta định nghĩa các tên miền mà website có. Bên trong đó lại có nhiều khối location định nghĩa các uri khớp với 1 mẫu nào thì thiết lập cái gì
 
 -> Các chỉ thị
---> Cấu hình HOST và SOCKET:
-listen: dùng trong khối server, địa chỉ ip và port được dùng bởi socket phục vụ website. Thường là 80 cho http và 443 cho https. 
+--> Cấu hình HOST và SOCKET
 Cú pháp: listen [address] [:port] [additional options];
+listen: dùng trong khối server, địa chỉ ip và port được dùng bởi socket phục vụ website. Thường là 80 cho http và 443 cho https. 
 Các [additional options]:
 - default hoặc default_server: chỉ rõ khối server này được dùng như website mặc định cho bất kỳ yêu cầu nhận được tại địa chỉ IP và port được chỉ rõ
 - ssl: dùng SSL
@@ -33,14 +32,14 @@ Các [additional options]:
 VD: listen 192.168.1.1:80;
 listen 443 ssl; # k có address tự hiểu localhost
 
+Cú pháp: server_name hostname1 [hostname2…];
 server_name: dùng trong khối server để đăng ký 1 or nhiều hostname cho khối server. Khi nhận request, nó sẽ lấy khối server đầu tiên khớp với host trong phần header của request, k khớp thì Nginx chọn khối server đầu tiên khớp với thông số của listen như port 80 rồi ưu tiên khối đầu tiên có tùy chọn mặc định cho phép trên chỉ thị listen
-server_name hostname1 [hostname2…];
 VD: server_name *.website.com; # nhận tất cả các domain có đuôi là .website.com
 server_name .website.com; # Kết hợp cả *.website.com và website.com
 Có thể dùng chuỗi rỗng như 1 giá trị của chỉ thị để bắt tất cả các yêu cầu không có giá trị Host trong phần header, nhưng chỉ sau ít nhất 1 tên thông thường (hoặc “_”).
 VD: server_name abc.com “”; hoặc server_name _ “”; => _ tức là mọi domain. 
 
-Cấu hình HTTPS:
+--> Cấu hình HTTPS:
 VD: server {
   listen 80 default_server;
   server_name _;
@@ -54,8 +53,8 @@ server {
 }
 
 --> Cấu hình đường dẫn và tài liệu:
+Cú pháp: root /path/resource/; => Giá trị mặc định là html
 root: sử dụng trong khối server, http, location, if; định nghĩa tài liệu gốc, chứa các tập tin muốn gửi khách
-Dùng cú pháp: root /path/resource/; Giá trị mặc định là html
 
 --> Cấu hình các request từ client:
 keepalive_requests: sử dụng trong khối server, http, location; xác định tối đa số lượng yêu cầu được phục vụ trên 1 kết nối keep-alive. Giá trị mặc định là 100
@@ -103,6 +102,18 @@ upstream app {
   keepalive 16;
 }
 
+-> Dùng $uri: biến chỉ phần của url đằng sau domain name
+VD gửi lại người dùng default GIF file nếu file k tồn tại:
+location /images/ {
+  try_files $uri $uri/ /images/default.gif;
+}
+location = /images/default.gif {
+  expires 30s;
+}
+=> Người dùng request http://www.domain.com/images/image1.gif => nginx sẽ tìm image1.gif trong chỉ thị root or alias xác định từ trước, nếu k có nó sẽ tìm trong image1.gif/ và k tìm thấy sẽ lấy tiếp /images/default.gif => nó sẽ chuyển sang chạy chỉ thị location thứ 2 và dừng process, nginx sẽ lấy file đó và đánh dấu trong cache trong 30s 
+
+VD2 try_files $uri =404; lấy $uri nếu k tồn tại sẽ trả 404
+
 
 
 # NGINX làm Load Balancer
@@ -145,13 +156,11 @@ VD: upstream backend {
 
 
 # Dùng nginx chống DDoS
-=> 1 số config chỉ có trên nginx plus, k dùng được trên nginx thường
+1 số config chỉ có trên nginx plus, k dùng được trên nginx thường
+Trước tiên, nginx có kiến trúc non-blocking và event-driven vốn đã có thể xử lý 1 lượng request khổng lồ đồng thời tốt hơn các loại máy chủ khác. Các yêu cầu mới không làm gián đoạn các phiên làm việc đang có của nginx nên bản thân nó đã ngăn chặn các cuộc tấn công cơ bản.
 
 DDoS thì lưu lượng truy cập lớn từ 1 tập các IP cố định 1 lượng đủ để áp đảo máy chủ. Việc 1 nhóm lớn sử dụng forward proxy (VPN) cũng có biểu hiện tương tự nhưng lưu lượng vẫn thấp hơn nhiều so với các cuộc tấn công DDoS. 
-Khi DDoS: heaer User-Agent thường là 1 giá trị non-standard k chuẩn, header Referer thường là 1 giá trị có thể liên kết với cuộc tấn công.
-
--> Trước tiên, nginx có kiến trúc non-blocking và event-driven vốn đã có thể xử lý 1 lượng request khổng lồ. Các yêu cầu mới không làm gián đoạn các phiên làm việc đang có của nginx nên bản thân nó đã ngăn chặn các cuộc tấn công cơ bản.
-Nginx có thể xử lý lượng request đồng thời tốt hơn các máy chủ cân bằng tải khác, do đó vẫn nên dùng thêm.
+Khi DDoS, heaer User-Agent thường là 1 giá trị non-standard k chuẩn, header Referer thường là 1 giá trị có thể liên kết với cuộc tấn công.
 
 -> Giới hạn số lượng request 1 ip chỉ được gửi sau mỗi 2s.
 limit_req_zone $binary_remote_addr zone=one:10m rate=30r/m;
@@ -178,7 +187,7 @@ server {
 }
 => limit_conn_zone định cấu hình 1 vùng nhớ chung là "addr" lưu các yêu cầu có key là ip của client là $binary_remote_addr, lưu max 10MB data. Ở đây nó limit 1 ip gọi tới vùng /store/ của trang web chỉ được max 10 connection đồng thời. Tức nếu ip gọi 11 request đồng thời thì 1 request reject
 
--> Vì hacker có xu hướng dùng các kết nối ghi dữ liệu thường xuyên vì chúng muốn giữ connection càng lâu càng tốt, từ đó giảm khả năng của server trong việc chấp nhận các connection mới. Các connection chậm này có thể được chặn lại. Slowloris là 1 VD của kiểu tấn công này. 
+-> Hacker có xu hướng dùng các kết nối ghi dữ liệu thường xuyên vì chúng muốn giữ connection càng lâu càng tốt cho nặng server. Các connection chậm này có thể được chặn lại. Slowloris là 1 VD của kiểu tấn công này. 
 server {
   client_body_timeout 5s;
   client_header_timeout 5s;
@@ -208,15 +217,14 @@ location /foo.php {
 => Sau khi cuộc tấn công DDoS nhắm vào /foo.php, mọi request vào nó nên được chặn lại. Ta có thể fix or chuyển sang 1 location khác.
 
 location / {
-  if ($http_user_agent ~* foo|bar) {
+  if ($http_user_agent ~* foo|bar) { => ~* là ss regex không phân biệt hoa thường, chứa foo hoặc bar
     return 403;
   }
   # ...
 }
 => Header User-Agent có giá trị bất thường so với các truy cập hợp lệ khác có thể bị chặn. Tương tự với các request có header Referer
 
--> Dùng caching trong nginx: Khi DDoS yêu cầu lặp lại nhiều lần, các data liên quan nên được lấy từ cache để giảm tải cho server thực
-
+-> Dùng caching trong nginx để giảm tải cho server khi request trùng nhau gọi lại nhiều lần.
 Trước tiên cấu hình 1 proxy cache: 
 proxy_cache_path /path/to/cache levels=1:2 keys_zone=my_cache:10m max_size=10g inactive=60m; => 1 proxy cache chạy tại url /path/to/cache với max dung lượng 10GB và thời gian hoạt động là 60p. Tham số levels xác định cấu trúc thư mục, ở đây cache được lưu dưới 1 thư mục cấp 1 và 1 thư mục cấp 2, cấu trúc như v giúp tăng hiệu suất khi truy cập cache.
 
@@ -240,55 +248,14 @@ upstream website {
   server 192.168.100.2:80 max_conns=200;
   queue 10 timeout=30s;
 }
-=> Chỉ Nginx Plus mới dùng được max_conns. Ở đây ta giới hạn không quá 200 kết nối đến mỗi server backend đồng thời. Chỉ thị queue giới hạn lượng yêu cầu đợi khi mọi máy chủ trong nhóm upstream đạt max kết nối, timeout chỉ định thời gian 1 yêu cầu đợi. VD ở đây quá 410 kết nối đồng thời sẽ từ chối, queue quá timeout cũng từ chối và pop khỏi queue
-=> Nginx Plus có thể nhận biết 1 cuộc tấn công DDoS thông qua Status or Dashboard, nó show số liệu và các mẫu lưu lượng bất thường để có thể thực hiện các actions cụ thể
+=> max_conns chỉ trong nginx plus. Ở đây ta giới hạn không quá 200 kết nối đến mỗi server backend đồng thời. Chỉ thị queue giới hạn lượng yêu cầu đợi khi mọi máy chủ trong nhóm upstream đạt max kết nối, timeout chỉ định thời gian 1 yêu cầu đợi. VD ở đây quá 410 kết nối đồng thời sẽ từ chối, queue quá timeout cũng từ chối và pop khỏi queue
+=> Nginx Plus cũng có thể nhận biết 1 cuộc tấn công DDoS thông qua Status or Dashboard, nó show số liệu và các mẫu lưu lượng bất thường để có thể thực hiện các actions cụ thể
 
--> Dùng log trong nginx
---> Chỉ thị error_log: error_log log_file [ log_level ] => log_level là mức ghi log thấp nhất mà ta muốn ghi lại: debug, info, notice, warn, error, crit, alert, emerg
-Khi chỉ định log_level, nó sẽ ghi log từ cấp độ đó đến cấp độ cao hơn cấp độ đó, mở file log_file để thấy nó ghi lại những gì trong quá trình server chạy
 
---> Chỉ thị access_log: access_log log_file log_format; => là 1 loại log khác giống error_log nhưng nó sẽ ghi theo mỗi request mà client tạo ra. 
-Tưng phần của log_format được xác định bằng biến bắt đầu bằng $. VD enabled nó để nó ghi các nút thắt cổ chai của server => nó sẽ ghi ra log các biến mà ta xác định trong cặp ""
 
-VD log_format có định dạng combined thì kiểu:
-log_format combined '$remote_addr - $remote_user [$time_local]  '
-		    '"$request" $status $body_bytes_sent '
-		    '"$http_referer" "$http_user_agent"'; 
-=> Danh sách các biến hỗ trợ: http://nginx.org/en/docs/http/ngx_http_core_module.html#variables cũng có nhiều định dạng khác, không chỉ combined như main, compression
-
-Cú pháp đủ: access_log /path/to/log/location [ format_of_log buffer_size ];
-format_of_log mặc định là combined. buffer_size là kích thước cache.
-VD: dùng access_log location format gzip; để nén log file
-
-Trên ubuntu có thể dùng cho error_log /dev/null crit; thì /dev/null là nơi để chọn thì error_log sẽ k ghi lại bất cứ thứ gì
-Dùng access_log off; khi chạy vào các location lỗi là để tắt ghi log đi khi ta biết nó lỗi gì để xử lý r
-
---> Để tránh đầy dung lượng đĩa thì phải xoay log. Đó là việc chuyển đổi các file log và có thể lưu trữ file cũ trong 1 khoảng tg nhất định. Ta k thể quản lý file log trong nginx nhưng có thể xoay log được. VD:
-mv /path/to/access.log /path/to/access.log.0
-kill -USR1 `cat /var/run/nginx.pid`
-sleep 1
-[ post-rotation processing of old log file ]
-=> Đầu tiên di chuyển log hiện tại sang 1 file mới để lưu trữ, có thể đặt nó là .0 và file cũ hơn là .1
-=> Lệnh kill -USR1 `cat /var/run/nginx.pid` sẽ gửi tín hiệu reload các file log khiến content được ghi vào file log được làm mới. Tệp nginx.pid là nơi nginx lưu trữ pid của quy trình chính. Điều này chỉ đúng trong linux
-=> Xoay vòng xong ta sleep 1 để hoàn tất, ta có thể nén file cũ or làm gì tùy ý.
-
-Cách 2 để xoay vòng là dùng logrotate: nó là chương trình cài sẵn trên ubuntu và nginx trên ubuntu đi kèm với tập lệnh logrotate tùy chỉnh => bỏ
-
--> $uri là biến chỉ phần của url đăng sau domain name
-VD1 TH gửi lại cho người dùng default GIF file nếu file k tồn tại:
-location /images/ {
-  try_files $uri $uri/ /images/default.gif;
-}
-location = /images/default.gif {
-  expires 30s;
-}
-=> Người dùng request http://www.domain.com/images/image1.gif => nginx sẽ tìm image1.gif trong chỉ thị root or alias xác định từ trước, nếu k có nó sẽ tìm trong image1.gif/ và k tìm thấy sẽ lấy tiếp /images/default.gif => nó sẽ chuyển sang chạy chỉ thị location thứ 2 và dừng process, nginx sẽ lấy file đó và đánh dấu trong cache trong 30s 
-
-VD2 try_files $uri =404; lấy $uri nếu k tồn tại sẽ trả 404
-
--> Cache trong nginx
+# Cache trong nginx advance
 Browser có bfcache sẵn tối ưu cho static file, còn files như html js luôn lấy realtime. Có thể code server bth or config nginx để custom cache này thoải mái => ít dùng
-VD: client request file app.js -> server gửi lại cho client -> 2p sau client lại cần file app.js -> server check file đó k có gì thay đổi -> client lấy từ cache của trình duyệt => thực tế ta phải cấu hình nginx sao cho client k cần gửi thêm bất cứ request nào lên server nx mà vẫn có file app.js mà k sợ nó đã bị cũ trên server.
+VD: client request file app.js -> server gửi lại cho client -> 2p sau client lại cần file app.js -> server check file đó k có gì thay đổi -> client lấy từ cache của trình duyệt Ta phải cấu hình nginx sao cho client k cần gửi thêm bất cứ request nào lên server nx mà vẫn có file app.js mà k sợ nó đã bị cũ trên server.
 
 - C1: Weak Caching Header (Etag / Last-Modified) phải request lên server để check sự thay đổi của các tài nguyên
 1.1> Last-Modified => Lần đầu tiên thì server gửi file logo.png kèm tham số last-modified ở response là thời điểm cuối cùng thay đổi của file. Lần tiếp theo request client có thêm If-Modified-Since là giá trị của them số Last-Modified lần trước nhận dược, server check nếu trùng với thời gian thay đổi lần cuối trên server thì trả lại 304 Not Modified để báo cho client biết file này éo đổi gì cả, client sẽ lấy bản sao được lưu cache browser
@@ -369,10 +336,39 @@ server {
 
 
 
+# Dùng log trong nginx
+-> Chỉ thị error_log: error_log log_file [ log_level ] => log_level là mức ghi log thấp nhất mà ta muốn ghi lại: debug, info, notice, warn, error, crit, alert, emerg
+Khi chỉ định log_level, nó sẽ ghi log từ cấp độ đó đến cấp độ cao hơn cấp độ đó, mở file log_file để thấy nó ghi lại những gì trong quá trình server chạy
+Trên ubuntu có thể dùng cho error_log /dev/null crit; thì /dev/null là nơi để chọn thì error_log sẽ k ghi lại bất cứ thứ gì
+
+-> Chỉ thị access_log: access_log /path/to/log/location [ format_of_log buffer_size ]; => giống error_log nhưng ghi theo mỗi request mà client tạo ra. 
+VD: http {
+  log_format log_format custom_format '$remote_addr - $remote_user [$time_local]'
+    '"$request" $status $body_bytes_sent '
+    '"$http_referer" "$http_user_agent"'; 
+  access_log /var/log/nginx/access.log custom_format;
+  server {
+    ...
+  }
+}
+=> Từng phần của log_format bắt đầu bằng $. Nó sẽ ghi ra log các biến mà ta xác định trong cặp ""
+Danh sách các biến hỗ trợ: http://nginx.org/en/docs/http/ngx_http_core_module.html#variables 
+buffer_size là kích thước cache.
+
+VD: access_log location format gzip; => để nén log file
+VD: access_log off; => tắt ghi log
+
+-> Để tránh đầy dung lượng đĩa thì phải xoay log. Đó là việc chuyển đổi các file log và có thể lưu trữ file cũ trong 1 khoảng tg nhất định. 
+VD: mv /path/to/access.log /path/to/access.log.0 => di chuyển log hiện tại sang 1 file mới để lưu trữ, có thể đặt nó là .0 và file cũ hơn là .1
+kill -USR1 `cat /var/run/nginx.pid` => gửi tín hiệu reload các file log khiến content ghi vào file được làm mới. nginx.pid là nơi lưu trữ pid của quy trình chính (linux). 
+sleep 1 => xoay log xong ta sleep 1 để hoàn tất, ta có thể nén file cũ or làm gì tùy ý.
+[ post-rotation processing of old log file ]
+
+Cách khác để xoay vòng là dùng logrotate: nó là chương trình cài sẵn trên ubuntu và nginx trên ubuntu đi kèm với tập lệnh logrotate tùy chỉnh => bỏ
+
+
+
 # Other
 -> Tool https://github.com/matsuu/kataribe giúp phát hiện bottleneck, kết hợp với nginx nhưng phải enable => uncomment phần log_format và access_log của file config
-
--> Certbot: là 1 tool tự động quá trình cài đặt và cập nhật chứng chỉ SSL/TLS từ Let's Encrypt - một tổ chức cung cấp chứng chỉ SSL/TLS miễn phí. Nó tự động hóa cấp chứng chỉ, cài chứng chỉ, gia hạn, và hỗ trợ các tính năng bảo mật như HSTS và OCSP Stapling. 
-Mua tên miền hosting + nginx + certbot là đẹp
 
 

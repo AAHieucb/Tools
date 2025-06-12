@@ -7,5 +7,13 @@ Glasskube là package manager cho kubernetes, giúp deploy, cài đặt, làm m�
 
 
 
-# 
+# Dừng
+-> Dừng series từ Deployment: Dùng replicaset độc lập không hay, họ thường dùng Deployment tốt hơn. Mỗi Deployment sở hữu 1 ReplicaSet riêng.
+URL: https://xuanthulab.net/deployment-trong-kubernetes-trien-khai-cap-nhat-va-scale.html
+Còn có PV, PVC, Ingress, Rancher2, Deployment, Service Headless, DaemonSet, CronJob, NFS, Secret
+
+-> Series khác: https://viblo.asia/s/kubernetes-series-bq5QL8QGlD8
+
+-> Terraform là 1 tool open-source giúp tự động hoá để quản lý AWS, GG Cloud, Docker, K8s, SQL, Load balancer, CDN, SSL Cert, Digital Ocean. 
+VD có thể dùng terraform để tự động setup K8s theo các bước định sẵn để mỗi lần k cần chạy thủ công từng bước nữa.
 
