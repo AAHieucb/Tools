@@ -1,15 +1,7 @@
-//!!!!!!!!!
-# VD cấu hình Nginx làm reverse proxy trên Ubuntu
-Dùng Let's Encrypt và PHP
-URL: https://galaxyz.net/cach-cau-hinh-nginx-lam-web-server-va-reverse-proxy-reverse-proxy-cho-apache-tren-mot-server-ubuntu-1804.388.anews
-URL: https://galaxyz.net/cach-cau-hinh-nginx-lam-reverse-proxy-cho-apache.3086.anews
-
-
-
 # Thực hành dùng pm2 tạo 3 cái server nodejs và dùng nginx để cân bằng tải các server đó
-=> ref tới "UseNginx / nginx-loadbalancer"
+=> ref tới "nginx-loadbalancer"
 
--> Dùng pm2: giúp khởi động lại dự án khi VPS bị restart hay app bị crash. Nếu k có thì khi gặp TH như v ta phải tự vào vps và chạy npm start ở folder dự án thủ công
+-> pm2 giúp khởi động lại dự án khi crash or VPS reboot. Nếu k có thì khi gặp TH như v ta phải tự vào vps và npm start thủ công
 pm2 list
 pm2 stop id
 pm2 delete id
