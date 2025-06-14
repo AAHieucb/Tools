@@ -117,41 +117,81 @@ VD2 try_files $uri =404; lấy $uri nếu k tồn tại sẽ trả 404
 
 
 # NGINX làm Load Balancer
--> VD config trên máy 10.10.10.1 là:
-upstream proserver {
-  server 10.10.10.9:9002;
-  server 10.10.10.10:9002;
-} 
-2 server 10.10.10.9 và 10.10.10.10 đang chạy ở cổng 9002. Rồi config để máy 10.10.10.1 đón ở cổng 9000:
-server {
-  proxy_buffering off;
-  client_max_body_size 5M;
-  listen 9000;
-  location / {
-    proxy_pass http://proserver;
-  }
-}
-Chạy NGINX bằng lệnh sudo service nginx restart là done. Khi gửi request về 10.10.10.1 sẽ redirect vào 10.10.10.9 or 10.10.10.10
-
-Có thể sửa config với tham số weight. VD:
-upstream proserver {
-  server 10.10.10.9:9002 weight=1;
-  server 10.10.10.10:9002 weight=2;
-} thì 10.10.10.10 sẽ xử lý lưu lượng truy cập gấp đôi 10.10.10.9
-
 upstream backend {
   server backend1.example.com max_fails=3 fail_timeout=15s;
   server backend2.example.com;
 }
 backend1 mà failed request 3 lần liên tiếp sẽ bị đánh dấu là k khả dụng trong 15s tiếp theo, sau 15s nginx sẽ ping thử server, nếu vẫn k khả dụng sẽ lại down 15s và cứ thế, khi down, mọi request đi vào backend2.
 
--> Mặc định tự dùng round robin. 
-Tùy biến: least_conn; # gửi tới server có số active connections ít nhất, tính cả trường weight.
-VD: upstream backend {
-  ip_hash; # ip_hash đảm bảo request từ cùng 1 IP sẽ chuyển đến cùng 1 máy chủ backend, nếu máy chủ đó hỏng mới chuyển cho máy chủ khác.
-  server backend1.example.com;
-  server backend3.example.com down; # down là flag đánh dấu 1 máy chủ đang k khả dụng
+-> Default là round robin:
+VD config trên máy 10.10.10.1 là:
+http {
+  upstream proserver { 
+    server 10.10.10.9:9002;
+    server 10.10.10.10:9002;
+  } 
+  server { # 2 server chạy ở cổng 9002. Rồi config để máy 10.10.10.1 đón ở cổng 9000
+    proxy_buffering off;
+    client_max_body_size 5M;
+    listen 9000;
+    location / {
+      proxy_pass http://proserver;
+    }
+  }
 }
+=> Chạy NGINX bằng lệnh sudo service nginx restart là done. Khi gửi request về 10.10.10.1 sẽ redirect vào 10.10.10.9 or 10.10.10.10
+
+-> Weighted Round Robin theo độ ưu tiên:
+http {
+  upstream proserver {
+    server 10.10.10.9:9002 weight=1;
+    server 10.10.10.10:9002 weight=2; # 10.10.10.10 sẽ xử lý lưu lượng truy cập gấp đôi 10.10.10.9 và được ưu tiên gửi vào trước
+  } 
+  server {
+    listen 80;
+    server_name nginx-tutorial.test;
+    location / {
+      proxy_pass http://backend_servers;
+    }       
+  }
+}
+
+-> Least Connections => nginx trả phí. Còn có thuật toán least time cũng bản trả phí
+http {
+  upstream backend_servers {
+    least_conn;
+    server localhost:3000;
+    server localhost:3001;
+    server localhost:3002;
+  } 
+  server {
+    listen 80;
+    server_name nginx-tutorial.test; # set server-name phải đk 1 tên miền sẵn rồi
+    location / {
+      proxy_pass http://backend_servers; # proxy_pass làm máy chủ chặn reverse proxy. Nó xác định tất cả lưu lượng được redirect đến. 
+    }       
+  }
+}
+=> gửi tới server có ít connection nhất. Có thể tính cả trường weight. 3 server mà lượng kết nối như nhau cx sẽ quay tuần tự thôi. 
+
+-> IP hash:
+http {
+  upstream backend_servers {
+    ip_hash;
+    server localhost:3000;
+    server localhost:3001;
+    server localhost:3002;
+    server backend3.example.com down; # down là flag đánh dấu 1 máy chủ đang k khả dụng
+  } 
+  server {
+    listen 80;
+    server_name nginx-tutorial.test;
+    location / {
+      proxy_pass http://backend_servers;
+    }       
+  }
+}
+=> ip_hash dựa vào ip của client lần trước connection như nào lần này vào tiếp server đó. Nếu máy chủ đó hỏng mới chuyển cho máy chủ khác.
 
 
 
