@@ -1,14 +1,14 @@
 # Basic
-Swagger code và generate ra OpenAPI Specification là API docs mô tả REST API. Thường có lib tự generate k cần code.
+Swagger là tool để code và generate ra OpenAPI Specification là API docs mô tả REST API để test call api trực tiếp. Thường có lib tự generate thành docs luôn mà.
 
--> Tool online swaggerhub: https://app.swaggerhub.com/home
+Tool online swaggerhub: https://app.swaggerhub.com/home
 Swaggerhub là hợp của 3 tools rời rạc là:
 Swagger Editor giúp design APIs or edit có sẵn bằng YAML config: https://swagger.io/tools/swagger-editor/
 Swagger Codegen tool generate code từ file config: https://swagger.io/tools/swagger-codegen/
 Swagger UI chỉ là 1 ứng dụng dùng HTML, CSS, JS và file config để tạo ra 1 file index.html là trang web biểu diễn API: https://swagger.io/tools/swagger-ui/
 
+Từng tool của Swaggerhub đều có thể tải về riêng dùng local từ github. 
 Swagger UI chỉ là 1 phần của Swaggerhub, các dự án mà cần mỗi swagger ui thì tải nó về từ git rồi add vào project là có file index.html lưu api luôn
-=> Từng tool của Swaggerhub đều có thể tải về riêng dùng local từ github
 
 -> Viết API lấy mẫu edit từ: https://editor.swagger.io/
 Keyword style và explode mô tả cách truyền tham số dạng mảng hay object vào url
