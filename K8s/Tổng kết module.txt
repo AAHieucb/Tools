@@ -256,3 +256,21 @@ C1: kubectl autoscale rs rsapp --max=2 --min=1 => Dùng dòng lệnh tạo 1 hpa
 C2: Tạo hpa từ file yaml => ref tới "HPA"
 
 
+
+
+Trong K8s, PersistentVolumeClaim (PVC) là một yêu cầu cụ thể về các thuộc tính như access mode và không gian lưu trữ từ một PersistentVolume (PV).
+PersistentVolume (PV) là một khối lưu trữ (volume) được cấp phát bởi quản trị viên hoặc từ StorageClass trong Kubernetes. PV tồn tại độc lập với vòng đời của Pod.
+Cách hoạt động của PV và PVC:
+- Quản trị viên tạo PersistentVolume (PV). PV có thể được cung cấp từ các nguồn lưu trữ như NFS, iSCSI, Cloud Storage (AWS EBS, GCE Persistent Disk).
+- Người dùng tạo PersistentVolumeClaim (PVC) yêu cầu một PV với các điều kiện cụ thể (ví dụ: 10GB, chế độ ReadWriteOnce).
+- Kubernetes tự động tìm PV phù hợp với yêu cầu của PVC và kết nối chúng.
+- PVC được gắn vào Pod để cung cấp lưu trữ bền vững.
+=> Tức điểm đặc biệt là ECK dùng PersistentVolumes để đảm bảo dữ liệu Elasticsearch k bị mất khi container hoặc pod bị xoá. 
+
+VD thuôc tính của PVC: 
+- Dung lượng lưu trữ 10Gi. 
+- Access mode
+ReadWriteOnce: Chỉ một Pod có thể gắn (mount) PV ở chế độ đọc/ghi.
+ReadOnlyMany: Nhiều Pod có thể gắn PV ở chế độ chỉ đọc.
+ReadWriteMany: Nhiều Pod có thể gắn PV ở chế độ đọc/ghi.
+- Storage Class chỉ định loại lưu trữ như SSD, HDD, hoặc Cloud Storage như AWS EBS

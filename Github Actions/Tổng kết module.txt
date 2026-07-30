@@ -226,7 +226,7 @@ Nên cấu hình dedicated user cho runner vì có các actions cần lệnh sud
 
 
 # Secrets
-Secret trong github acion k thể lấy ra dùng trong app. Khi fork 1 repo cũng k fork được secret.
+Secret trong github acion k thể lấy ra dùng trong app. Khi fork 1 repo cũng k fork được secret. Nó chỉ khác env var ở chỗ nó bí mật.
 Có thể dùng secret qua API hay cli hay trong file github.action nhưng k thể xem được giá trị hay in ra
 
 -> Tạo secret: vào settings của repo -> Ấn secrets để dùng secret của repo. Có thể vào Environment để tạo secret cho từng môi trường

@@ -1,5 +1,20 @@
+->*** https://free.theresanaiforthat.com/
+
+
+
 -> Fiddler: 
 Tool bắt gói tin mà máy gửi đi, có thể biết mọi thông tin request. VD debug powershell biết được nó gửi request gì đi mà việc dùng thông thường k thể thấy được
+
+
+
+-> Nguồn media
+https://www.pexels.com/ => ảnh và video free
+https://unsplash.com/ => ảnh đa dạng hơn, có cả thông tin máy chụp, tiêu cự, ống kính
+pngtree => ảnh png transparent background free
+
+
+
+-> https://rows.com/ => tool ai thay thế excel
 
 
 
@@ -12,7 +27,15 @@ Plant UML vẽ UML diagram bằng code đỉnh
 
 
 
--> http://colormind.io/: Tool AI sinh color palette 
+-> http://colormind.io/: Tool AI sinh color palette
+
+
+
+-> deepwiki => tool ai đọc code từ repo và sinh document giải thích code.
+
+
+
+-> ToDiagram => có extension, để visualize json data thành dạng diagrams, có AI hỗ trợ filtering data.
 
 
 
