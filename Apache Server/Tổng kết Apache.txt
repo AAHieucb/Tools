@@ -1,10 +1,12 @@
-# Basic
--> Cài đặt:
+# Apache server 
+Web server viết bằng C++, hỗ trợ CGI script, PHP, GZIP compression, virtual hosting, URL rewriting, caching, cân bằng tải.
+Mỗi request là 1 thread riêng. Nó có httpd cài đặt cùng là 1 http daemon xử lý request gửi tới.
+Khi nhận request, apache server sẽ serve thư mục ở 1 port, hoặc execute 1 CGI script và trả lại kết quả.
+
+-> Cài đặt: 
 - Cài xampp có sẵn
 - Cài qua docker
-- Trong window download apache -> a number of third party vendors -> Apache Lounge -> cài 64bit -> giải nén vào ổ C -> vào bin -> chạy httpd.exe -> vào browser: localhost -> hiện It works!!
-Tùy bản Apache mà được xây dựng trên Visual C Redistributiuon for Visual Studio phiên bản khác nhau mà phải có Visual Studio mới chạy được apache
-Ta giải nén vào ổ C mà kp là ổ khác vì cấu hình này được chỉnh sẵn trong file config là DocumentRoot rồi nên nếu ta dùng thư mục khác thì phải thay đổi config thư mục như trong docker ta set với image httpd ấy
+- Cài qua web trang chủ
 
 -> Setup httpd.conf: C:\Apache24\conf\httpd.conf (window)
 - Tắt warning thiếu servername: uncomment #ServerName www.example.com:80 -> sửa thành: ServerName localhost
@@ -266,5 +268,10 @@ VD sử dụng suEXE trên VirtualHost:
     ....
 </VirtualHost>
 => Ở host địa chỉ và cổng trên nếu chạy CGI với FastCHI or PHP-FPM thì nó sẽ chạy tới user là abc và group là xyz
+
+
+
+# Dừng
+-> publish global, dùng VirtualHost, self-sign SSL => để học tiếp phải đăng nhập được vào Router của wifi cơ
 
 
