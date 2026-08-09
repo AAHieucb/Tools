@@ -189,14 +189,13 @@ VD: Trong file htaccess
 
 
 
-//!!!!!!!
 # CGI scrpit
-CGI(Common Gateway Interface) script là 1 chương trình viết bằng Perl or C hoặc chỉ là 1 shellscript đơn giản để tương tác server-client. VD client gửi 1 form lên server, nếu cần xử lý phức tạp, server gọi đến chương trình thực thi 1 CGI script chỉ định để xử lý yêu cầu. Xử lý xong sẽ gửi kết quả lại server, server gửi tiếp cho client.
+CGI (Common Gateway Interface) script là chương trình viết bằng Perl or C hoặc chỉ là 1 shellscript đơn giản để tương tác server-client. VD client gửi 1 form lên server, nếu cần xử lý phức tạp, server gọi đến chương trình thực thi CGI script chỉ định để xử lý yêu cầu. Xử lý xong sẽ gửi kết quả lại server, r server gửi cho client.
 Còn có FastCGI Handler. FastCGI kế thừa CGI và được tùy chỉnh để giảm tải sự tương tác giữa script CGI và Webserver. Nhẹ hơn nên server phục vụ được nhiều yêu cầu cùng lúc hơn.
 
-VD: Action image/gif /cgi-bin/images.cgi # Chạy script image.cgi khi mở file .gif
 Cú pháp: Action action-type cgi-script [virtual]
-Thì action-type là MIME được thêm vào nhờ mod_mime bằng chỉ thị AddType như image/jpeg
+VD chạy script image.cgi khi mở file .gif: Action image/gif /cgi-bin/images.cgi
+action-type là MIME được thêm vào nhờ mod_mime bằng chỉ thị AddType như image/jpeg
 cgi-script là vị trí của CGI Script
 virtual thêm vào để loại bỏ các Handler phía trước
 
@@ -215,58 +214,52 @@ VD: Script POST "/cgi-bin/postcontent.cgi" => gặp request POST thì server ch�
 
 
 # Dùng Handler 
-Cơ chế là khi apache gọi đến 1 file nào thì thực hiện handler tương ứng. Mỗi kiểu file .php, .html, .cgi có handler riêng. Có loại handler phải tải vào bằng Module như php, có loại có sẵn trong Apache. 
+Apache gọi đến file nào thì thực hiện handler tương ứng. Mỗi kiểu file .php, .html, .cgi có handler riêng. Có handler phải tải vào bằng Module, có loại có sẵn trong Apache. 
 
-Các Handler mặc định tích hợp sẵn là:
-default-handler phục vụ các nội dung tĩnh (như các file ảnh .jpg ...)
-send-as-is (mod_asis) - Apache gửi file nhưng không có hầu hết phần header thông thường
-cgi-script: handler này thi hành file như cgi script
+-> Các Handler mặc định tích hợp sẵn:
+default-handler phục vụ các nội dung tĩnh như ảnh
+send-as-is (mod_asis) Apache gửi file nhưng không có hầu hết phần header thông thường
+cgi-script handler này thi hành file như cgi script
 server-info lấy thông tin server
 server-status lấy trạng thái server
 type-map phân tích file, ánh xạ đến nội dung cần thiết
 
-Handler cũng được gán bằng một CGI script được kích hoạt bởi Action. VD khi gọi đến file có phần mở rộng .xyz thì xử lý file đó với script CGI "/cgi-bin/program.cgi":
-# Files of a particular file extension
+Handler cũng được gán CGI script được kích hoạt bởi Action. VD khi gọi đến file đuôi .xyz thì xử lý file đó với script CGI "/cgi-bin/program.cgi":
 AddHandler my-file-type .xyz => tạo 1 handler mới tên là "my-file-type" xử lý mọi file có đuôi .xyz
 Action my-file-type "/cgi-bin/program.cgi"
 
-VD: thêm vào VirtualHost thiết lập:
+VD thêm vào VirtualHost thiết lập:
 <Location "/server-info">
   SetHandler server-info 
 </Location>
-=> Khi gọi đến địa chỉ /server-info thì Handler có sẵn của apache là server-info sẽ thi hành và trả về toàn bộ thông tin của Apache Server. Tương tự với handler server-status.
+Gọi đến địa chỉ /server-info thì Handler có sẵn của apache là server-info sẽ thi hành và trả về toàn bộ thông tin của Apache Server.
 
-VD: Xử lý trong file httpd.conf
-# Thêm một hander
-AddHandler handler-name extension
-# handler-nam là tên handler
-# extension là phần mở rông của file gắn với handler (php, html ...)
+VD xử lý trong file httpd.conf:
+# Thêm một hander có tên là handler-name
+AddHandler handler-name extension # extension là đuôi file gắn với handler
 
 # Loại bỏ Handler
-RemoveHandler extension
-# extension là phần mở rông của file gắn với handler cần bỏ
+RemoveHandler extension # extension là đuôi file gắn với handler cần bỏ
 
-# Thiết lập hander cho một nhóm file phù hợp với cú pháp: SetHandler handler-name
+# Thiết lập hander cho một nhóm file phù hợp với cú pháp SetHandler handler-name
 VD: Các file .php sẽ mở bằng handler có tên application/x-httpd-php
 <FilesMatch "\.php$">
   SetHandler application/x-httpd-php
 </FilesMatch>
 
--> suEXE giúp chạy CGI dưới 1 user khác với user đang chạy Apache HTTPD, mặc định thì cùng user.
-Khi sử dụng tính năng này mục đích để gán user cho những VirtualHost khác nhau. Ta nên quản lý user chặt chẽ, nếu k thì k nên dùng suEXE
+-> suEXE chạy CGI dưới 1 user khác với user đang chạy Apache HTTPD, mặc định là cùng user. Mục đích để gán user cho những VirtualHost khác nhau, phải quản lý user chặt chẽ.
 httpd -V sẽ ra -D SUEXEC_BIN="/apache/bin/suexec" là vị trí lưu suEXE
-
 VD sử dụng suEXE trên VirtualHost:
 <VirtualHost 123.123.123.123:80>
     ....
     SuexecUserGroup abc xyz
     ....
 </VirtualHost>
-=> Ở host địa chỉ và cổng trên nếu chạy CGI với FastCHI or PHP-FPM thì nó sẽ chạy tới user là abc và group là xyz
+Ở host địa chỉ và cổng trên nếu chạy CGI với FastCHI or PHP-FPM thì nó sẽ chạy tới user là abc và group là xyz
 
 
 
 # Dừng
--> publish global, dùng VirtualHost, self-sign SSL => để học tiếp phải đăng nhập được vào Router của wifi cơ
+-> publish global, dùng VirtualHost, self-sign SSL => để học tiếp phải đăng nhập được vào Router của wifi
 
 
