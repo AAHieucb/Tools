@@ -45,18 +45,10 @@ K chọn github phải có file gốc là index.html, k chọn overwrite cái in
 
 -> Connect githubn(hosting CI/CD): Tiếp tục từ npm install -g firebase-tools -> firebase init hosting -> Chọn dùng github và xđ user, repo, nhánh, grant access url, lệnh trước và sau khi deploy -> Có chọn option mỗi khi có merge request sẽ tự động deploy lại.
 
-
-
-
-//!!!!!!!!
 -> Hosting nextjs web tĩnh. URL: https://tsykin.com/blog/how-to-deploy-nextjs-to-firebase-hosting
-
-
-
-dùng SSG export tĩnh ra trước.
-
-Có 2 cách là firebase tự setup sẵn theo loại project k nên dùng, mà nên set thủ công NextJS hosting + CICD (Nếu k cần CICD chỉ cần bỏ đoạn setup git):
-firebase experiments:enable webframeworks -> firebase init hosting -> chọn config và git action -> setup url, nhánh -> Chọn url directory là out k dùng public -> Khi dùng nextjs có thể kp single page router như bth thì có thể dùng như dưới. Khi đó MPA (tức router của trang chính k trỏ đến các trang con mà người dùng chủ động gõ url vào trang con) thì phải dùng dynamic link như dưới:
+Dùng SSG export tĩnh ra trước. Nên set thủ công NextJS hosting + CICD.
+firebase experiments:enable webframeworks -> firebase init hosting -> chọn config và git action -> setup url, nhánh, /ouput 
+NextJS dùng MPA, nên set dynamic link:
 {
   "hosting": {
     "public": "out",
@@ -74,13 +66,13 @@ firebase experiments:enable webframeworks -> firebase init hosting -> chọn con
     ]
   }
 }
-Để chạy được, các lệnh github k set gì hết. Thêm lệnh npm run build và npm run export vào package.json để tạo ra thư mục out
-Mỗi lần gọi lệnh npm run export sẽ tạo ra file index.html trong /out ok. Nhưng để chạy được các lệnh này, 1 vài tính năng của Next sẽ lỗi. VD khi dùng next/image thẻ <Image/> thì phải thêm config unoptimize: true vào vì k hỗ trợ optimize image như vercel.
-Trong gitignore phải xóa out đi vì phải push cả nó lên git. Mỗi khi có git action (push, merge) lên đúng 1 nhánh của git sẽ kích hoạt gitaction gắn với firebase chạy lần lượt các lệnh cần thiết deploy dự án. Có thê xem trạng thái trong mục Action của dự án trên github.
-Mỗi lần sửa đổi: chạy build và export -> push lên git sau khi đổi thư mục out. Check cả 2 url .web.app và .firebaseapp.com thì mới được bản update mới nhất 
+Thêm npm run build và npm run export vào package.json để tạo ra thư mục out
+Mỗi lần gọi npm run export sẽ tạo file index.html trong /out ok. Config 1 vài tính năng của Next lỗi như khi dùng next/image, thẻ <Image/> thì phải thêm config unoptimize: true vào vì export SSG k hỗ trợ optimize image như vercel.
+.gitignore phải xóa /out đi. Mỗi khi có git action (push, merge) lên đúng 1 nhánh của git sẽ kích hoạt gitaction gắn với firebase chạy lệnh để deploy dự án.
+Mỗi lần sửa đổi, chạy build và export -> push lên git sau khi đổi thư mục out. Check url .web.app và .firebaseapp.com để thấy bản update mới nhất 
 
--> Hosting React: tương tự -> ở thư mục chưa public -> npm run build -> ... -> chọn folder public /build
-K cần vào web firebase tạo sẵn 1 app nx: create a new project (k dùng existing project) -> gõ tên project (là url web hiển thị, k viết hoa) -> enter tiếp để xác nhận dùng project id cùng tên luôn -> goi single app hay k tức là có dồn tất cả vào file index.html hay k thì chọn có
+-> Hosting React tương tự chọn folder public là /build
+Vào web firebase, create a new project -> gõ tên project -> enter tiếp để xác nhận dùng project id cùng tên luôn -> goi single app hay k tức là có dồn tất cả vào file index.html hay k thì chọn có
 Firebase lỗi reload khi reload trang lại theo url mới của ứng dụng và fix bằng cách thêm: 
 "rewrites": [
   {
@@ -88,6 +80,6 @@ Firebase lỗi reload khi reload trang lại theo url mới của ứng dụng v
     "destination": "/index.html"
   }
 ]
-Tức là vào bằng 1 url của react-router-dom thì firebase k chạy app nên k nhận diện được. Đoạn code trên là chạy tiếp vào index.html để xử lý dom và cho ra kết quả.
+Nguyên nhân vì vào bằng 1 url của react-router-dom thì firebase k nhận diện được. Đoạn code trên là chạy tiếp vào index.html để xử lý DOM và cho ra kết quả.
 
 
