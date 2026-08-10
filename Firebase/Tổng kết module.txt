@@ -43,11 +43,18 @@ K chọn github phải có file gốc là index.html, k chọn overwrite cái in
 } 
 => Khi chuyển route bị lỗi khi k tìm thấy route đó trong server hosting vì mặc định server chỉ host / or đường dẫn xđ trong package json, vì ta dùng single page nên phải redirect mọi url vào index.html để từ đó chạy các component Switch Route bên trong trỏ đến đúng trang cần lấy (SPA)
 
+-> Connect githubn(hosting CI/CD): Tiếp tục từ npm install -g firebase-tools -> firebase init hosting -> Chọn dùng github và xđ user, repo, nhánh, grant access url, lệnh trước và sau khi deploy -> Có chọn option mỗi khi có merge request sẽ tự động deploy lại.
 
--> Có thể connect github(hosting CI/CD): Tiếp tục từ npm install -g firebase-tools -> firebase init hosting -> ... -> Chọn dùng github Yes -> xđ user/repo -> grant access theo url hiện ra(làm 1 lần) -> xđ nhánh -> xđ câu lệnh trước và sau khi deploy -> Có option chọn mỗi khi merge pull request, app sẽ tự động deploy lại (thực ra cứ push lên git là nó tạo ra phiên bản mới ngay) -> nếu gắn với git phải push lên 1 lần mới đc
 
--> Hosting nextjs khi tạo web tĩnh: dùng SSG export tĩnh ra trước.
-URL: https://tsykin.com/blog/how-to-deploy-nextjs-to-firebase-hosting?utm_source=reddit&utm_medium=referral&utm_content=comment
+
+
+//!!!!!!!!
+-> Hosting nextjs web tĩnh. URL: https://tsykin.com/blog/how-to-deploy-nextjs-to-firebase-hosting
+
+
+
+dùng SSG export tĩnh ra trước.
+
 Có 2 cách là firebase tự setup sẵn theo loại project k nên dùng, mà nên set thủ công NextJS hosting + CICD (Nếu k cần CICD chỉ cần bỏ đoạn setup git):
 firebase experiments:enable webframeworks -> firebase init hosting -> chọn config và git action -> setup url, nhánh -> Chọn url directory là out k dùng public -> Khi dùng nextjs có thể kp single page router như bth thì có thể dùng như dưới. Khi đó MPA (tức router của trang chính k trỏ đến các trang con mà người dùng chủ động gõ url vào trang con) thì phải dùng dynamic link như dưới:
 {
