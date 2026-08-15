@@ -1,29 +1,29 @@
-# Basic
+# Github action
+Tự động hóa khi có sự kiện xảy ra, VD khi push code lên thì thực hiện tác vụ nào.
+Có thể update lên VPS or cloud nào đó và connect với github qua github actions để tự động hóa deploy. VD firebase or vercel. Còn nếu k hỗ trợ github actions thì phải tự code workflow để chạy lệnh nào khi push code.
 Tương tác với repo qua API được: https://docs.github.com/en/rest/repos?apiVersion=2022-11-28#create-a-repository-dispatch-event
+
+-> CI/CD:
+Continuous integration (CI) khi code merge thì tự động build, test, AI check lỗi nếu có sẽ gửi mail.
+Continuous delivery/deployment (CD) là tự động deploy lên môi trường tương ứng sau đó. Nếu fail vẫn dùng phiên bản thành công gần nhất.
+Thường setup dev merge vào nhánh dev 1 lượng lớn thì admin mới merge vào master và tự động deploy dùng thử non-production or staging env (bản test cho QA). Sau khi hoàn thành chỉ tiêu mới chốt version release lên production mới.
 
 -> Events ---trigger---> Workflows ---Use---> Actions
 Các event có thể trigger: https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#push
 Thường dùng push, pull_request, public, schedule (tự động chạy sau 1 khoảng tg), workflow_dispatch (trigger 1 actions thủ công qua 1 nút, có thể biến thành api để call từ xa)
 
-Có nhiều actions và workflow có sẵn có thể dùng. Có thể viết actions bằng bất cứ ngôn ngữ nào miễn có thể compiled ra JS, tối thiểu phải có 2 file là index.js và action.yml config cho chạy index.js. Nên chia nhỏ và k tạo 1 action làm quá nhiều thứ vì rất khó debug cũng như khi thêm bớt các step tính năng mới sẽ phải viết lại actions
-Có thể tự tạo actions và cho lên marketplace. 1 actions có thể pull code từ git hay setup các tool chain lớn. VD marketplace có sẵn các actions như setup java jdk, setup .net core sdk, setup go evironment.
-Khi tạo actions và nhiều người khác dùng nó, xong ta code sửa đổi actions thì nên tạo ra version mới cho nó. Tránh những người khác chạy action version lỗi khi dùng với version code của repo hiện tại. VD báo rằng 1 acion này dùng với repo nhánh có version v1.0.0:
+Có thể dùng actions và workflow có sẵn. Có thể viết actions bằng bất cứ ngôn ngữ nào miễn có thể compiled ra JS, tối thiểu phải có 2 file index.js và action.yml config cho chạy index.js. Nên chia nhỏ và k tạo 1 action làm quá nhiều thứ vì khó debug.
+Có thể tự tạo actions và cho lên marketplace. 1 actions có thể pull code từ git hay setup các tool chain lớn. VD marketplace có sẵn các actions setup java, .net core, go env.
+Khi tạo actions public có nhiều người khác dùng thì nên tạo version mới mỗi khi sửa actions để tránh ảnh hưởng người khác chạy version cũ. VD báo rằng 1 acion này dùng với repo nhánh có version v1.0.0:
 steps:
   - name: My Action Step
     uses: owner/repo@v1.0.0
-=> Thường có docs cho github actions báo những tham số cần điền hay version của actions
-
-Kết hợp docker thì chỉ chạy được trên linux vm của github actions.
-Có thể dùng secret or biến global trong phạm vi repo hay organization 1 nhóm các projects đều được.
-
--> Chọn từ tab actions của github có "Simple workflow"
+Có thể kết hợp docker. Có thể set dùng biến secret or global trong phạm vi repo hay organization.
 
 
 
 # Code file yml
-URL tổng hợp syntax: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#on
-
--> Tổng hợp:
+-> URL tổng hợp syntax: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#on
 name: CI
 on:
   push:
@@ -84,8 +84,7 @@ jobs:
           event-type: MyCustomEventName
           client-payload: '{"testboolean": 123}'
 
--> Master cấu hình workflow event: Còn rất nhiều cách để trigger workflow như tạo comment hay xóa branch
-
+-> Có nhiều cách trigger workflow như tạo comment hay xóa branch:
 on: push 
 on: [push, pull_request] 
 
@@ -111,12 +110,10 @@ on:
     paths:
     - '**.js' # Ngược lại cái trên
 
---> Trigger workflow theo schedule định sẵn bằng POSIX cron syntax:
-on:
+on: // Trigger workflow theo schedule định sẵn bằng POSIX cron syntax
   schedule:
     - cron:  '*/15 * * * *' # thực hiện trigger mỗi 15 phút
-
-Cái này thực thi trên sources của commit mới nhất của default branch. Cú pháp Cron syntax có 5 trường ngăn khoảng trắng:
+Thực thi trên sources của commit mới nhất của default branch. Cú pháp Cron syntax có 5 trường ngăn khoảng trắng:
 <Phút> <giờ> <ngày trong tháng> <tháng> <ngày trong tuần>
 Toán tử: * là tất cả giá trị; , là giá trị trong danh sách
 VD: 2,10 4,5 * * * là chạy ở phút thứ 2, 10 và giờ thứ 4,5 của mọi ngày 
@@ -125,8 +122,7 @@ VD: 0 4-6 * * * => mỗi 0 phút, từ 4-6 giờ của mọi ngày
 / là bước nhảy giá trị
 VD: 20/15 * * * * là chạy mỗi 15 phút từ phút thứ 20 mỗi giờ (tức chạy ở các phút 20, 35, 50 của mỗi giờ)
 
---> Matrix build giúp viết code 1 lần mà chạy build nhiều lần chạy trên các nền tảng và version khác nhau theo tham số. 
-Chỉ dùng khi cần test trên nhiều phiên bản, hđh. Mỗi lần chạy là một môi trường riêng biệt, song song.
+-> Matrix build giúp viết code 1 lần mà chạy build nhiều lần chạy từng nền tảng và version khác nhau theo tham số. Dùng khi cần nhiều phiên bản và OS độc lập khác nhau.
 VD: 
 jobs: 
   build: 
@@ -161,28 +157,46 @@ run: |
     echo "Normal build"
   fi
 
--> Jobs có thể là 1 script do ta viết or 1 action. Mỗi job được chạy độc lập trong 1 virual machine runner or 1 container riêng.
-Event -> Runner1[Job1[run action -> run script -> run action]] -> Runner2[Job2[run action -> run script]]
-Default các job sẽ run parallel, ta có thể setup run tuần tự. 
-Runner là 1 server máy ảo chạy cái workflow, có sẵn đủ linux, window, macos. Nếu ta cần các điều kiện phần cứng phức tạp có thể host riêng 1 runner. 1 runner chỉ chạy được 1 job 1 lúc.
-Khi có workflow, github actions sẽ check code được pushed và cài BATS(Bash Automated Testing System) testing framework rồi chạy command hiển thị version: bats -v
+-> Jobs có thể là 1 script tự viết or 1 action. 
+Mỗi job chạy độc lập trong 1 VM runner or 1 container riêng: Event -> Runner1[Job1[run action -> run script -> run action]] -> Runner2[Job2[run action -> run script]]
+Default các job sẽ run parallel, có thể setup run tuần tự. 
+Runner là 1 server VM chạy workflow, có sẵn linux, window, macos. Nếu cần các điều kiện phần cứng phức tạp có thể host riêng 1 runner. 1 runner chỉ chạy được 1 job 1 lúc.
+Khi có workflow, github actions sẽ check code được pushed và cài BATS(Bash Automated Testing System) testing framework rồi chạy command hiển thị version "bats -v"
+
+
+
+# Self-hosted runner
+Có thể tuỳ ý customize chạy 1 runner vừa build .net app, vừa build nodejs app nhưng nên tách ra.
+
+-> Github hosted runner là máy ảo cung bởi github để chạy job trong github actions. 1 job - 1 runner. Có các loại runner khác nhau như ubuntu, windows, macOs.
+Runner tự động clear hết mọi instance sau khi thực hiện từng job xong. Tối ưu tài nguyên nhưng có thể bất tiện khi mỗi lần chạy phải lặp lại việc tải các file về máy ảo.
+Bản free chạy trên máy ảo 2000 phút 1 tháng. 
+
+-> Có thể chạy github actions trên self hosted runner là VM của ta để tuỳ ý quản lý hoàn toàn cách chạy và k giới hạn.
+VD nếu ta build 1 application cần dùng đến GPU chẳng hạn mà github hosted runner k có thì ta phải tự setup self hosted runner có GPU. 
+Khi tự setup, k nên dùng self hosted runner cho public repo vì người ngoài có thể lợi dụng nó, nếu dùng thì nên thêm firewall và ip allowed list cho an toàn.
+Khi có nhiều self hosted runner, có thể gom thành 1 runner group. Vd group chia theo từng team, chia theo repo và organization hay nhóm các runner linux lại với nhau. 
+Nên cấu hình dedicated user cho runner vì có các actions cần lệnh sudo, có actions không cần, nên phân quyền cho những user nào được quyền chạy các actions tương ứng. 
+
+URL: https://docs.github.com/en/actions/hosting-your-own-runners
+Để tạo 1 self hosted runner thì github cung sẵn script chỉ cần tải về và chạy trên self hosted VM, rồi config authentication với token là nó sẽ lắng nghe các event từ repo để thực hiện jobs tương ứng. 
+VM self hosted phải đảm bảo cài đầy đủ các framework, dependency cần thiết để chạy ứng dụng mà phải setup thủ công.
 
 
 
 # Debug github action
-Có thể xem log trong github
+Luôn dùng github actions extension của VS sẽ tự check lỗi logic và chỉ dẫn cho file yml, chỉ hoạt động khi file yml đặt trong đúng folder .github\workflows
 
-Muốn log show chi tiết thông tin debug của từng bước, show warning và lỗi. Dùng ACTIONS_STEP_DEBUG có sẵn của github. VD:
+Có thể xem log trong github
+Muốn log show chi tiết debug của từng bước, warning và error thì dùng ACTIONS_STEP_DEBUG có sẵn của github. VD:
 steps:
   - name: My Step
     run: echo "Hello, World!"
     env:
       ACTIONS_STEP_DEBUG: true # Nó tạo nhiều output đầu ra nên chỉ dùng khi thực sự cần.
 
-Luôn dùng github actions extension của VS sẽ tự check lỗi logic và chỉ dẫn cho file yml. Nó chỉ hoạt động khi file yml đặt trong đúng folder .github\workflows
-
--> Trong github actions có Super-Linter là repo giúp check faulty code của đủ loại ngôn ngữ mà github hỗ trợ. Việc check bằng super linter trước khi commit giúp tránh các lỗi cơ bản => k cần thiết mấy vì thg build thành công mới push code chứ
-VD 
+Github actions có Super-Linter là repo giúp check faulty code của đủ loại ngôn ngữ mà github hỗ trợ => k cần thiết vì thường build thành công mới push code mà. 
+VD: 
 - name: Run Super-Linter # Để chạy super linter trước khi thực hiện tiếp cái khác bên dưới
   uses: github/super-linter@v4
   env:
@@ -191,9 +205,9 @@ VD
 
 
 # Environment
-Ta có thể phân chia môi trường Dev, QA, PreProd, Prod. Mỗi môi trường có biến secret riêng và k ảnh hưởng lẫn nhau.
+Có thể chia môi trường Dev, QA, PreProd, Prod. Mỗi env có biến secret riêng k ảnh hưởng lẫn nhau.
 Environment ở trạng thái waiting tức đang chờ approval, inactive là chưa chạy lần nào, active là đã chạy, queued là đang chạy 
-Protection rules giúp xác định đk, VD chỉ deploy khi admin cho phép, chỉ deploy với code ở 1 branch cụ thể, tích hợp thêm các API của bên thứ 3, wait timer. Theo dõi tất cả trong Deployments Activity log
+Protection rules giúp xác định đk, vd chỉ deploy khi admin cho phép, chỉ deploy với code ở 1 branch cụ thể, tích hợp thêm các API của bên thứ 3, wait timer. Theo dõi tất cả trong Deployments Activity log
 
 -> Dùng environment:
 - Tab settings của repo hoặc organization. Chỉ có trong public repo hoặc enterprise private repo
@@ -203,33 +217,16 @@ Protection rules giúp xác định đk, VD chỉ deploy khi admin cho phép, ch
 environment: 
   name: Development
   url: "http://dev.myapp.com"
-sẽ tự deploy vào môi trường Development tạo từ trước và deploy với domain url phải bắt đầu bằng http/https. Có cách dùng dynamic url mà k fix cứng như này
-=> Ngoài các đk if và needs, dùng environment chỉ là để thêm điều kiện protection rules nữa vào thôi. Mỗi env có 1 protection rules.
-
-
-
-# Self-hosted runner
--> Github hosted runner là máy ảo cung bởi github để chạy job trong github actions. 1 job - 1 runner. Các loại runner khác nhau như ubuntu, windows, macOs.
-Runner tự động clear hết mọi instance sau khi thực hiện từng job xong. Tối ưu tài nguyên nhưng bất tiện vì nếu ta tải các file về máy ảo, lần sau chạy phải tải lại và lặp lại quy trình.
-Bản free chạy trên máy ảo 2000 phút 1 tháng. 
-
--> Có thể setup chạy github actions trên self hosted runner là máy ảo trên hạ tầng của ta để tuỳ ý quản lý hoàn toàn cách chạy và k giới hạn.
-VD nếu ta build 1 application cần dùng đến GPU chẳng hạn mà github hosted runner k có thì ta phải tự setup self hosted runner có GPU của ta. Có thể tuỳ ý customize chạy 1 runner vừa build .net app, vừa build nodejs app nhưng nên tách ra.
-Khi tự setup, k nên dùng self hosted runner cho public repo vì người ngoài có thể lợi dụng nó, nếu dùng nên thêm firewall và ip allowed list cho an toàn.
-
---> Để tạo 1 self hosted runner: Github cung sẵn script chỉ cần tải về và chạy trên self hosted VM, rồi config authentication với token là nó sẽ lắng nghe các event từ repo để thực hiện jobs tương ứng thôi. URL: https://docs.github.com/en/actions/hosting-your-own-runners
-VM self hosted phải đảm bảo cài đầy đủ các framework, dependency cần thiết để chạy ứng dụng mà ta phải setup thủ công.
-
---> Khi có nhiều self hosted runner, có thể gom thành 1 runner group. Vd group chia theo từng team, chia theo repo và organization hay nhóm các runner linux lại với nhau. 
-Nên cấu hình dedicated user cho runner vì có các actions cần lệnh sudo, có actions không cần, ta nên phân quyền cho những user nào được quyền chạy các actions tương ứng. 
+sẽ tự deploy vào môi trường Development tạo từ trước và deploy với domain url phải bắt đầu bằng http/https. Cũng có cách dùng dynamic url mà k cần fix cứng.
+Ngoài các đk if và needs, dùng environment chỉ là để thêm điều kiện protection rules vào, mỗi env có 1 protection rules.
 
 
 
 # Secrets
-Secret trong github acion k thể lấy ra dùng trong app. Khi fork 1 repo cũng k fork được secret. Nó chỉ khác env var ở chỗ nó bí mật.
+Secret trong github acion k thể lấy ra dùng trong app. Khi fork 1 repo cũng k fork được secret. Secret chỉ khác env var là nó bí mật.
 Có thể dùng secret qua API hay cli hay trong file github.action nhưng k thể xem được giá trị hay in ra
 
--> Tạo secret: vào settings của repo -> Ấn secrets để dùng secret của repo. Có thể vào Environment để tạo secret cho từng môi trường
+-> Có thể vào setting của repo để tạo secret, cũng có có thể vào Environment để tạo secret cho từng môi trường
 Có tool Azure key vault trong marketplace giúp lấy secret ra output variables của các actions để dùng trong workflow
 
 Organization secret sẽ áp dụng với mọi repo trong organization => trả phí
@@ -258,7 +255,8 @@ with:
 
 
 # Dùng github actions tạo dynamic file readme
+URL: https://dev.to/jacktt/creating-dynamic-readmemd-file-388o?fbclid=IwAR2XUYI_UdIzb-Owtk4H8-JCy8zvDKLBYec5OrJLViCeb0EnkNffMTcIl-U
 Có thể tạo 1 file readme template và code template cho file đó bằng markdown. Rồi tạo 1 github actions riêng nhận data fill vào chỗ trống đó.
 Set github actions chạy với cron job, định kỳ fetch lại data update tự động vào readme.template cho ra output là Readme.md show ra trên git.
-URL: https://dev.to/jacktt/creating-dynamic-readmemd-file-388o?fbclid=IwAR2XUYI_UdIzb-Owtk4H8-JCy8zvDKLBYec5OrJLViCeb0EnkNffMTcIl-U
+
 

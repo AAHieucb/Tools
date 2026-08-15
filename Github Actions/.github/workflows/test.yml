@@ -1,4 +1,3 @@
-# Chỉ cần bỏ file này vào .github/workflows của bất kỳ repo nào sẽ tự chạy
 # Workflow mẫu basic nhất.
 name: CI
 on:
