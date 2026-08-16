@@ -1,9 +1,10 @@
-# Basic
-Nginx làm web server chặn DDoS, load balancer, xử lý 10000 kết nối đồng thời mà chiếm ít bộ nhớ, mã hóa SSL, cache txt css ảnh tĩnh trả dữ liệu luôn để k cần gọi tới server.
-Cloudflare chống DDoS tốt nên có thể kết hợp dùng như 1 lớp reverse proxy trước nginx, cứ cần thêm cái gì thì add nó như 1 lớp reserve proxy forward liên tục tới đích là được.
+# Nginx
+Nginx làm web server, chặn DDoS, load balancer, xử lý 10000 kết nối đồng thời mà chiếm ít bộ nhớ, mã hóa SSL, cache txt css ảnh tĩnh trả dữ liệu luôn để k cần gọi tới server.
+Cloudflare chống DDoS tốt nên có thể kết hợp dùng như 1 lớp reverse proxy trước nginx. Cứ cần thêm cái gì thì add nó như 1 lớp reserve proxy forward liên tục tới đích là được.
 
 
 
+//!!!!!!!!!
 # Config Nginx 
 URL search: https://viblo.asia/p/tim-hieu-va-huong-dan-setup-web-server-nginx-OREGwBwlvlN
 
@@ -410,5 +411,52 @@ Cách khác để xoay vòng là dùng logrotate: nó là chương trình cài s
 
 # Other
 -> Tool https://github.com/matsuu/kataribe giúp phát hiện bottleneck, kết hợp với nginx nhưng phải enable => uncomment phần log_format và access_log của file config
+
+
+
+
+### Thực hành
+# Thực hành dùng pm2 tạo 3 cái server nodejs và dùng nginx để cân bằng tải các server đó => ref tới "nginx-loadbalancer"
+pm2 giúp khởi động lại dự án khi crash or VPS reboot. Nếu k có thì khi gặp TH như v ta phải tự vào vps và npm start thủ công.
+Nên dùng pm2 startup ubuntu.
+
+Mở cmd vào url có file nginx.exe -> chạy: taskkill /f /im nginx.exe để tắt các nginx cũ -> chạy: start nginx.exe để restart cái nginx 
+Cấu hình config cho nginx làm cân bằng tải cho 3 server với round robin hay iphash.
+
+Hosting lên VPS ubuntu rồi vào terminal VPS để tải code dự án. Cài npm nodejs nginx. Trong file config của nginx nhớ đổi: server_name <YourVPSIpAddress>; và ta có thể truy cập public được website của ta.
+
+
+
+# Setup dự án NodeJS deploy hoàn chỉnh Cloud DigitalOcean + NodeJS Express Web App + Custom Domain + Reverse Proxy Nginx + SSL certbot
+URL: https://www.youtube.com/watch?v=oykl1Ih9pMg
+
+-> Tạo 1 dự án NodeJS và push lên github -> vào Digital Ocean create droplet -> chọn ubuntu và các thông tin khác -> chọn SSH keys và hostname là tạo được 1 cloud server
+=> Tuỳ loại cloud. Digital Ocean cho vào cmd hệ điều hành của VPS trong khi Heroku k làm được v mà phải thông qua git của heroku, do đó k thể dùng nginx kết hợp với Heroku bth.
+
+ssh root@<ip address cung từ VPS của digital ocean> vào terminal VPS -> sudo apt update -> cài node và npm: sudo apt install nodejs -> tạo app và clone từ github về trên máy ảo(chứ kp command copy nào ở đây cả) -> vào app -> npm install -> Chạy server rồi vào <ip của VPS>:<port> ok. Nhưng ta k muốn cái url xàm lol thế này nên phải dùng thêm nginx
+=> Dùng docker sẽ k cần cài từng cái phức tạp.
+
+-> npm install -g pm2 -> pm2 start app.js -> app sẽ run ở background -> Dùng pm2 startup
+
+-> Trước khi dùng nginx ta sẽ enable firewall trên VPS: 
+"ufw status" xem trạng thái firewall hiện tại -> ufw enable để mở firewall nhưng nó sẽ disrupt cái ssh connection hiện tại -> ufw allow ssh -> kêt nối lại connection đó -> ufw status sẽ thấy port 22/tcp được mở vì đó là của SSH mà ta đang sử dụng -> vào lại app thấy k chạy vì firewall k mở port 5000 như trước
+=> Và ta cũng k cần mở port 5000 nữa mà cái ta cần là port 80 và 143 cơ để nginx sẽ tự forward 5000 cho ta
+
+ufw allow http -> ufw allow https -> ufw status sẽ thấy mở thêm 80 và 143 -> sudo apt install nginx -> nginx tự được mở vào ip của server sẽ thấy -> mở file config ở: /etc/nginx/sites-available/default và sửa location / ra proxy_pass http://localhost:5000 và các setting khác -> server_name thêm 2 phiên bản url và www.url vào nginx -> save và sudo nginx -t để check -> sudo service nginx restart -> vào lại trang web ở ip của VPS chả cần port nx cũng tự vào trang web của ta
+
+->*** Để có cái url server_name kia ta dùng bất cứ 1 nền tảng nào giúp đk tên miền, VD namecheap -> đăng ký 1 domain miễn phí
+
+-> Bh ta có 1 domain và ip của VPS từ digitalocean. Ta cần hợp nó lại
+Vào networking của digitalocean thêm cái domain vào để digitalocean quản lý DNS -> tạo record cho các domain 2 phiên bản thường thì dùng dấu @ và www để digitalocean xác định url nào thì redirect vào app nào của ta -> từ trang tạo domain ở đây là namecheap, ta phải thêm custom server name vào là: ns1/ns2/ns3.digitalocean.com -> mất 1 khoảng thời gian để DNS server update nó thì ta vào url của ta là nó vào đúng app luôn
+=> Ở đây cơ chế là: vào url của ta -> DNS server gọi đến nhà cung cấp namecheap xác định server name digitalocean, gửi đến server đó rồi digitalocean gọi đến app của ta trong dự án của digital ocean gọi vào bên trong với cái url kia -> nginx bắt được đầu tiên sẽ chạy các khối http và server bên trong thì thấy khối có server_name trùng được thực thi gọi vào khối location redirect đến localhost:5000 của VPS mà cổng 5000 đang dược chạy bởi PM2 chạy 1 nodejs server bắt http request gửi trả thông tin vè lại client
+
+-> Cài certbot: sudo add-apt-repository ppa:certbot/certbot -> sudo apt update -> sudo apt-get install python-certbot-nginx -> sudo certbot --nginx -d yourdomain.site -d www.yourdomain.site -> điền các thông tin và chọn option tự động redirect vào https khi truy cập http -> bh trang web của ta đã secure SSL -> SSL cerfiticate tự hết hạn sau 90 ngày nên phải chạy command sau để tự động gia hạn mỗi 90 ngày k cần làm thủ công: certbot renew --dry-run
+
+--> certbot renew --dry-run không tự động gia hạn mà chỉ để kiểm tra quá trình gia hạn, gọi vô hạn được.
+cerbot renew thực sự gửi yêu cầu tới Let's Encrypt để gia hạn chứng chỉ. Nên chạy câu lệnh trên trước để đảm bảo có thể gia hạn thành công r mới chạy thực. Gọi có limit / tuần.
+Nó không chạy định kỳ, có thể dựng 1 server hoặc dùng systemd chạy ngầm check mỗi tuần 1 lần để tự gửi request gia hạn khi sắp hết.
+
+=>*** Lưu ý host VPS toàn quyền root khác với dùng Heroku hay Google Firebase khi nó có sẵn mọi thứ. VD host lên Heroku không thể cài nginx được và cũng k cần vì nó hỗ trợ hết reverse proxy hay ssl các thứ rồi. Dùng docker trên Heroku cũng khó và bị hạn chế rất nhiều.
+=> Digital Ocean chỉ khác 1 máy laptop cá nhân bth là tuỳ chỉnh cấu hình và public ip sẵn thôi.
 
 

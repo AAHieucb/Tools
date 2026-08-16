@@ -1,13 +1,10 @@
 # SS nginx apache 
-Apache chỉ nhận 1 lượng request xác định và loại bỏ số còn lại trong khi NGINX cố gắng hết khả năng để k bỏ qua 1 request nào. 
-Nginx chịu được số user truy cập 1 thời điểm nhiều hơn Apache.
-Apache "prefork" thì mỗi request kể cả lấy tài nguyên tĩnh đều dùng 1 process riêng. Còn nginx xử lý hướng sự kiện trong cùng 1 luồng async, 1 process xử lý nhiều request liên tục tuỳ lượng tài nguyên còn lại của hệ thống. Mỗi process gồm nhiều worker nhỏ hơn xử lý request và Worker Connections sẽ quản lý tât cả thread đó, giải quyết C10K
-
-Nginx rất tốt trong việc xử lý nội dung tĩnh lưu lượng cao, có thể kết hợp Apache để tận dụng lợi thế xử lý nhanh. VD:
+Apache chỉ nhận 1 lượng request xác định và loại bỏ số còn lại, còn NGINX cố gắng để k bỏ qua 1 request nào. Nginx chịu được số user truy cập 1 thời điểm nhiều hơn Apache.
+Apache mỗi request kể cả lấy tài nguyên tĩnh đều dùng 1 thread riêng. Còn nginx xử lý hướng sự kiện trong 1 thread async, xử lý nhiều request tuỳ lượng tài nguyên còn lại của hệ thống. Nginx giải quyết C10K prob, có nhiều worker nhỏ xử lý các request, Worker Connections sẽ quản lý các worker đó.
+Nginx tốt trong việc xử lý nội dung tĩnh lưu lượng cao, có thể kết hợp Apache để xử lý nhanh nội dung động. 
 Client <--> Front-end <--> Backend(Php,..) - Apache
                       <--> Static content(txt, js, css, images, video,..) - NGINX
-
-=> Apache, Nginx chuyên php, html, nodejs; IIS của Microsoft dành cho asp, aspx; Sun Java system dành cho jsp.
+Apache, Nginx chuyên php, html, nodejs. IIS của Microsoft dành cho asp, aspx. Sun Java system dành cho jsp.
 
 
 
@@ -18,21 +15,17 @@ Reverse Proxy: Đại diện cho máy chủ nhận các request. Nó có thể c
 
 
 # Pb VPS và máy chủ vật lý
-VD cấu hình laptop cá nhân
-- Ta cài đặt các dịch vụ máy chủ muốn sử dụng (như Apache, MySQL, PHP) trực tiếp lên laptop là thành 1 server vật lý. Cấu hình hosting public ra ngoài.
+- Cài đặt các dịch vụ máy chủ như Apache, MySQL, PHP trực tiếp lên laptop cá nhân là thành 1 server vật lý. Cấu hình hosting public ra ngoài.
 - Ta dùng phần mềm ảo hóa như VMWare hoặc VirtualBox phân chia tài nguyên từ máy gốc. Mỗi máy ảo chạy 1 hđh riêng rồi cung ra ngoài cho người khác thuê gọi là cung ra VPS.
-VPS thường các nền tảng cung ra dùng tài nguyên cloud cơ.
 
 
 
 # Có 4 loại web hosting: 
-- Shared hosting (hay hosting): trang web của ta đặt trên 1 máy chủ cùng vói nhiều trang web khác. Các website chia sẻ tài nguyên từ máy chủ như RAM, CPU. Rất rẻ, kỹ năng chuyên môn k cao, chỉ cần upload file lên thôi. Bảo mật không tốt vì hàng đống website cùng IP máy chủ.
+- Shared hosting: trang web đặt trên 1 máy chủ cùng vói nhiều trang web khác. Các website chia sẻ chung tài nguyên từ máy chủ như RAM, CPU. Rất rẻ, kỹ năng chuyên môn k cao, bảo mật không tốt và các website đó đều cùng IP máy chủ.
 - VPS (Virtual Private Server) là máy chủ ảo được chia tài nguyên từ 1 máy chủ gốc bằng các phần mềm ảo hoá. Nó có ip riêng, tài nguyên độc lập. 1 website k bị ảnh hưởng hiệu suất bởi các website khác nếu máy host k bị quá tải. 
-- Server (server tự mua): kiểm soát tài nguyên hoàn toàn mà k lo bảo mật, có thể cho người khác thuê lại. Chi phí có riêng 1 cái khá cao vì phải đảm bảo về phần cứng, các công ty bảo mật toàn dùng cách này. Tự bảo trì và quản lý máy chủ. Vẫn dùng chung server vật lý với người khác nhưng được phân bố 1 vùng riêng.
+VD kiến trúc react nginx: Client --SSL--> VPS[Nginx -> PM2 -> Serve{HTML, CSS, JS, static assets}]
+- Server tự mua: kiểm soát tài nguyên hoàn toàn và an toàn. Có thể cho người khác thuê lại. Chi phí có riêng 1 máy VM khá cao vì phải đảm bảo về phần cứng, các công ty bảo mật thường mua server riêng và tự bảo trì. Vẫn cho dùng chung server vật lý với người khác nhưng được phân bố 1 vùng riêng.
 Máy tính cá nhân mà host thì thường thường chạy hệ điều hành FreeNAS. Nhưng RAM CPU sẽ yếu hơn máy chủ chuyên dụng.
-- Cloud Hosting: khả năng không giới hạn xử lý lượng truy cập lớn. Trả thêm phí nếu muốn can thiệp sâu vào hệ thống. Bộ nhớ của cloud được tổng hợp từ các vùng nhớ rảnh trên nhiều máy chủ. Website cũng được phân bố nhiều máy chủ cloud đảm bảo tính availability cao.
-
-VD 1 kiến trúc VPS react nginx:
-Client --SSL--> VPS[Nginx -> PM2 -> Serve{HTML, CSS, JS, static assets}]
+- Cloud Hosting: khả năng không giới hạn xử lý lượng truy cập lớn. Trả thêm phí nếu muốn can thiệp sâu vào hệ thống. Bộ nhớ của cloud được tổng hợp từ các vùng nhớ rảnh trên nhiều máy chủ. Website cũng được phân bố ở nhiều máy chủ cloud đảm bảo tính availability cao.
 
 
