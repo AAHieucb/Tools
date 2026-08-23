@@ -1,29 +1,27 @@
 # Nginx
 Nginx làm web server, chặn DDoS, load balancer, xử lý 10000 kết nối đồng thời mà chiếm ít bộ nhớ, mã hóa SSL, cache txt css ảnh tĩnh trả dữ liệu luôn để k cần gọi tới server.
-Cloudflare chống DDoS tốt nên có thể kết hợp dùng như 1 lớp reverse proxy trước nginx. Cứ cần thêm cái gì thì add nó như 1 lớp reserve proxy forward liên tục tới đích là được.
-
-
-
-//!!!!!!!!!
-# Config Nginx 
-URL search: https://viblo.asia/p/tim-hieu-va-huong-dan-setup-web-server-nginx-OREGwBwlvlN
-
-nginx -t => lệnh check cú pháp của file nginx đang dùng có chuẩn không
+Cloudflare chống DDoS tốt nên có thể kết hợp như 1 lớp reverse proxy trước nginx. Cứ cần thêm cái gì thì add nó như 1 lớp reserve proxy forward liên tục tới đích là được.
+ 
+-> nginx -t => lệnh check cú pháp của file config nginx đang dùng có chuẩn không
 nginx -t -c /etc/nginx/nginx.conf => lệnh check cú pháp của 1 file nginx config cụ thể có chuẩn không
 
--> Nginx có thể có nhiều file config và thường thì nó tự nạp tất cả file .conf trong thư mục như /etc/nginx/conf.d/
-Đặt tên tuỳ ý nhưng nên code server khác nhau trong các file config để k xảy ra trường hợp đè nhau hay ưu tiên lấy cái nào trước.
+Nginx có thể có nhiều file config và thường thì nó tự nạp tất cả file.conf trong /etc/nginx/conf.d/
 Có thể chỉ định thêm các file nào với "include". Cơ chế nó nối nội dung các file config vào mà thôi.
 
--> Các module trong file:
+
+
+# Module và directives
+URL search: https://viblo.asia/p/tim-hieu-va-huong-dan-setup-web-server-nginx-OREGwBwlvlN
+
+-> Các module:
 - http: các chỉ thị từ tất cả các module liên quan đến HTTP. Có thể tạo nhiều khối và các khối chỉ thị sau sẽ đè lên trước.
 - server: khai báo 1 website (hostname) cụ thể được nhận diện bởi nginx và cấu hình của nó. Khối này nằm trong khối http, default là hostname localhost gửi lại file index.html
 - upstream: xác định 1 nhóm các server
 - location: định nghĩa các thiết lập áp dụng cho 1 vị trí cụ thể của URL website. Khối location có thể dùng trong khối server or nằm chồng trong 1 khối location khác
-=> VD ta tạo khối http cấu hình web và bên trong có nhiều khối server, mỗi khối server ta định nghĩa các tên miền mà website có. Bên trong đó lại có nhiều khối location định nghĩa các uri khớp với 1 mẫu nào thì thiết lập cái gì
+VD tạo khối http cấu hình web và bên trong có nhiều khối server, mỗi khối server định nghĩa các tên miền mà website có. Bên trong đó lại có nhiều khối location định nghĩa các uri khớp với 1 mẫu nào thì thiết lập cái gì
 
--> Các chỉ thị
---> Cấu hình HOST và SOCKET
+-> Directives
+--> Chỉ thị cấu hình HOST và SOCKET:
 Cú pháp: listen [address] [:port] [additional options];
 listen: dùng trong khối server, địa chỉ ip và port được dùng bởi socket phục vụ website. Thường là 80 cho http và 443 cho https. 
 Các [additional options]:
@@ -40,7 +38,7 @@ server_name .website.com; # Kết hợp cả *.website.com và website.com
 Có thể dùng chuỗi rỗng như 1 giá trị của chỉ thị để bắt tất cả các yêu cầu không có giá trị Host trong phần header, nhưng chỉ sau ít nhất 1 tên thông thường (hoặc “_”).
 VD: server_name abc.com “”; hoặc server_name _ “”; => _ tức là mọi domain. 
 
---> Cấu hình HTTPS:
+--> Chỉ thị cấu hình HTTPS:
 VD: server {
   listen 80 default_server;
   server_name _;
@@ -53,15 +51,15 @@ server {
   return 301 https://example.com$request_uri;
 }
 
---> Cấu hình đường dẫn và tài liệu:
+--> Chỉ thị cấu hình đường dẫn và tài liệu:
 Cú pháp: root /path/resource/; => Giá trị mặc định là html
 root: sử dụng trong khối server, http, location, if; định nghĩa tài liệu gốc, chứa các tập tin muốn gửi khách
 
---> Cấu hình các request từ client:
+--> Chỉ thị cấu hình các request từ client:
 keepalive_requests: sử dụng trong khối server, http, location; xác định tối đa số lượng yêu cầu được phục vụ trên 1 kết nối keep-alive. Giá trị mặc định là 100
 VD: keepalive_requests 100;
 
---> MIME types: Multipurpose Internet Mail Extensions là chuẩn mô tả định dạng của các loại tệp.
+--> Chỉ thị MIME types: Multipurpose Internet Mail Extensions là chuẩn mô tả định dạng của các loại tệp.
 types: dùng trong khối server, http, location. VD: 
 types {
   text/html html;
@@ -104,7 +102,8 @@ upstream app {
 }
 
 -> Dùng $uri: biến chỉ phần của url đằng sau domain name
-VD gửi lại người dùng default GIF file nếu file k tồn tại:
+VD: try_files $uri =404; lấy $uri nếu k tồn tại sẽ trả 404
+VD2 gửi lại người dùng default GIF file nếu file k tồn tại:
 location /images/ {
   try_files $uri $uri/ /images/default.gif;
 }
@@ -113,12 +112,10 @@ location = /images/default.gif {
 }
 => Người dùng request http://www.domain.com/images/image1.gif => nginx sẽ tìm image1.gif trong chỉ thị root or alias xác định từ trước, nếu k có nó sẽ tìm trong image1.gif/ và k tìm thấy sẽ lấy tiếp /images/default.gif => nó sẽ chuyển sang chạy chỉ thị location thứ 2 và dừng process, nginx sẽ lấy file đó và đánh dấu trong cache trong 30s 
 
-VD2 try_files $uri =404; lấy $uri nếu k tồn tại sẽ trả 404
-
 
 
 # NGINX làm Load Balancer
-upstream backend {
+VD: upstream backend {
   server backend1.example.com max_fails=3 fail_timeout=15s;
   server backend2.example.com;
 }
@@ -197,14 +194,11 @@ http {
 
 
 # Dùng nginx chống DDoS
-1 số config chỉ có trên nginx plus, k dùng được trên nginx thường
-Trước tiên, nginx có kiến trúc non-blocking và event-driven vốn đã có thể xử lý 1 lượng request khổng lồ đồng thời tốt hơn các loại máy chủ khác. Các yêu cầu mới không làm gián đoạn các phiên làm việc đang có của nginx nên bản thân nó đã ngăn chặn các cuộc tấn công cơ bản.
-
-DDoS thì lưu lượng truy cập lớn từ 1 tập các IP cố định 1 lượng đủ để áp đảo máy chủ. Việc 1 nhóm lớn sử dụng forward proxy (VPN) cũng có biểu hiện tương tự nhưng lưu lượng vẫn thấp hơn nhiều so với các cuộc tấn công DDoS. 
-Khi DDoS, heaer User-Agent thường là 1 giá trị non-standard k chuẩn, header Referer thường là 1 giá trị có thể liên kết với cuộc tấn công.
+Nginx có kiến trúc non-blocking và event-driven vốn đã có thể xử lý 1 lượng request đồng thời tốt hơn các loại máy chủ khác. Các yêu cầu mới không làm gián đoạn các phiên làm việc đang có của nginx nên vốn đã ngăn chặn các cuộc tấn công cơ bản.
+DDoS thì lưu lượng truy cập lớn từ 1 tập các IP cố định đủ để áp đảo máy chủ. Việc 1 nhóm lớn sử dụng forward proxy (VPN) cũng có biểu hiện tương tự nhưng lưu lượng vẫn thấp hơn nhiều so với các cuộc tấn công DDoS. 
 
 -> Giới hạn số lượng request 1 ip chỉ được gửi sau mỗi 2s.
-limit_req_zone $binary_remote_addr zone=one:10m rate=30r/m;
+VD: limit_req_zone $binary_remote_addr zone=one:10m rate=30r/m;
 server {
   # ...
   location /login.html {
@@ -213,12 +207,12 @@ server {
   # ...
   }
 }
-=> limit_req_zone định cấu hình 1 vùng nhớ chung gọi là one lưu trạng thái các request cho key là $binary_remote_addr (ip của máy khách). zone one lưu state của request từ 1 ip và giới hạn 30 request trong 1 phút.
+limit_req_zone định cấu hình 1 vùng nhớ chung gọi là one lưu trạng thái các request cho key là $binary_remote_addr (ip của máy khách). zone one lưu state của request từ 1 ip và giới hạn 30 request trong 1 phút.
 Mọi request tới server vào url /login.html sẽ dùng zone one. zone one lưu max 10MB data.
 burst=5: nếu 100 request vào đồng thời thì 1 request được xử lý trong 2s, 5 request được đưa vào buffer, 94 request đưa vào queue (hoặc drop), tất cả bị delay lại để meet với tốc độ 1r/2s để k sập server.
 
 -> Giới hạn số lượng kết nối đến 1 vùng chỉ định của trang web
-limit_conn_zone $binary_remote_addr zone=addr:10m;
+VD: limit_conn_zone $binary_remote_addr zone=addr:10m;
 server {
   # ...
   location /store/ {
@@ -228,13 +222,13 @@ server {
 }
 => limit_conn_zone định cấu hình 1 vùng nhớ chung là "addr" lưu các yêu cầu có key là ip của client là $binary_remote_addr, lưu max 10MB data. Ở đây nó limit 1 ip gọi tới vùng /store/ của trang web chỉ được max 10 connection đồng thời. Tức nếu ip gọi 11 request đồng thời thì 1 request reject
 
--> Hacker có xu hướng dùng các kết nối ghi dữ liệu thường xuyên vì chúng muốn giữ connection càng lâu càng tốt cho nặng server. Các connection chậm này có thể được chặn lại. Slowloris là 1 VD của kiểu tấn công này. 
-server {
+-> Hacker có xu hướng dùng các kết nối ghi dữ liệu thường xuyên vì chúng muốn giữ connection càng lâu càng tốt cho nặng server. Slowloris là 1 VD của kiểu tấn công này. 
+VD: server {
   client_body_timeout 5s;
   client_header_timeout 5s;
   # ...
 }
-=> client_body_timeout kiểm soát thời gian nginx đợi để nhận được body của client. client_header_timeout kiểm soát thời gian nginx đợi để nhận được header của client. 
+client_body_timeout kiểm soát thời gian nginx đợi để nhận được body của client. client_header_timeout kiểm soát thời gian nginx đợi để nhận được header của client. 
 Ở đây nếu quá 5s mà chưa nhận được, nginx sẽ đóng kết nối phiên hiện tại và cho rằng yêu cầu bị hủy bỏ và thực hiện xử lý khác. Vì nếu nginx đợi quá lâu sẽ giảm performance trong việc nhận connection mới
 
 -> Chặn ip với nginx
@@ -244,18 +238,17 @@ location / {
 }
 => Phải làm thủ công nếu check log thấy 1 ip là hacker DDoS
 
-Trong 1 số TH ta chỉ dựng server cho 1 lượng ip cụ thể
+Trong 1 số TH chỉ dựng server cho 1 lượng ip cụ thể
 location / {
   allow 192.168.1.0/24;
   deny all;
   # ...
 }
 
-Chặn mọi IP:
+Chặn mọi IP sau khi thấy có attack nhắm vào /foo.php
 location /foo.php {
   deny all;
 }
-=> Sau khi cuộc tấn công DDoS nhắm vào /foo.php, mọi request vào nó nên được chặn lại. Ta có thể fix or chuyển sang 1 location khác.
 
 location / {
   if ($http_user_agent ~* foo|bar) { => ~* là ss regex không phân biệt hoa thường, chứa foo hoặc bar
@@ -263,11 +256,11 @@ location / {
   }
   # ...
 }
-=> Header User-Agent có giá trị bất thường so với các truy cập hợp lệ khác có thể bị chặn. Tương tự với các request có header Referer
+Header User-Agent và Referer có giá trị bất thường so với các truy cập hợp lệ or liên kết với cuộc tấn công thì có thể bị chặn.
 
 -> Dùng caching trong nginx để giảm tải cho server khi request trùng nhau gọi lại nhiều lần.
 Trước tiên cấu hình 1 proxy cache: 
-proxy_cache_path /path/to/cache levels=1:2 keys_zone=my_cache:10m max_size=10g inactive=60m; => 1 proxy cache chạy tại url /path/to/cache với max dung lượng 10GB và thời gian hoạt động là 60p. Tham số levels xác định cấu trúc thư mục, ở đây cache được lưu dưới 1 thư mục cấp 1 và 1 thư mục cấp 2, cấu trúc như v giúp tăng hiệu suất khi truy cập cache.
+proxy_cache_path /path/to/cache levels=1:2 keys_zone=my_cache:10m max_size=10g inactive=60m; => 1 proxy cache chạy tại url /path/to/cache với max dung lượng 10GB và thời gian hoạt động là 60p. levels xác định cấu trúc thư mục, ở đây cache được lưu dưới 1 thư mục cấp 1 và 1 thư mục cấp 2, cấu trúc như v giúp tăng hiệu suất khi truy cập cache.
 
 Dùng proxy_cache_use chỉ định khi nào cache nên được cập nhật:
 location / {
@@ -276,7 +269,7 @@ location / {
   proxy_cache_use stale updating error timeout;
   proxy_pass http://backend;
 }
-=> Dùng cache tên là my_cache xác định khi khởi tạo. Thời gian hiệu lực của các response mã 200 và 302 là 10p, các phản hồi với mã khác sẽ k được lưu trong cache. 
+Dùng cache tên là my_cache xác định khi khởi tạo. Thời gian hiệu lực của các response mã 200 và 302 là 10p, các phản hồi với mã khác sẽ k được lưu trong cache. 
 Còn proxy_cache_use stale updating error timeout; xác định các tùy chọn sử dụng cache trong trường hợp cache không khả dụng or gặp sự cố:
 - stale: sử dụng cache cũ nếu cache không có bản sao mới nhất của tài nguyên
 - updating: sử dụng cache cũ trong quá trình cập nhật nếu cache vẫn đang được cập nhật bởi 1 yêu cầu khác
@@ -289,21 +282,29 @@ upstream website {
   server 192.168.100.2:80 max_conns=200;
   queue 10 timeout=30s;
 }
-=> max_conns chỉ trong nginx plus. Ở đây ta giới hạn không quá 200 kết nối đến mỗi server backend đồng thời. Chỉ thị queue giới hạn lượng yêu cầu đợi khi mọi máy chủ trong nhóm upstream đạt max kết nối, timeout chỉ định thời gian 1 yêu cầu đợi. VD ở đây quá 410 kết nối đồng thời sẽ từ chối, queue quá timeout cũng từ chối và pop khỏi queue
-=> Nginx Plus cũng có thể nhận biết 1 cuộc tấn công DDoS thông qua Status or Dashboard, nó show số liệu và các mẫu lưu lượng bất thường để có thể thực hiện các actions cụ thể
+max_conns chỉ có trong nginx plus. Ở đây ta giới hạn không quá 200 kết nối đến mỗi server backend đồng thời. Chỉ thị queue giới hạn lượng yêu cầu đợi khi mọi máy chủ trong nhóm upstream đạt max kết nối, timeout chỉ định thời gian 1 yêu cầu đợi. VD ở đây quá 410 kết nối đồng thời sẽ từ chối, queue quá timeout cũng từ chối và pop khỏi queue
+Nginx Plus cũng có thể nhận biết 1 cuộc tấn công DDoS thông qua Status or Dashboard, nó show số liệu và các mẫu lưu lượng bất thường để có thể thực hiện các actions cụ thể
 
 
 
-# Cache trong nginx advance
-Browser có bfcache sẵn tối ưu cho static file, còn files như html js luôn lấy realtime. Có thể code server bth or config nginx để custom cache này thoải mái => ít dùng
-VD: client request file app.js -> server gửi lại cho client -> 2p sau client lại cần file app.js -> server check file đó k có gì thay đổi -> client lấy từ cache của trình duyệt Ta phải cấu hình nginx sao cho client k cần gửi thêm bất cứ request nào lên server nx mà vẫn có file app.js mà k sợ nó đã bị cũ trên server.
 
-- C1: Weak Caching Header (Etag / Last-Modified) phải request lên server để check sự thay đổi của các tài nguyên
-1.1> Last-Modified => Lần đầu tiên thì server gửi file logo.png kèm tham số last-modified ở response là thời điểm cuối cùng thay đổi của file. Lần tiếp theo request client có thêm If-Modified-Since là giá trị của them số Last-Modified lần trước nhận dược, server check nếu trùng với thời gian thay đổi lần cuối trên server thì trả lại 304 Not Modified để báo cho client biết file này éo đổi gì cả, client sẽ lấy bản sao được lưu cache browser
-1.2> Etag => Tương tự nhưng dùng chuỗi ký tự để check sự thay đổi của file thông qua request header If-None-Match và response Header Etag chứ éo nhất thiết phải là 1 mốc tg. Thực tế, server k lưu lại giá trị Etag để lôi ra check như là Last-Modified mà nó dùng thuật toán để tính ra Etag trong spec của HTTP, điều này giúp server hạn chế update Etag mỗi lần file đổi
-- C2: Strong Caching Header (Expires / Cache-Control) thì trình duyệt tự biết expires chưa quá thì lấy.
-2.1> Expires => VD: expires 5m; => file hết hạn trong 5p mặc kệ client có request lên server k
-2.2> Cache-Control => thêm các option sau expires trong file cấu hình:
+
+
+
+
+
+# Cache trong nginx
+Browser có sẵn bfcache tối ưu cho static file, còn files như html js luôn lấy realtime. Có thể code server bth or config nginx để custom cache này thoải mái => ít dùng
+VD: client request file app.js -> server gửi lại cho client -> 2p sau client lại cần file app.js -> server check file k có gì thay đổi -> client lấy luôn từ cache của browser
+
+-> Nginx có thể cấu hình custom cache, qtr là cơ chế check file k có gì thay đổi:
+- Weak Caching Header (Etag / Last-Modified) phải request lên server để check sự thay đổi của các tài nguyên
+1> Last-Modified => Lần đầu tiên thì server gửi file logo.png kèm tham số last-modified ở response là thời điểm cuối cùng thay đổi của file. Lần tiếp theo request client có thêm If-Modified-Since là giá trị của tham số Last-Modified lần trước nhận dược, server check nếu trùng với thời gian thay đổi lần cuối trên server thì trả lại 304 Not Modified để báo cho client biết file này éo đổi gì cả, client sẽ lấy bản sao được lưu cache browser
+2> Etag => Tương tự nhưng dùng chuỗi ký tự để check sự thay đổi của file thông qua request header If-None-Match và response Header Etag chứ éo nhất thiết phải là 1 mốc tg. Thực tế, server k lưu lại giá trị Etag để lôi ra check như là Last-Modified mà nó dùng thuật toán để tính ra Etag trong spec của HTTP, điều này giúp server hạn chế update Etag mỗi lần file đổi
+
+- Strong Caching Header (Expires / Cache-Control) thì trình duyệt tự biết expires chưa quá thì lấy.
+1> Expires => VD: expires 5m; => file hết hạn trong 5p mặc kệ client có request lên server k
+2> Cache-Control => thêm các option sau expires trong file cấu hình:
 no-store => file luôn được trả về theo cách thông thường, k lưu trong cache trình duyệt
 no-cache => cache sẽ gửi yêu cầu đến máy chủ để xác thực r mới tiến hành sao chép lưu trong trình duyệt (cache but revalidate)
 private/public => public cho phép file được cache bởi các proxy và server trung gian; private thì browser có thể cache nhưng proxy thì k, chỉ cho phép file có giá trị khác nhau cho các client khác nhau.
@@ -312,9 +313,10 @@ must-revalidate => buộc client phải validate với server trước khi sử 
 VD: Cache-Control "public, no-cache, max-age=12355, must-revalidate";
 => Laravel mix còn đánh dấu sự thay đổi của file ngay trong tên file. VD: A.123456.js or a.js?v=123456 làm tên cho file
 
-Cần tránh lỗi, VD đặt expires sau 5p nhưng file bị đổi trước đó dẫn đến người dùng nhận lại tài nguyên cũ => các file js, css là những file thường xuyên thay đổi nên dùng giải pháp Etag; các file ảnh, font chữ là file ít đổi nên dùng expires 5p.
-Thực tế các server config mặc định là dùng etag caching cho tất cả file nên ta phải sửa lại VD file config của nginx:
-server {
+=> Cần tránh lỗi, VD đặt expires sau 5p nhưng file bị đổi trước đó dẫn đến người dùng nhận lại tài nguyên cũ => các file js, css là những file thường xuyên thay đổi nên dùng giải pháp Etag; các file ảnh, font chữ là file ít đổi nên dùng expires 5p.
+
+Thực tế các server config mặc định là dùng etag caching cho tất cả file nên phải sửa lại. 
+VD: server {
   listen 80;
   server_name xxxxx; 
   root xxxxx; 
@@ -378,11 +380,12 @@ server {
 
 
 # Dùng log trong nginx
--> Chỉ thị error_log: error_log log_file [ log_level ] => log_level là mức ghi log thấp nhất mà ta muốn ghi lại: debug, info, notice, warn, error, crit, alert, emerg
-Khi chỉ định log_level, nó sẽ ghi log từ cấp độ đó đến cấp độ cao hơn cấp độ đó, mở file log_file để thấy nó ghi lại những gì trong quá trình server chạy
+-> Chỉ thị error_log: error_log log_file [ log_level ] => log_level là mức ghi log thấp nhất muốn ghi lại: debug, info, notice, warn, error, crit, alert, emerg
+Khi chỉ định log_level sẽ ghi log từ cấp độ đó đến cấp độ cao hơn cấp độ đó.
 Trên ubuntu có thể dùng cho error_log /dev/null crit; thì /dev/null là nơi để chọn thì error_log sẽ k ghi lại bất cứ thứ gì
 
--> Chỉ thị access_log: access_log /path/to/log/location [ format_of_log buffer_size ]; => giống error_log nhưng ghi theo mỗi request mà client tạo ra. 
+-> Chỉ thị access_log: 
+VD: access_log /path/to/log/location [ format_of_log buffer_size ]; => giống error_log nhưng ghi theo mỗi request mà client tạo ra. 
 VD: http {
   log_format log_format custom_format '$remote_addr - $remote_user [$time_local]'
     '"$request" $status $body_bytes_sent '
@@ -392,71 +395,60 @@ VD: http {
     ...
   }
 }
-=> Từng phần của log_format bắt đầu bằng $. Nó sẽ ghi ra log các biến mà ta xác định trong cặp ""
-Danh sách các biến hỗ trợ: http://nginx.org/en/docs/http/ngx_http_core_module.html#variables 
-buffer_size là kích thước cache.
-
 VD: access_log location format gzip; => để nén log file
 VD: access_log off; => tắt ghi log
+Từng phần của log_format bắt đầu bằng $, sẽ ghi ra log các biến xác định trong cặp ""
+Danh sách các biến hỗ trợ: http://nginx.org/en/docs/http/ngx_http_core_module.html#variables 
 
 -> Để tránh đầy dung lượng đĩa thì phải xoay log. Đó là việc chuyển đổi các file log và có thể lưu trữ file cũ trong 1 khoảng tg nhất định. 
-VD: mv /path/to/access.log /path/to/access.log.0 => di chuyển log hiện tại sang 1 file mới để lưu trữ, có thể đặt nó là .0 và file cũ hơn là .1
+VD: mv /path/to/access.log /path/to/access.log.0 => di chuyển log hiện tại sang 1 file mới để lưu trữ
 kill -USR1 `cat /var/run/nginx.pid` => gửi tín hiệu reload các file log khiến content ghi vào file được làm mới. nginx.pid là nơi lưu trữ pid của quy trình chính (linux). 
-sleep 1 => xoay log xong ta sleep 1 để hoàn tất, ta có thể nén file cũ or làm gì tùy ý.
+sleep 1 => xoay log xong sleep 1 để hoàn tất, có thể nén file cũ or làm gì tùy ý.
 [ post-rotation processing of old log file ]
+Nên tự làm thủ công thay vì xoay vòng với logrotate có sẵn trên ubuntu.
 
-Cách khác để xoay vòng là dùng logrotate: nó là chương trình cài sẵn trên ubuntu và nginx trên ubuntu đi kèm với tập lệnh logrotate tùy chỉnh => bỏ
+
+
+# Thực hành dùng pm2 tạo 3 server nodejs và dùng nginx để cân bằng tải các server đó => ref tới "nginx-loadbalancer"
+pm2 giúp khởi động lại dự án khi crash or VPS reboot. Nếu k có thì khi gặp TH như v phải tự vào vps và npm start thủ công.
+
+Mở cmd vào url có file nginx.exe -> chạy: taskkill /f /im nginx.exe để tắt các nginx cũ -> chạy: start nginx.exe để restart 
+Cấu hình config cho nginx làm cân bằng tải cho 3 server với round robin hay iphash.
+Hosting lên VPS ubuntu rồi vào terminal VPS để tải code dự án. Cài npm nodejs nginx. Trong file config đổi: server_name <YourVPSIpAddress>; là truy cập được web public.
+
+
+
+# Setup NodeJS deploy hoàn chỉnh Cloud DigitalOcean + NodeJS Express Web App + Custom Domain + Reverse Proxy Nginx + SSL certbot
+URL: https://www.youtube.com/watch?v=oykl1Ih9pMg
+- Tạo 1 dự án NodeJS và push lên github -> vào Digital Ocean create droplet ubuntu -> chọn SSH keys và hostname là tạo được 1 cloud server
+=> Tuỳ loại cloud. Digital Ocean cho vào cmd hệ điều hành của VPS trong khi Heroku k làm được v mà phải thông qua git của heroku, do đó k thể dùng nginx kết hợp với Heroku bth.
+
+- ssh root@<ip address cung từ VPS của digital ocean> vào terminal VPS -> sudo apt update -> cài node và npm: sudo apt install nodejs -> tạo app và clone từ github về trên máy ảo(chứ kp command copy nào ở đây cả) -> vào app -> npm install -> Chạy server rồi vào <ip của VPS>:<port> ok nginx giúp xoá port khỏi url
+Có thể dùng docker sẽ k cần cài từng cái phức tạp.
+
+- npm install -g pm2 -> pm2 start app.js -> app sẽ run ở background -> Dùng pm2 startup
+
+- Trước khi dùng nginx phải enable firewall trên VPS: 
+"ufw status" xem trạng thái firewall hiện tại -> ufw enable để mở firewall nhưng nó sẽ disrupt cái ssh connection hiện tại -> ufw allow ssh -> kêt nối lại connection đó -> ufw status sẽ thấy port 22/tcp được mở vì đó là của SSH mà ta đang sử dụng -> vào lại app thấy k chạy vì firewall k mở port 5000 như trước
+K cần mở port 5000 mà cần là port 80 và 143 rối để nginx tự forward port 5000 
+ufw allow http -> ufw allow https -> ufw status sẽ thấy mở thêm 80 và 143 -> sudo apt install nginx -> nginx tự được mở vào ip của server sẽ thấy -> mở file config ở: /etc/nginx/sites-available/default và sửa location / ra proxy_pass http://localhost:5000 và các setting khác -> server_name thêm 2 phiên bản url và www.url vào nginx -> save và sudo nginx -t để check -> sudo service nginx restart -> vào lại trang web ở ip của VPS chả cần port nx cũng vào được
+
+-*** Để có cái url server_name kia, cần dùng bất cứ 1 nền tảng nào giúp đk tên miền, VD namecheap or digitalflat -> đăng ký 1 domain miễn phí
+
+- Cần hợp domain và ip của VPS trên digital ocean lại:
+Vào networking của digitalocean thêm domain vô để digitalocean quản lý DNS -> tạo record cho các domain 2 phiên bản thường thì dùng dấu @ và www để digitalocean xác định url nào thì redirect vào app nào -> từ trang tạo domain ở đây là namecheap, phải thêm custom server name vào là: ns1/ns2/ns3.digitalocean.com -> mất 1 khoảng thời gian để DNS server update nó thì vào url của là vào đúng app luôn
+=> Cơ chế: vào url -> DNS server gọi đến nhà cung cấp namecheap xác định server name digitalocean, gửi đến server đó rồi digitalocean gọi đến app trong dự án, gọi vào bên trong với cái url kia -> nginx bắt được đầu tiên sẽ chạy các khối http và server bên trong thì thấy khối có server_name trùng được thực thi gọi vào khối location redirect đến localhost:5000 của VPS mà cổng 5000 đang được chạy bởi PM2 chạy 1 nodejs server bắt http request gửi trả thông tin vè lại client
+
+- Cài certbot (dev env): sudo add-apt-repository ppa:certbot/certbot -> sudo apt update -> sudo apt-get install python-certbot-nginx -> sudo certbot --nginx -d yourdomain.site -d www.yourdomain.site -> điền các thông tin và chọn option tự động redirect vào https khi truy cập http -> bh trang web đã secure SSL -> SSL cerfiticate tự hết hạn sau 90 ngày nên phải chạy command sau để tự động gia hạn mỗi 90 ngày k cần làm thủ công: certbot renew --dry-run
+certbot renew --dry-run không tự động gia hạn mà chỉ để kiểm tra quá trình gia hạn, gọi vô hạn được.
+cerbot renew thực sự gửi yêu cầu tới Let's Encrypt để gia hạn chứng chỉ. Nên chạy câu lệnh trên trước để đảm bảo có thể gia hạn thành công r mới chạy thực. Gọi có limit / tuần.
+Nó không chạy định kỳ, có thể dựng 1 server hoặc dùng systemd chạy ngầm check mỗi tuần 1 lần để tự gửi request gia hạn khi sắp hết.
+
+=>*** Lưu ý host VPS digital ocean toàn quyền root khác với dùng Heroku hay Google Firebase khi nó có sẵn mọi thứ. VD host lên Heroku không thể cài nginx được và cũng k cần vì nó hỗ trợ hết reverse proxy hay ssl các thứ rồi. Dùng docker trên Heroku cũng khó và bị hạn chế rất nhiều.
 
 
 
 # Other
 -> Tool https://github.com/matsuu/kataribe giúp phát hiện bottleneck, kết hợp với nginx nhưng phải enable => uncomment phần log_format và access_log của file config
-
-
-
-
-### Thực hành
-# Thực hành dùng pm2 tạo 3 cái server nodejs và dùng nginx để cân bằng tải các server đó => ref tới "nginx-loadbalancer"
-pm2 giúp khởi động lại dự án khi crash or VPS reboot. Nếu k có thì khi gặp TH như v ta phải tự vào vps và npm start thủ công.
-Nên dùng pm2 startup ubuntu.
-
-Mở cmd vào url có file nginx.exe -> chạy: taskkill /f /im nginx.exe để tắt các nginx cũ -> chạy: start nginx.exe để restart cái nginx 
-Cấu hình config cho nginx làm cân bằng tải cho 3 server với round robin hay iphash.
-
-Hosting lên VPS ubuntu rồi vào terminal VPS để tải code dự án. Cài npm nodejs nginx. Trong file config của nginx nhớ đổi: server_name <YourVPSIpAddress>; và ta có thể truy cập public được website của ta.
-
-
-
-# Setup dự án NodeJS deploy hoàn chỉnh Cloud DigitalOcean + NodeJS Express Web App + Custom Domain + Reverse Proxy Nginx + SSL certbot
-URL: https://www.youtube.com/watch?v=oykl1Ih9pMg
-
--> Tạo 1 dự án NodeJS và push lên github -> vào Digital Ocean create droplet -> chọn ubuntu và các thông tin khác -> chọn SSH keys và hostname là tạo được 1 cloud server
-=> Tuỳ loại cloud. Digital Ocean cho vào cmd hệ điều hành của VPS trong khi Heroku k làm được v mà phải thông qua git của heroku, do đó k thể dùng nginx kết hợp với Heroku bth.
-
-ssh root@<ip address cung từ VPS của digital ocean> vào terminal VPS -> sudo apt update -> cài node và npm: sudo apt install nodejs -> tạo app và clone từ github về trên máy ảo(chứ kp command copy nào ở đây cả) -> vào app -> npm install -> Chạy server rồi vào <ip của VPS>:<port> ok. Nhưng ta k muốn cái url xàm lol thế này nên phải dùng thêm nginx
-=> Dùng docker sẽ k cần cài từng cái phức tạp.
-
--> npm install -g pm2 -> pm2 start app.js -> app sẽ run ở background -> Dùng pm2 startup
-
--> Trước khi dùng nginx ta sẽ enable firewall trên VPS: 
-"ufw status" xem trạng thái firewall hiện tại -> ufw enable để mở firewall nhưng nó sẽ disrupt cái ssh connection hiện tại -> ufw allow ssh -> kêt nối lại connection đó -> ufw status sẽ thấy port 22/tcp được mở vì đó là của SSH mà ta đang sử dụng -> vào lại app thấy k chạy vì firewall k mở port 5000 như trước
-=> Và ta cũng k cần mở port 5000 nữa mà cái ta cần là port 80 và 143 cơ để nginx sẽ tự forward 5000 cho ta
-
-ufw allow http -> ufw allow https -> ufw status sẽ thấy mở thêm 80 và 143 -> sudo apt install nginx -> nginx tự được mở vào ip của server sẽ thấy -> mở file config ở: /etc/nginx/sites-available/default và sửa location / ra proxy_pass http://localhost:5000 và các setting khác -> server_name thêm 2 phiên bản url và www.url vào nginx -> save và sudo nginx -t để check -> sudo service nginx restart -> vào lại trang web ở ip của VPS chả cần port nx cũng tự vào trang web của ta
-
-->*** Để có cái url server_name kia ta dùng bất cứ 1 nền tảng nào giúp đk tên miền, VD namecheap -> đăng ký 1 domain miễn phí
-
--> Bh ta có 1 domain và ip của VPS từ digitalocean. Ta cần hợp nó lại
-Vào networking của digitalocean thêm cái domain vào để digitalocean quản lý DNS -> tạo record cho các domain 2 phiên bản thường thì dùng dấu @ và www để digitalocean xác định url nào thì redirect vào app nào của ta -> từ trang tạo domain ở đây là namecheap, ta phải thêm custom server name vào là: ns1/ns2/ns3.digitalocean.com -> mất 1 khoảng thời gian để DNS server update nó thì ta vào url của ta là nó vào đúng app luôn
-=> Ở đây cơ chế là: vào url của ta -> DNS server gọi đến nhà cung cấp namecheap xác định server name digitalocean, gửi đến server đó rồi digitalocean gọi đến app của ta trong dự án của digital ocean gọi vào bên trong với cái url kia -> nginx bắt được đầu tiên sẽ chạy các khối http và server bên trong thì thấy khối có server_name trùng được thực thi gọi vào khối location redirect đến localhost:5000 của VPS mà cổng 5000 đang dược chạy bởi PM2 chạy 1 nodejs server bắt http request gửi trả thông tin vè lại client
-
--> Cài certbot: sudo add-apt-repository ppa:certbot/certbot -> sudo apt update -> sudo apt-get install python-certbot-nginx -> sudo certbot --nginx -d yourdomain.site -d www.yourdomain.site -> điền các thông tin và chọn option tự động redirect vào https khi truy cập http -> bh trang web của ta đã secure SSL -> SSL cerfiticate tự hết hạn sau 90 ngày nên phải chạy command sau để tự động gia hạn mỗi 90 ngày k cần làm thủ công: certbot renew --dry-run
-
---> certbot renew --dry-run không tự động gia hạn mà chỉ để kiểm tra quá trình gia hạn, gọi vô hạn được.
-cerbot renew thực sự gửi yêu cầu tới Let's Encrypt để gia hạn chứng chỉ. Nên chạy câu lệnh trên trước để đảm bảo có thể gia hạn thành công r mới chạy thực. Gọi có limit / tuần.
-Nó không chạy định kỳ, có thể dựng 1 server hoặc dùng systemd chạy ngầm check mỗi tuần 1 lần để tự gửi request gia hạn khi sắp hết.
-
-=>*** Lưu ý host VPS toàn quyền root khác với dùng Heroku hay Google Firebase khi nó có sẵn mọi thứ. VD host lên Heroku không thể cài nginx được và cũng k cần vì nó hỗ trợ hết reverse proxy hay ssl các thứ rồi. Dùng docker trên Heroku cũng khó và bị hạn chế rất nhiều.
-=> Digital Ocean chỉ khác 1 máy laptop cá nhân bth là tuỳ chỉnh cấu hình và public ip sẵn thôi.
 
 
