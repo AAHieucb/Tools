@@ -1,5 +1,5 @@
-# Basic
-Swagger là tool để code và generate ra OpenAPI Specification là API docs mô tả REST API để test call api trực tiếp. Thường có lib tự generate thành docs luôn mà.
+# Swagger
+Tool để code và generate ra OpenAPI Specification là API docs mô tả REST API để test call api trực tiếp. Thường có lib tự generate thành docs luôn mà.
 
 Tool online swaggerhub: https://app.swaggerhub.com/home
 Swaggerhub là hợp của 3 tools rời rạc là:
