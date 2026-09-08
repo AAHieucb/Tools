@@ -1,17 +1,14 @@
 # Swagger
-Tool để code và generate ra OpenAPI Specification là API docs mô tả REST API để test call api trực tiếp. Thường có lib tự generate thành docs luôn mà.
+Tool generate ra OpenAPI Specification là API docs để test call api trực tiếp, thường có lib gen tự động
 
 Tool online swaggerhub: https://app.swaggerhub.com/home
-Swaggerhub là hợp của 3 tools rời rạc là:
+Swaggerhub là hợp của 3 tools rời rạc, từng tool của Swaggerhub đều có thể tải về riêng dùng local từ github. 
 Swagger Editor giúp design APIs or edit có sẵn bằng YAML config: https://swagger.io/tools/swagger-editor/
 Swagger Codegen tool generate code từ file config: https://swagger.io/tools/swagger-codegen/
-Swagger UI chỉ là 1 ứng dụng dùng HTML, CSS, JS và file config để tạo ra 1 file index.html là trang web biểu diễn API: https://swagger.io/tools/swagger-ui/
+Swagger UI chỉ là 1 ứng dụng dùng HTML, CSS, JS và file config để tạo ra 1 file index.html là trang web biểu diễn API: https://swagger.io/tools/swagger-ui/. Swagger UI chỉ là 1 phần của Swaggerhub, các dự án mà cần mỗi swagger ui thì tải nó về từ git rồi add vào project là có file index.html lưu api luôn
 
-Từng tool của Swaggerhub đều có thể tải về riêng dùng local từ github. 
-Swagger UI chỉ là 1 phần của Swaggerhub, các dự án mà cần mỗi swagger ui thì tải nó về từ git rồi add vào project là có file index.html lưu api luôn
-
--> Viết API lấy mẫu edit từ: https://editor.swagger.io/
-Keyword style và explode mô tả cách truyền tham số dạng mảng hay object vào url
+-> Có thể code ra page swagger API, lấy mẫu từ: https://editor.swagger.io/
+style và explode: mô tả cách truyền tham số dạng mảng hay object vào url
 components: Mô tả các kiểu object chung trong type trả về. VD trả ra kiểu Pet xong mô tả bên dưới kiểu Pet đó có những trường gì
 securitySchemes: Các API bảo mật phải cấu hình swagger để truy cập thông qua securitySchemes
 
