@@ -1,45 +1,54 @@
-->*** https://free.theresanaiforthat.com/
+# Phím tắt website:
+doc.new
+form.new
+sheet.new
+slide.new
+site.new
+note.new
+cal.new
+meet.new
+design.new
+figma.new
+image.new
+link.new
+excel.new
+ppt.new
+docx.new
+gist.new
+repo.new
+pen.new
+quiz.new
+jwt.io
+1ty.me
 
 
 
--> Fiddler: 
-Tool bắt gói tin mà máy gửi đi, có thể biết mọi thông tin request. VD debug powershell biết được nó gửi request gì đi mà việc dùng thông thường k thể thấy được
+# Fiddler => Tool bắt gói tin máy gửi đi, có thể biết mọi thông tin request. VD debug powershell API để biết call tới đâu
 
 
 
--> Nguồn media
+# Nguồn media
 https://www.pexels.com/ => ảnh và video free
 https://unsplash.com/ => ảnh đa dạng hơn, có cả thông tin máy chụp, tiêu cự, ống kính
 pngtree => ảnh png transparent background free
 
 
 
--> https://rows.com/ => tool ai thay thế excel
+# AI tool
+deepwiki => Tool AI đọc code từ repo và sinh document giải thích code.
+Dialogflow => giúp tạo chatbot trả lời tự động cho các ứng dụng như facebook, telegram, discord 
+Clave Prep: AI hỗ trợ phỏng vấn
+https://github.com/nextlevelbuilder/ui-ux-pro-max-skill: tool AI design UI tự động cực mạnh
+https://github.com/JCodesMore/ai-website-cloner-template: tool AI clone UI bất kỳ website nào. 
+https://github.com/greensock/gsap-skills: tool AI dùng crazy animation
+
+-> Ollama chạy các mô hình AI ở local, có sẵn nhiều mô hình. 
+VD kết hợp claude code UI free với model local gemini của ollama để có 1 hệ thống AI hoàn toàn free, nhưng phải có phần cứng mạnh.
+URL: https://www.makeuseof.com/free-way-to-use-claude-code-and-its-surprisingly-simple
 
 
 
--> http://www.plantuml.com/plantuml/uml
-Plant UML vẽ UML diagram bằng code đỉnh
-
-
-
--> https://chartdb.io/ => tool cực mạnh visualize mọi loại relational database
-
-
-
--> http://colormind.io/: Tool AI sinh color palette
-
-
-
--> deepwiki => tool ai đọc code từ repo và sinh document giải thích code.
-
-
-
--> ToDiagram => có extension, để visualize json data thành dạng diagrams, có AI hỗ trợ filtering data.
-
-
-
--> Dùng cURL call api qua cmd.
+# Dùng cURL call api qua cmd.
 curl -X GET "http://localhost:<port>/<>" 
 curl <url> --include => query get tới url hiển thị đầy đủ header
 
@@ -54,18 +63,11 @@ POST object explicit: curl -d "param1=value1&param2=value2" -H "Content-Type: ap
 POST data file: curl -d "@data.txt" -X POST http://localhost:<port>/data
 POST with data in JSON file: curl -d "@data.json" -X POST http://localhost:3000/data
 
-=> Lỗi A parameter cannot be found that matches parameter name 'X' => cái này là lỗi do OS đã được set từ trước cái curl như 1 alias(bí danh) để invoke-webrequest. Ta phải xóa cái set từ trước đó đi với: remove-item alias:\curl là có thể dùng đc bth
+=> Lỗi A parameter cannot be found that matches parameter name 'X' => cái này là lỗi do OS đã được set từ trước cái curl như 1 alias(bí danh) để invoke-webrequest, phải xóa cái set từ trước đó đi với: remove-item alias:\curl là có thể dùng đc bth
 
 
 
--> Tool AI tốt nhất là chạy local, mọi tool đều mất phí
-Vbee: AI tool tạo giọng nói từ văn bản, chuyên dùng cho tiếng việt.
-Rosebud AI: AI tạo game từ text, 1 hit nhét vào thẻ canvas luôn
-https://bolt.new/ => tool tạo web app full stack bằng ai
-
-
-
--> Tool open source free replace bản trả phí:
+# Tool open source free replace bản trả phí:
 Libre Office thay thế hoàn hảo cho MS Office 365, chỉ chạy local và k có cloud hay AI.
 Nocodb chuyển dữ liệu RDBMS sang dạng bảng tính thay thế airtable, cung API tự động. Cloud cũng free max 20 users. Tự setup VPS self host để hỗ trợ unlimited user.
 Focalboard thay thế Trello, notion để quản lý tiến độ công việc, note-taking.
@@ -87,8 +89,6 @@ Prestashop thay thế shopify
 NextCloud thay thế Dropbox
 Matomo thay thế Google Analytics
 
-
-
 -> VD có 3 cách để dùng penpot: 1 ứng dụng open source thiết kế UI UX
 1) Dùng online trên cloud chỉ cần đk tk, data lưu online vĩnh viễn, mất chi phí
 2) Tải source về chạy local. Chỉ dùng trên máy cá nhân, dùng được mọi tính năng, thậm chí sửa code để sửa tính năng. K cần kết nối internet, data chỉ lưu trên máy k share. Nếu dùng 1 người thì nên dùng local.
@@ -97,17 +97,39 @@ Có thể thuê 1 máy chủ, tự cấu hình máy cá nhân thành máy chủ,
 
 
 
--> Youtube online tool:
+# Youtube online tool:
 cursorful => free online screen record without voice
-https://online-voice-recorder.com/ => free online record audio
-https://www.audacityteam.org/ => free app edit and record audio
-https://www.canva.com/ => free online intro/outro, video editor 
-https://obsproject.com/ => free app screen record with voice
-https://www.blackmagicdesign.com/products/davinciresolve/ => free app edit video
-https://shotcut.org/ => free app edit video
+https://www.canva.com/ => free online intro/outro, video editor
 https://www.apowersoft.com/free-online-screen-recorder => free online screen recording with voice
 https://clideo.com/ => edit video có watermark online
-https://app.clipchamp.com/ => *free online edit video no watermark, có cho record luôn
-https://www.flexclip.com/pricing.html => video editor no watermark nhưng limit 10p
+https://app.clipchamp.com/ => *free online edit and record video no watermark
+https://github.com/debpalash/VoiceStudio => tool edit voice, clone voice free
 
+
+
+# Web tool 
+-> CapacitorJS: tool biến ứng dụng web thành ứng dụng di động native (iOS, Android) mà không cần viết lại toàn bộ bằng Swift, Kotlin hay Java. Đồng thời cung các plugin để truy cập được các tính năng của thiết bị (như camera, GPS, thông báo) qua JS.
+
+-> Cloudflare: có thể add website của ta vào để chống DDoS, botnet attack, hosting => có free tier
+
+-> restdb.io: tạo db để test ok, free.
+
+-> Algolia là search as a service cung dịch vụ tìm kiếm mạnh, hỗ trợ nh kiểu phức tạp. VD ốp data lên cho nó index r query nhanh. Hỗ trợ sẵn AI đưa ra gợi ý search, autocomplete, ranking.
+
+-> massCode: phần mềm lưu trữ snippets như kiểu 1 personal library ấy
+
+-> Vegeta: tool call http đo lường test hiệu năng mạnh. VD query 20k request trong 10s được.
+
+-> Digitalplat: cung free domain
+
+
+
+# Tool tổng hơp tool
+-> https://free.theresanaiforthat.com/
+
+-> https://aizening.com/tools?cat=free => Tổng hợp AI tool free 100 lượt 1 ngày, clone voice
+
+-> https://quickref.me/ => tổng hợp cheetsheet
+
+-> https://nosignups.net/ => tổng hợp tool in browser k cần sign up
 

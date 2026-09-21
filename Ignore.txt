@@ -1,0 +1,206 @@
+# Ignore
+
+-> Winform: là 1 phần của .NET Framework cung hỗ trợ phát triển app giao diện người dùng cho desktop, laptop và tablet.
+
+-> Flutter phù hợp với các ứng dụng mobile focus về animation, layout phức tạp. Back bởi Facebook dùng Dart.
+React Native cũng cross-platform nhưng animation làm vất vả hơn. Back bởi GG dùng JS.
+Ionic Framework cũng là 1 framework phát triển ứng dụng mobile đa nền tảng.
+
+-> Hook và lập trình win32
+Hook là cơ chế dùng để chắn ngang các lời gọi hàm, sự kiện trước khi nó đến một ứng dụng. Từ đó có thể sửa đổi theo ý ta, như thêm or đổi chức năng của ứng dụng. Lập trình hook có thể tùy chỉnh điều này. Nó là 1 kỹ thuật trong lập trình win32
+Win32 là viết tắt cho cụm từ Windows 32-bit, Win32 API cung cấp cho ta một số lượng hàm, thủ tục nhất định để ta dễ dàng tạo ra một chương trình window theo ý muốn
+
+-> Autocad: Phần mêm vẽ kỹ thuật bằng đồ họa vector trong kiến trúc, có thể vẽ cấu trúc 3d tòa nhà hay các thứ
+
+-> WebGL: Có thể sẽ không bao giờ đụng vì nó giúp code front end nhưng ở tầng level quá thấp nên phức tạp, giúp tương tác với GPU để render đồ họa cao, bao gồm 3D model và các hiệu ứng cực đẹp.
+
+-> WebGPU: 1 phiên bản mới hoàn hảo hơn kế thừa từ WebGL. Mạnh hơn, nhanh hơn và tốt hơn.
+
+-> Laravel: là 1 framework của PHP làm web theo MVC. Code được giảm thiểu nhưng vẫn đạt tiêu chuẩn giúp tiết kiệm tg.
+
+-> Angular, Vue: Các framework JS FE chỉ học nếu thực sự có nhu cầu công ty yêu cầu dùng
+
+-> Htmx: Htmx k chia component như react nên khó tái sử dụng. Có thể thêm thuộc tính ngay trong tag htmx để thực hiện actions mà k cần code JS riêng, k quản lý state.
+
+-> Bardeen: extension giúp tạo automation thực hiện 1 chuỗi hành động trên các nền tảng gg drive, tele, openai. Mất phí.
+
+-> Phaser: là 1 framework HTML5 để làm game trên web. Nó dùng Pixi.js render trên WebGL và Canvas. Hỗ trợ cả mobile và desktop. 
+Điều đb là game phát triển bởi Phaser có thể dễ dạng biên thành ứng dụng cho iOS và Android. Code rất dễ với JS.
+
+-> Coze: nền tảng chuyên tạo chat bot AI trên các MXH
+
+-> Deno giống với NodeJs là một runtime environment, cũng được phát triển dựa trên V8 engine của Javascript giống với Nodejs, khắc phục vài hạn chế của NodeJS.
+Deno không sử dụng npm mà dùng trực tiếp url. Làm việc với typescripts. Dùng callback-based, không còn lo callback hell. Phải cấp quyền truy cập vào network các thứ thay vì gọi thoải mái như nodejs. Nói chung nó là tool chặt chẽ hơn nodejs thôi.
+
+-> EmberJS: Framework FE giống React, chả có gì nổi bật, kbh dùng.
+
+-> Supabase là một cloud cung Backend dưới dạng Dịch vụ (BaaS) cho developer, được xây dựa trên các công cụ mã nguồn mở và có mục tiêu cạnh tranh với Firebase của Google. 
+Supabase cung cấp các dịch vụ đám mây như cơ sở dữ liệu, xác thực, lưu trữ, serverless và thời gian thực, tương thích với nextjs.
+
+-> tRPC: 1 JS API lib để xây dựng web mà cho phép tạo ra các hàm trên server r gọi trực tiếp từ client như thể chúng định nghĩa trên client. 
+Kết hợp với Typescript, nó typesafe và nếu ta đổi 1 trường trong API phía server thì client sẽ báo lỗi đúng dòng tương ứng. Nếu làm fullstack rất ổn vì tốc độ xây dựng nhanh, chứ bth server sửa 1 trường xong phải báo team client sửa theo sẽ rất mất tg.
+
+-> Turso: fork của libSQL, 1 nhánh mã nguồn mở của SQLite.
+Xử lý data lớn nhanh. Lưu ở edge cloud có tốc độ cao trên toàn thế giới, khác với SQLite chỉ local. Nhưng nó chỉ hỗ trợ các kiểu cơ bản như số chuỗi, ngày tháng.
+=> Cơ chế hoạt động giống như Edge Computing là 1 mô hình tính toán phân tán cho phép các thiết bị ở xa xử lý dữ liệu gần với nơi dữ liệu được tạo ra.
+
+-> WinterJS: là một runtime JavaScript siêu nhanh, tương tự như Node.js. Được viết bằng Rust, dùng JS engine SpiderMonkey để thực thi JS. Có thể biên dịch ra Web Assembly hoàn toàn, tốc độ nhanh hơn cả Bun.
+
+-> CloudNativePG là một operator triển khai, quản lý và vận hành các cụm PostgreSQL trên k8s. Chỉ dùng để quản lý khi scale postgre quy mô lớn, sao lưu, khôi phục, tự động xử lý sự cố, failover.
+
+-> Cloud Foundry Marketplace (PaaS): 1 nền tảng giúp tìm kiếm và tích hợp các dịch vụ như cơ sở dữ liệu, dịch vụ lưu trữ, dịch vụ giám sát, hoặc API vào ứng dụng của mình dưới dạng các service plans (ví dụ: PostgreSQL, RabbitMQ, Redis). Dev có thể tự thêm, cấu hình, và quản lý các dịch vụ này.
+Korifi là 1 dự án mã nguồn mở của Cloud Foundry, mang lại khả năng tương tự Cloud Foundry nhưng hoạt động trên K8s.
+
+-> Wasp: Bth phát triển ứng dụng phải setup React (frontend) + Express (backend) + Prisma (DB) + Auth + Routing + Deploy script. Dùng wasp thì viết 1 file config, nó gen hết ra boilerplate và chỉ cần code logic chính từng phần và chạy 1 lệnh để deploy.
+
+-> Nx và Learna: tools quản lý monorepo cho các framework JS
+
+-> Yarg: tool thực hiện nhiệm vụ reverse proxy trong web. Có thể dùng để xây dựng load balancer or API gateway bằng C# cho ứng dụng ASP.NET
+
+-> https://bolt.new/ => tool tạo web app full stack bằng ai
+
+-> Strapi: là 1 CMS headless phải tự deploy, tự quản lý. Nó chỉ quản lý phần backend serverless và cung cấp API để kết nối với bất kỳ FE nào.
+
+-> GitGuardian: tool quét mã nguồn và tìm commit chứa thông tin nhạy cảm như API keys, mật khẩu, tokens bị push nhầm lên public repo.
+
+-> Remix Run: 1 loại framework fullstack tạo react CSR, SSR. Phù hợp ứng dụng hiệu suất cao, data phức tạp, trải nghiệm mượt mà.
+Có các adapters, mỗi adapters giúp remix chạy với 1 nền tảng khác nhau như express, vercel, cloudflare, aws lambda.
+
+-> Fileforge: lib cung cấp service liên quan đến xử lý tệp. VD chuyển HTML thành PDF file thông qua các lib @fileforge/react-print và @fileforge/client
+
+-> Winglang: ngôn ngữ dành riêng cho lập trình cloud app.
+
+-> LangChain: framework xây dựng ứng dụng dựa trên LLM.
+
+-> AdonisJS: Typescript framework BE giống NodeJS nhưng tích hợp sẵn nhiều thứ giúp quá trình xây dựng nhanh hơn thôi, performance k đổi.
+Deepkit: Typescript BE framework, tích hợp sẵn nhiều thứ, cũng chả biết tốt hơn gì so với AdonisJS không.
+
+-> Fresh: Typescript FE framework phát triển bởi Deno, k cần build, cấu hình ít, dễ dùng, chỉ hỗ trợ SSR tối ưu.
+
+-> Dualbot: Tool giúp chạy nhiều hđh 1 máy
+
+-> KolibriOS: hđh viết hoàn toàn bằng assembly cực nhẹ nhưng vẫn cung cấp các tính năng đầy đủ của 1 OS.
+
+-> Neo4j: là một hệ quản trị cơ sở dữ liệu đồ thị open source.
+
+-> One: 1 react framework dùng cho cả web và react native, hỗ trợ cả CSR và SSR.
+
+-> Tiptap: framework dùng tạo text editor cực mạnh. Nó đa dạng và cân nhiều loại text editor phức tạp. Dùng cho React ok. Mất phí.
+
+-> Travis CI: giống github actions nhưng dễ dùng hơn, bắt commit trên git để tự build, test, deploy vào các nền tảng như heroku, aws. Mất phí
+Fastlane: tương tự nhưng chuyên CI cho ứng dụng mobile.
+Jenkins: tool CI/CD giống travisCI hay github actions nhưng travis dùng cloud, trả phí thì cái này 100% free và self hosted => tự cài docker ok
+Coveralls: cung cấp thông tin phần trăm mã nguồn đã được kiểm thử và độ bao phủ (code coverage) bởi các bộ kiểm thử tự động. Thường dùng với các công cụ CI, VD khi các bài test chạy trên Travis CI xong, nó sẽ tạo ra một báo cáo về độ bao phủ mã và gửi đến Coveralls.
+Cypress: cũng là 1 frontend testing tool
+
+-> Selenium: automation tool cho browser, có thể setup tự động mở browser điền form ấn nút các thứ để kiểm thử cho nhanh. Viết code bằng JS or Python.
+
+-> xterm.js: Nodejs lib tạo terminal trên browser
+Shiki là lib npm for syntax highlighter. VD hiển thị code JS trên màn hình và muốn highlight
+
+-> Stackblitz: nền tảng code trực tuyến và demo nhanh trên browser khi cần gửi code cho ai đó mà họ không cần cài đặt môi trường.
+
+-> JMeter: tool test hiệu năng chịu tải của website.
+
+-> Vaultwarden: giống bitwarden nhưng cài và chạy với docker ok
+
+-> SolidJS là framework cực kỳ nhẹ, bundle size < 10 lần React, performance nhanh hơn cả Svelte, Preact, Inferno (1 framework khác nhanh hơn cả Svelte). Nó cập nhật thay đổi UI trực tiếp trên native DOM, k dùng virtual dom như react nên nhanh hơn, hỗ trợ SSR.
+
+-> Project idx giúp tập trung phát triển FE trên cloud, editor cloud của gg. Như kiểu firebase chuyên BE thì project idx chuyên FE.
+
+-> Tauri 2.0: framework giúp xây UI cho app mobile desktop bằng công nghệ web. VD dùng vite + tauri tạo UI app desktop tương thích mọi OS và dùng Rust làm BE ok.
+
+-> Jellyfin: là library biến home server thành streaming đủ loại cực manh, access từ mọi device. Có docker container.
+
+-> Sentry: công cụ giám sát lỗi, theo dõi hiệu suất, debug ứng dụng, dùng cho react, next ok. Có phí
+
+-> wrk: a HTTP benchmarking tool cũ rồi
+
+-> RustDesk: free opensource thay thế tốt nhất cho team viewer
+
+-> Nextcloud: biến home server thành cloud platform như gg drive, dropbox nhưng toàn quyền kiểm soát, hỗ trợ sẵn hầu hết mọi feature của cloud. Có docker container.
+
+-> Penpot: tool design web, có AI plugin 
+
+-> Home Assistant: docker container cho 1 platform quản lý smart home. Chỉ cần các thiết bị trong nhà hỗ trợ là có thể connect với app này để kiểm soát từ xa mọi thứ.
+
+-> Netdata: real-time performance monitoring tool, có docker container, track đủ mọi thứ của server luôn.
+
+-> Duplicati: docker container chạy trên home server. Tool chuyên backs up files vào local storage or cloud or chia sẻ qua mạng, encrypt file và đủ thứ.
+
+-> Joomla: CMS tạo web nhưng nhỏ hơn wordpress
+
+-> uploadthing: thay thế S3 trong việc upload file, có 2GB free
+
+-> Hono server: framework siêu nhẹ cho JS tối ưu cho edge computing và serverless, giống expressjs nhưng dùng cho api nhỏ gọn, chạy trên edge hoặc microservice.
+
+-> NueJS: standards web framework có thể tạo web cực nhẹ, cả web chỉ nhẹ bằng 1 cái nút bấm.
+
+-> Aptrinsic / Gainsight PX: giúp thu thập hành vi người dùng, thu thập đến từng vị trí bấm nút trên màn hình. Mất phí.
+
+-> Base44: AI vibe coding
+
+-> Github copilot: có thể setup tự động review code dựa trên pull requests. 
+Bản pro có thể setup copilot agent tự động chỉnh sửa code theo yêu cầu và tạo MR, xong ta review để merge. Như có thêm dev.
+
+-> Github Spark: tool vibe code của github khá mạnh
+
+-> CodeRabbit: Tool có thể setup review code từng commit trên VSC 
+
+-> Neo.mjs: 1 framework FE chuyên multi-thread, k cần bundler, tốc độ cao như 1 app desktop, data cực lớn và update nhiều cũng k sợ lag.
+
+-> Sonar: Tự động check security bug và lỗi basic trong hệ thống
+
+-> Zed: editor nhanh
+Codex: AI code editor của open ai
+Google antigravity: tool ai free unlimited completion
+Windsurf: IDE AI khác
+Warp: AI terminal cực mạnh
+Terax: AI terminal tích hợp cả IDE cực mạnh và nhẹ
+
+-> Gulp: 1 task runner tự động hóa task, giống webpack nhưng webpack là 1 bundler còn có tác dụng bundle file nữa. Gulp còn giúp tạo 1 server để serve có hot reload
+
+-> Codex: tool ai của open ai là tool vibe code luôn
+
+-> Chromatic: tool test FE giống story book
+
+-> Libreoffice: full office suite thay thế Microsoft
+OnlyOffice Docspace: chia sẻ file nhiều người, thay thế office
+
+-> Resilience4J: là thư viện trong java cho microservice xây dựng hệ thống chịu lỗi. Hỗ trợ ngắt mạch khi service lỗi nhiều, bulkhead tách thread tránh quá tải, fallback khi lỗi. Tương tự có Hystrix.
+
+-> Syncthing: tool giúp sync folder. VD save file trên laptop, tự sync vào điện thoại qua wifi
+
+-> Portable: container tool cài trong docker để quản lý container volumn các thứ bằng giao diện
+Dozzle: container tool cài trong docker để quản lý và xem logs của các container khác trong docker
+
+-> Excalidraw: the perfect Google Jamboard alternative, free open source cho tool vẽ
+
+-> Open Spec / Spec Kit: tài liệu để AI dựa vào trước khi code
+
+-> Caddy webserver: thay thế nginx nhưng cấu hình dễ hơn, nếu k cần rules quá phức tạp thì dùng caddy webserver cài qua docker ok.
+Fail2Ban: tool bảo mật server, monitor log file tìm ra malicious requests, failed login attempts, tự block ip vào firewall nếu thấy malicious pattern. Có docker container.
+Swag: container giúp reverse proxy + SSL
+Watchtower: 1 container dùng trong hệ thống có nhiều docker container. Nó chạy trong background luôn đảm bảo image newest version, tự update image, reboots container
+
+-> http://www.plantuml.com/plantuml/uml => Plant UML vẽ UML diagram bằng code
+
+-> Mano-cua: cho phép agent đọc những gì xuất hiện trên màn hình và thao tác tự động theo ý muốn. https://github.com/MININGLAMP-AI/MANO-P
+
+-> http://colormind.io/ => Tool AI sinh color palette
+
+-> arena.ai: dùng mọi loại AI nhưng bị limited.
+https://www.chatday.ai/chat => tương tự
+
+-> https://chartdb.io/ => tool cực mạnh visualize mọi loại relational database
+
+-> ToDiagram => có extension, để visualize json data thành dạng diagrams, có AI hỗ trợ filtering data.
+
+-> Vbee: AI tool tạo giọng nói từ văn bản, chuyên dùng cho tiếng việt.
+
+-> Rosebud AI: AI tạo game từ text, 1 hit nhét vào thẻ canvas luôn
+
+-> Openclaw: là AI open source tool, thay vì chỉ hỏi đáp như chatgpt, có thể tương tác với máy tính và thực hiện trực tiếp
+
+-> https://memes.yarn.co/ => tổng hợp meme
+ 
