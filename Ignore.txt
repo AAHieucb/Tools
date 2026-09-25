@@ -191,6 +191,7 @@ Watchtower: 1 container dùng trong hệ thống có nhiều docker container. N
 
 -> arena.ai: dùng mọi loại AI nhưng bị limited.
 https://www.chatday.ai/chat => tương tự
+app.ashna.ai => tương tự
 
 -> https://chartdb.io/ => tool cực mạnh visualize mọi loại relational database
 
@@ -204,3 +205,26 @@ https://www.chatday.ai/chat => tương tự
 
 -> https://memes.yarn.co/ => tổng hợp meme
  
+-> smsfast.com => tool nhận sms đến sđt ở nhiều quốc gia
+temp-number.com
+
+-> https://airi.moeru.ai/ => open source tạo trợ lý ảo anime bằng AI
+
+-> Openworker: tool opensource như 1 CRM nhỏ free, có thể tích hợp AI và quản lý công việc, dùng kết hợp với các CRM chuẩn như saleforce
+
+-> gdevelop.io: tool tạo game bằng UI và AI no code.
+
+-> browser-use: tool open-source giúp tự động hoá thao tác với browser, có thể tự điền thông tin, hoàn thành captcha, đặt vé tuỳ ý.
+
+-> https://github.com/firecrawl/anydoc => tool open-source biến mọi loại docs thành markdown có thể dùng làm skill cho AI
+
+-> https://exercism.org/ => học bất cứ ngôn ngữ nào
+
+-> https://exercism.org/: học bất cứ thứ gì
+
+-> https://www.logoai.com/ => web tạo logo và animate logo
+
+-> https://brik.space/: dùng AI build animmated component mà có thể tuỳ chỉnh, có đủ 3D, crazy animation
+
+-> https://www.jotform.com: tạo ứng dụng từ prompt, mất phí
+

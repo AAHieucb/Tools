@@ -1,3 +1,7 @@
+Tổng hợp tool free, dễ dùng, cần thiết.
+
+
+
 # Phím tắt website:
 doc.new
 form.new
@@ -104,6 +108,8 @@ https://www.apowersoft.com/free-online-screen-recorder => free online screen rec
 https://clideo.com/ => edit video có watermark online
 https://app.clipchamp.com/ => *free online edit and record video no watermark
 https://github.com/debpalash/VoiceStudio => tool edit voice, clone voice free
+https://github.com/microsoft/VibeVoice => Chuyển từ audio sang file text, để cho vào AI ra giọng nói khác
+https://github.com/OpenBMB/VoxCPM => open-source chuyển văn bản thành giọng nói k giới hạn
 
 
 
@@ -132,4 +138,8 @@ https://github.com/debpalash/VoiceStudio => tool edit voice, clone voice free
 -> https://quickref.me/ => tổng hợp cheetsheet
 
 -> https://nosignups.net/ => tổng hợp tool in browser k cần sign up
+
+-> https://github.com/ripienaar/free-for-dev => cực mạnh
+
+-> 123apps.com => edit video, record screen free
 
