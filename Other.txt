@@ -40,15 +40,13 @@ pngtree => ảnh png transparent background free
 
 # AI tool
 deepwiki => Tool AI đọc code từ repo và sinh document giải thích code.
-Dialogflow => giúp tạo chatbot trả lời tự động cho các ứng dụng như facebook, telegram, discord 
 Clave Prep: AI hỗ trợ phỏng vấn
 https://github.com/nextlevelbuilder/ui-ux-pro-max-skill: tool AI design UI tự động cực mạnh
 https://github.com/JCodesMore/ai-website-cloner-template: tool AI clone UI bất kỳ website nào. 
 https://github.com/greensock/gsap-skills: tool AI dùng crazy animation
 
--> Ollama chạy các mô hình AI ở local, có sẵn nhiều mô hình. 
+-> Ollama chạy các mô hình AI ở local, có sẵn nhiều mô hình. URL: https://www.makeuseof.com/free-way-to-use-claude-code-and-its-surprisingly-simple
 VD kết hợp claude code UI free với model local gemini của ollama để có 1 hệ thống AI hoàn toàn free, nhưng phải có phần cứng mạnh.
-URL: https://www.makeuseof.com/free-way-to-use-claude-code-and-its-surprisingly-simple
 
 
 
@@ -105,7 +103,6 @@ Có thể thuê 1 máy chủ, tự cấu hình máy cá nhân thành máy chủ,
 cursorful => free online screen record without voice
 https://www.canva.com/ => free online intro/outro, video editor
 https://www.apowersoft.com/free-online-screen-recorder => free online screen recording with voice
-https://clideo.com/ => edit video có watermark online
 https://app.clipchamp.com/ => *free online edit and record video no watermark
 https://github.com/debpalash/VoiceStudio => tool edit voice, clone voice free
 https://github.com/microsoft/VibeVoice => Chuyển từ audio sang file text, để cho vào AI ra giọng nói khác
@@ -114,9 +111,7 @@ https://github.com/OpenBMB/VoxCPM => open-source chuyển văn bản thành gi�
 
 
 # Web tool 
--> CapacitorJS: tool biến ứng dụng web thành ứng dụng di động native (iOS, Android) mà không cần viết lại toàn bộ bằng Swift, Kotlin hay Java. Đồng thời cung các plugin để truy cập được các tính năng của thiết bị (như camera, GPS, thông báo) qua JS.
-
--> Cloudflare: có thể add website của ta vào để chống DDoS, botnet attack, hosting => có free tier
+-> Cloudflare: có thể add website vào để chống DDoS, botnet attack, hosting => có free tier
 
 -> restdb.io: tạo db để test ok, free.
 
@@ -139,7 +134,7 @@ https://github.com/OpenBMB/VoxCPM => open-source chuyển văn bản thành gi�
 
 -> https://nosignups.net/ => tổng hợp tool in browser k cần sign up
 
--> https://github.com/ripienaar/free-for-dev => cực mạnh
+-> https://github.com/ripienaar/free-for-dev => cực mạnh toàn tool free
 
 -> 123apps.com => edit video, record screen free
 

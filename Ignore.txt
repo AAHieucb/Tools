@@ -228,3 +228,8 @@ temp-number.com
 
 -> https://www.jotform.com: tạo ứng dụng từ prompt, mất phí
 
+-> Dialogflow => giúp tạo chatbot trả lời tự động cho các ứng dụng như facebook, telegram, discord 
+
+-> CapacitorJS: tool biến ứng dụng web thành ứng dụng di động native (iOS, Android) mà không cần viết lại toàn bộ bằng Swift, Kotlin hay Java. Đồng thời cung các plugin để truy cập được các tính năng của thiết bị (như camera, GPS, thông báo) qua JS.
+
+
