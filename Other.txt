@@ -1,7 +1,3 @@
-Tổng hợp tool free, dễ dùng, cần thiết.
-
-
-
 # Phím tắt website:
 doc.new
 form.new
@@ -27,10 +23,6 @@ jwt.io
 
 
 
-# Fiddler => Tool bắt gói tin máy gửi đi, có thể biết mọi thông tin request. VD debug powershell API để biết call tới đâu
-
-
-
 # Nguồn media
 https://www.pexels.com/ => ảnh và video free
 https://unsplash.com/ => ảnh đa dạng hơn, có cả thông tin máy chụp, tiêu cự, ống kính
@@ -39,14 +31,31 @@ pngtree => ảnh png transparent background free
 
 
 # AI tool
-deepwiki => Tool AI đọc code từ repo và sinh document giải thích code.
-Clave Prep: AI hỗ trợ phỏng vấn
-https://github.com/nextlevelbuilder/ui-ux-pro-max-skill: tool AI design UI tự động cực mạnh
+-> Ollama chạy các mô hình AI ở local, có sẵn nhiều mô hình. URL: https://www.makeuseof.com/free-way-to-use-claude-code-and-its-surprisingly-simple
+VD kết hợp claude code UI free với model local gemini của ollama để có 1 hệ thống AI hoàn toàn free, nhưng phải có phần cứng mạnh.
+
+-> DeepWiki => Tool AI đọc code từ repo và sinh document giải thích code.
+
+-> Clave Prep: AI luyện hỏi đáp phỏng vấn
+
+-> https://github.com/nextlevelbuilder/ui-ux-pro-max-skill: tool AI design UI tự động cực mạnh
 https://github.com/JCodesMore/ai-website-cloner-template: tool AI clone UI bất kỳ website nào. 
 https://github.com/greensock/gsap-skills: tool AI dùng crazy animation
 
--> Ollama chạy các mô hình AI ở local, có sẵn nhiều mô hình. URL: https://www.makeuseof.com/free-way-to-use-claude-code-and-its-surprisingly-simple
-VD kết hợp claude code UI free với model local gemini của ollama để có 1 hệ thống AI hoàn toàn free, nhưng phải có phần cứng mạnh.
+-> https://bolt.new/ => tool tạo web app full stack từ prompt, web đơn giản dùng được free tier
+
+-> https://imgupscaler.ai/ => làm nét ảnh cực mạnh
+https://vmake.ai/ => remove background cho image, create video từ image
+
+-> https://github.com/firecrawl/anydoc => tool open-source biến mọi loại docs thành markdown có thể dùng làm skill cho AI
+
+-> https://brik.space/: dùng AI build animmated component mà có thể tuỳ chỉnh, có đủ 3D, crazy animation
+
+-> https://www.logoai.com/ => AI tạo logo và animate logo
+
+-> arena.ai: dùng mọi loại AI nhưng bị limited.
+https://www.chatday.ai/chat => tương tự
+app.ashna.ai => tương tự
 
 
 
@@ -65,11 +74,11 @@ POST object explicit: curl -d "param1=value1&param2=value2" -H "Content-Type: ap
 POST data file: curl -d "@data.txt" -X POST http://localhost:<port>/data
 POST with data in JSON file: curl -d "@data.json" -X POST http://localhost:3000/data
 
-=> Lỗi A parameter cannot be found that matches parameter name 'X' => cái này là lỗi do OS đã được set từ trước cái curl như 1 alias(bí danh) để invoke-webrequest, phải xóa cái set từ trước đó đi với: remove-item alias:\curl là có thể dùng đc bth
+Lỗi A parameter cannot be found that matches parameter name 'X' => cái này là lỗi do OS đã được set từ trước cái curl như 1 alias(bí danh) để invoke-webrequest, phải xóa cái set từ trước đó đi với: remove-item alias:\curl là có thể dùng đc bth
 
 
 
-# Tool open source free replace bản trả phí:
+# Tool open source free replace bản trả phí
 Libre Office thay thế hoàn hảo cho MS Office 365, chỉ chạy local và k có cloud hay AI.
 Nocodb chuyển dữ liệu RDBMS sang dạng bảng tính thay thế airtable, cung API tự động. Cloud cũng free max 20 users. Tự setup VPS self host để hỗ trợ unlimited user.
 Focalboard thay thế Trello, notion để quản lý tiến độ công việc, note-taking.
@@ -99,29 +108,15 @@ Có thể thuê 1 máy chủ, tự cấu hình máy cá nhân thành máy chủ,
 
 
 
-# Youtube online tool:
+# Youtube online tool
 cursorful => free online screen record without voice
 https://www.canva.com/ => free online intro/outro, video editor
 https://www.apowersoft.com/free-online-screen-recorder => free online screen recording with voice
 https://app.clipchamp.com/ => *free online edit and record video no watermark
-https://github.com/debpalash/VoiceStudio => tool edit voice, clone voice free
 https://github.com/microsoft/VibeVoice => Chuyển từ audio sang file text, để cho vào AI ra giọng nói khác
 https://github.com/OpenBMB/VoxCPM => open-source chuyển văn bản thành giọng nói k giới hạn
-
-
-
-# Web tool 
--> Cloudflare: có thể add website vào để chống DDoS, botnet attack, hosting => có free tier
-
--> restdb.io: tạo db để test ok, free.
-
--> Algolia là search as a service cung dịch vụ tìm kiếm mạnh, hỗ trợ nh kiểu phức tạp. VD ốp data lên cho nó index r query nhanh. Hỗ trợ sẵn AI đưa ra gợi ý search, autocomplete, ranking.
-
--> massCode: phần mềm lưu trữ snippets như kiểu 1 personal library ấy
-
--> Vegeta: tool call http đo lường test hiệu năng mạnh. VD query 20k request trong 10s được.
-
--> Digitalplat: cung free domain
+https://github.com/debpalash/VoiceStudio => free open source local voice edit and clone tool
+Excalidraw: tool vẽ mạnh thay thế cho Google Jamboard, free open source
 
 
 
@@ -137,4 +132,32 @@ https://github.com/OpenBMB/VoxCPM => open-source chuyển văn bản thành gi�
 -> https://github.com/ripienaar/free-for-dev => cực mạnh toàn tool free
 
 -> 123apps.com => edit video, record screen free
+
+
+
+# Web tool 
+-> Cloudflare: có thể add website vào để chống DDoS, botnet attack, hosting => có free tier
+
+-> restdb.io: tạo db để test ok, free.
+
+-> Algolia là search as a service cung dịch vụ tìm kiếm mạnh, hỗ trợ nh kiểu phức tạp. VD ốp data lên cho nó index r query nhanh. Hỗ trợ sẵn AI đưa ra gợi ý search, autocomplete, ranking.
+
+-> massCode: phần mềm lưu trữ snippets như kiểu 1 personal library ấy
+
+-> Digitalplat (Free domain): cung free domain
+
+
+
+# Other 
+-> Vegeta: tool call http đo lường test hiệu năng mạnh. VD query 20k request trong 10s được.
+
+-> Fiddler => Tool bắt gói tin máy gửi đi, có thể biết mọi thông tin request. VD debug powershell API để biết call tới đâu
+
+-> Nx và Lerna quản lý trong monorepo cho framework JS, đều open-source free.
+
+-> uploadthing: thay thế S3 trong việc upload file, có 2GB free
+
+-> smsfast.com => tool nhận sms đến sđt ở nhiều quốc gia
+temp-number.com
+
 

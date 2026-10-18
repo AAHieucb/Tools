@@ -266,6 +266,8 @@ ReadOnlyMany: Nhiều Pod có thể gắn PV ở chế độ chỉ đọc.
 ReadWriteMany: Nhiều Pod có thể gắn PV ở chế độ đọc/ghi, tức nhiều pod dùng chung PV.
 - Storage Class chỉ định loại lưu trữ như SSD, HDD, hoặc Cloud Storage như AWS EBS
 
+-> CloudNativePG: 1 operator triển khai, quản lý và vận hành các cụm PostgreSQL trên k8s, chỉ dùng khi scale postgre quy mô lớn, sao lưu, khôi phục, failover.
+
 -> Dừng:
 Dùng replicaset độc lập không hay, họ thường dùng Deployment tốt hơn. Mỗi Deployment sở hữu 1 ReplicaSet riêng.
 URL: https://xuanthulab.net/deployment-trong-kubernetes-trien-khai-cap-nhat-va-scale.html
